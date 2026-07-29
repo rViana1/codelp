@@ -1,87 +1,120 @@
-# Lessons Learned
-
-This document records the most important technical lessons learned during the development of each milestone.
-
-Its goal is to preserve architectural reasoning, successful decisions and future improvements identified during development.
-
 ---
 
-# Milestone 2.1 — Project Scanner
+# Milestone 2.2 — Project Domain Model
 
 ## Objective
 
-Implement the first production-ready version of the Project Scanner.
+Introduce the central `Project` aggregate root and integrate the scanner with the domain model without breaking the existing scanner API.
 
-The scanner is responsible for traversing a project directory, applying filtering rules and producing an in-memory representation of the project tree.
+This milestone established the architectural foundation for all future modules (Parser, Indexer, Chunker, Embeddings and Retrieval).
 
 ---
 
-## What went well
+## What Went Well
 
-- The scanner remained focused on a single responsibility.
-- The project tree representation proved to be simple and expressive.
-- Introducing the ScanFilter abstraction made the scanner easily extensible.
-- Deterministic ordering simplified both testing and debugging.
-- Building the tree during scanning avoided unnecessary post-processing.
+- The `Project` aggregate created a clear central source of truth.
+- Separating metadata, configuration and statistics improved cohesion.
+- Timezone-aware UTC handling was introduced from the beginning.
+- The scanner was integrated without breaking backwards compatibility.
+- Existing scanner tests continued to pass unchanged.
+- Integration tests validated the interaction between the scanner and the domain.
 
 ---
 
 ## Lessons Learned
 
-### Keep responsibilities small
+### Domain First Simplifies Evolution
 
-Avoid adding parsing, chunking or indexing responsibilities to the scanner.
+Introducing a dedicated domain model early makes future modules significantly easier to design.
 
-The scanner should only discover the project structure.
-
----
-
-### Deterministic behaviour is extremely valuable
-
-Sorting directories before files and keeping alphabetical ordering makes:
-
-- tests deterministic;
-- debugging easier;
-- future caching mechanisms more reliable.
+Instead of connecting modules directly, every module enriches the same `Project` instance.
 
 ---
 
-### Domain models are worth creating early
+### Preserve Stable APIs When Evolving Architecture
 
-Using explicit models (`TreeNode` and `ScanResult`) instead of dictionaries provides a much better foundation for future evolution.
+The original `scan()` API remained untouched.
 
----
+Adding a new `scan_project()` method was safer than replacing the existing contract.
 
-### Design for extension, not speculation
-
-The `ScanFilter` abstraction allows new filtering strategies without modifying the scanner itself.
-
-Only abstractions with immediate value should be introduced.
+Incremental architectural evolution is usually less risky than disruptive redesign.
 
 ---
 
-### Test incrementally
+### Rich Domain Models Need Clear Boundaries
 
-Creating small tests first and gradually increasing complexity made implementation safer and reduced debugging time.
+The domain should store knowledge, not implementation details.
+
+The scanner owns `TreeNode`; the domain stores a serialization-safe representation of the tree.
+
+Keeping this boundary explicit prevents accidental coupling.
+
+---
+
+### Circular References Become a Real Problem Quickly
+
+The `parent` reference in `TreeNode` created circular serialization issues.
+
+Navigation models and persistence models are often different concerns.
+
+A dedicated serialization step solved the problem while preserving navigation capabilities.
+
+---
+
+### Default Factories Prevent Shared Mutable State
+
+Pydantic `Field(default_factory=...)` was essential for sets, lists and nested models.
+
+This avoided shared mutable state between `Project` instances.
+
+---
+
+### Timezone Awareness Should Be Decided Early
+
+Using `datetime.now(timezone.utc)` from the beginning prevents future migration problems.
+
+Timezone-aware timestamps should be the default for all persistent project data.
+
+---
+
+### Package Structure Matters
+
+The integration tests revealed that a clear package root and a configured `pytest.ini` are necessary for reliable imports.
+
+Import strategy should be defined early and applied consistently across the project.
 
 ---
 
 ## Architectural Decisions Reinforced
 
-- Project tree represented as a graph of `TreeNode` objects.
-- Children stored as a dictionary for fast lookup.
-- Filtering implemented using the Strategy Pattern.
-- Scanner remains independent from parsers, chunkers and indexers.
+- `Project` is the Aggregate Root.
+- The domain depends on no application modules.
+- Application modules may depend on the domain.
+- Scanner enriches the `Project` instead of communicating with future modules.
+- Tree serialization excludes parent references.
+- Backwards compatibility is preserved during architectural evolution.
 
 ---
 
-## Future Improvements
+## Future Improvements Identified
 
-- Scanner statistics.
-- Incremental scanning.
-- Persistent project knowledge.
-- Composite scan filters.
-- Parallel scanning for very large repositories.
+### Domain
+
+- Dedicated `ProjectTree` domain model.
+- Stronger validation rules.
+- Immutable metadata sections.
+
+### Scanner Integration
+
+- Make `scan_project()` the primary public API.
+- Incremental tree updates.
+- Change tracking between scans.
+
+### Knowledge Persistence
+
+- Persist serialized trees.
+- Store scan snapshots.
+- Track repository evolution over time.
 
 ---
 
@@ -89,10 +122,14 @@ Creating small tests first and gradually increasing complexity made implementati
 
 Status: Completed
 
-Architecture Review: Approved
+Implementation: Completed
+
+Tests: Passed (17 automated tests)
 
 Code Review: Approved
 
-Tests: Passed
+Architecture Review: Approved
 
-Ready for next milestone.
+Documentation: Completed
+
+Ready for Milestone 3 — Parser.

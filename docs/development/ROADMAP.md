@@ -52,6 +52,14 @@ Architectural decisions are documented before implementation.
 
 Prefer explicit and maintainable solutions over clever ones.
 
+## Domain First
+
+The domain model is the central source of truth of the platform.
+
+## Dependency Direction
+
+Application modules may depend on the domain; the domain must never depend on application modules.
+
 ---
 
 # 3. High-Level Architecture
@@ -61,6 +69,9 @@ Repository
       │
       ▼
 Scanner
+      │
+      ▼
+Project (Aggregate Root)
       │
       ▼
 Parser
@@ -87,7 +98,7 @@ Context Builder
 LLM
 ```
 
-Each stage only depends on the previous one.
+Each application module enriches the same `Project` aggregate.
 
 ---
 
@@ -104,10 +115,12 @@ Responsibilities
 - build project tree
 - register files
 - register directories
+- update Project scan state
 
-Output
+Outputs
 
-`ScanResult`
+- `ScanResult`
+- `Project` enrichment
 
 ---
 
@@ -205,24 +218,26 @@ Output
 
 ---
 
-# 5. Planned Domain Model
+# 5. Domain Model
 
-The long-term central entity of the system is the `Project`.
+The central entity of the system is the `Project` aggregate.
 
 ```
 Project
-
 ├── metadata
-├── scan_result
-├── parsed_project
-├── project_index
-├── chunks
-├── embeddings
-├── diagnostics
-└── knowledge
+├── configuration
+├── statistics
+├── root_tree
+├── parser_result
+├── index_result
+├── chunk_result
+├── embedding_result
+└── diagnostics
 ```
 
-Each module progressively enriches the same Project object.
+The domain is implemented in `backend/core/project`.
+
+Application modules enrich the same Project instance during analysis.
 
 ---
 
@@ -255,18 +270,31 @@ Deliverables
 
 ---
 
-## Milestone 2.2 — Project Model
+## Milestone 2.2 — Project Domain Model
 
 Status
 
-Planned
+Completed
 
-Goals
+Deliverables
 
-- Introduce Project entity
-- Metadata model
+- Project aggregate root
+- ProjectMetadata
+- ProjectConfiguration
+- ProjectStatistics
+- Public domain API
+- Timezone-aware UTC handling
 - Scanner integration
-- Rich domain model foundation
+- Safe tree serialization
+- Domain tests
+- Integration tests
+- Backwards compatibility preserved
+- Architecture Review
+- Code Review
+
+Validation
+
+- 17 automated tests passing
 
 ---
 
@@ -286,6 +314,7 @@ Goals
 - Classes
 - Functions
 - Methods
+- Project integration
 
 ---
 
@@ -301,6 +330,7 @@ Goals
 - Dependency graph
 - Reference graph
 - File index
+- Project integration
 
 ---
 
@@ -315,6 +345,7 @@ Goals
 - Semantic chunking
 - Metadata
 - Context preservation
+- Project integration
 
 ---
 
@@ -329,6 +360,7 @@ Goals
 - Provider abstraction
 - Cache
 - Persistence
+- Project integration
 
 ---
 
@@ -415,6 +447,7 @@ Current ADRs
 
 - ADR-001 — Project Model
 - ADR-002 — Scanner Permission Handling
+- ADR-003 — Scanner Integration with Project
 
 Planned ADRs
 
@@ -441,3 +474,4 @@ The platform should remain:
 - extensible
 - AI-ready
 - maintainable
+- domain-centric

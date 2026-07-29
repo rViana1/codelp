@@ -1,8 +1,8 @@
 # Codelp Architecture
 
-> **Version:** 1.0  
-> **Status:** Draft  
-> **Last Updated:** Milestone 2.1
+> **Version:** 1.1  
+> **Status:** In Development  
+> **Last Updated:** Milestone 2.2
 
 ---
 
@@ -72,6 +72,20 @@ Important engineering decisions must be documented through ADRs.
 
 ---
 
+## Domain First
+
+The domain model is the central source of truth of the platform.
+
+---
+
+## Dependency Direction
+
+Application modules may depend on the domain.
+
+The domain must never depend on application modules.
+
+---
+
 # 4. High-Level Architecture
 
 Repository
@@ -79,6 +93,10 @@ Repository
 ↓
 
 Scanner
+
+↓
+
+Project (Aggregate Root)
 
 ↓
 
@@ -112,7 +130,7 @@ Context Builder
 
 LLM
 
-Each module enriches the project representation without knowing the internal implementation of later modules.
+Each application module enriches the same Project aggregate.
 
 ---
 
@@ -128,10 +146,12 @@ Responsibilities
 - discover directories
 - ignore configured paths
 - build the project tree
+- update Project scan state
 
-Output
+Outputs
 
-ScanResult
+- ScanResult
+- Project enrichment
 
 ---
 
@@ -183,7 +203,7 @@ Responsibilities
 
 Output
 
-Chunks
+ChunkCollection
 
 ---
 
@@ -199,7 +219,7 @@ Responsibilities
 
 Output
 
-Embeddings
+EmbeddingCollection
 
 ---
 
@@ -227,37 +247,54 @@ Responsibilities
 
 Output
 
-LLM Context
+PromptContext
 
 ---
 
 # 6. Domain Model
 
-The central entity of the architecture is the Project.
+The central entity of the architecture is the Project aggregate root.
 
-Every module enriches the same Project instance.
+Every application module enriches the same Project instance.
 
 Project
 
 ├── metadata
 
-├── scan
+├── configuration
 
-├── parser
+├── statistics
 
-├── index
+├── root_tree
 
-├── chunks
+├── parser_result
 
-├── embeddings
+├── index_result
 
-├── diagnostics
+├── chunk_result
 
-└── statistics
+├── embedding_result
 
-No module communicates directly with another module.
+└── diagnostics
+
+The domain is implemented in `backend/core/project`.
+
+---
+
+## Aggregate Root
+
+The Project is the single source of truth for all analysis state.
+
+Modules do not communicate directly with each other.
 
 Communication always happens through the Project model.
+
+Examples
+
+- scanner.scan_project(project)
+- parser.parse(project)
+- indexer.index(project)
+- chunker.chunk(project)
 
 ---
 
@@ -323,27 +360,24 @@ LLM
 
 Allowed dependencies
 
-Scanner → Models
-
-Parser → Models
-
-Indexer → Models
-
-Chunker → Models
-
-Retriever → Models
+- app.scanner → core.project
+- app.parser → core.project
+- app.indexing → core.project
+- app.chunking → core.project
+- app.embeddings → core.project
+- app.rag → core.project
 
 Forbidden dependencies
 
-Scanner → Parser
-
-Parser → Chunker
-
-Chunker → Retriever
-
-Retriever → Scanner
+- scanner → parser
+- parser → chunker
+- chunker → retriever
+- retriever → scanner
+- core → app
 
 No module should depend on a future processing stage.
+
+The domain must remain independent from application modules.
 
 ---
 
@@ -363,17 +397,46 @@ Domain
 
 Infrastructure
 
-Scanner belongs to the Infrastructure layer.
+Current mapping
 
-The Project model belongs to the Domain layer.
+- Application → app/*
+- Domain → core/*
+- Infrastructure → storage, vector stores, external APIs
 
-Business rules belong to the Domain layer.
+The Scanner is an application component that enriches the domain.
 
-External APIs belong to the Infrastructure layer.
+The Project model belongs to the domain layer.
+
+Business rules belong to the domain layer.
+
+External APIs belong to the infrastructure layer.
 
 ---
 
-# 10. Testing Strategy
+# 10. Tree Serialization
+
+The scanner internally uses a TreeNode graph with parent references.
+
+TreeNode
+
+├── parent
+
+└── children
+
+This structure is suitable for navigation but creates circular references during serialization.
+
+When the scanner updates the Project aggregate, the tree is converted into a serialization-safe dictionary representation that excludes parent references.
+
+This representation is:
+
+- deterministic
+- JSON-friendly
+- persistence-friendly
+- independent from the scanner implementation
+
+---
+
+# 11. Testing Strategy
 
 Every module must include automated tests.
 
@@ -387,9 +450,15 @@ Priority
 
 Implementation details should not be tested directly.
 
+Current validation
+
+- Domain model tests
+- Scanner tests
+- Scanner integration tests
+
 ---
 
-# 11. Performance Goals
+# 12. Performance Goals
 
 Future milestones should optimise
 
@@ -403,69 +472,56 @@ Performance optimisations should never compromise determinism.
 
 ---
 
-# 12. Extensibility
+# 13. Extensibility
 
 The architecture must support
 
 - multiple programming languages
-
 - multiple embedding providers
-
 - multiple LLM providers
-
 - multiple vector databases
 
 without changing the core architecture.
 
 ---
 
-# 13. Architecture Decision Records
+# 14. Architecture Decision Records
 
 Major engineering decisions are documented separately.
 
 Current ADRs
 
-ADR-001 Project Model
-
-ADR-002 Permission Tests
+- ADR-001 — Project Model
+- ADR-002 — Scanner Permission Handling
+- ADR-003 — Scanner Integration with Project
 
 Future ADRs
 
-Plugin System
-
-Cache
-
-Configuration
-
-Language Support
-
-Incremental Scanner
+- Persistent Project Knowledge
+- Incremental Scanner
+- Plugin System
+- Cache
+- Configuration
+- Language Support
 
 ---
 
-# 14. Future Evolution
+# 15. Future Evolution
 
-Future architectural improvements include
+Planned architectural improvements include
 
-- Project entity
-
-- Plugin system
-
-- Incremental scanning
-
-- Remote repository support
-
-- Distributed indexing
-
-- Streaming parser
-
-- Parallel chunking
-
-- Multi-language parsing
+- dedicated ProjectTree model
+- incremental scanning
+- persistent project knowledge
+- remote repository support
+- distributed indexing
+- streaming parser
+- parallel chunking
+- multi-language parsing
 
 ---
 
-# 15. Engineering Philosophy
+# 16. Engineering Philosophy
 
 Codelp is designed as an engineering platform rather than a collection of utilities.
 

@@ -89,6 +89,24 @@ The following documents should remain updated:
 
 ---
 
+## Documentation as Code
+
+Core domain entities must document their design directly in the source code.
+
+Every major class should describe:
+
+- Responsibility
+- Purpose
+- Invariants
+- Boundaries
+- Expected evolution (when relevant)
+
+Architectural decisions belong in ADRs.
+
+Behavioural contracts belong in the code.
+
+---
+
 # 6. Code Review
 
 Every completed feature should be reviewed before being committed.
@@ -113,3 +131,22 @@ Each milestone should end with:
 - code review
 - git commit
 - version tag
+
+### Date and Time
+
+All internal dates and times must use timezone-aware UTC `datetime` objects.
+
+Use:
+
+```python
+datetime.now(timezone.utc)
+```
+
+Do not use:
+
+```python
+datetime.utcnow()
+datetime.now()
+```
+
+Timezone conversion must only happen at the presentation layer.

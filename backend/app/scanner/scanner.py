@@ -4,6 +4,8 @@ import os
 import time
 from pathlib import Path
 
+from core.project import Project
+
 from .filters import DefaultScanFilter, ScanFilter
 from .models import ScanResult, TreeNode
 
@@ -55,6 +57,47 @@ class ProjectScanner:
             duration=duration,
             errors=self._errors,
         )
+
+    def _serialize_tree(self, node: TreeNode) -> dict:
+        """
+        Serializes a TreeNode without parent references.
+        """
+
+        return {
+            "name": node.name,
+            "path": str(node.path),
+            "is_directory": node.is_directory,
+            "children": {
+                name: self._serialize_tree(child)
+                for name, child in node.children.items()
+            },
+    }
+
+    def scan_project(self, project: Project) -> Project:
+        """
+        Scans a project and updates its domain state.
+
+        This method preserves the existing scanner behaviour by reusing
+        the scan() method and copying the relevant information into the
+        Project aggregate.
+
+        The scanner remains responsible for discovery, while the Project
+        remains the single source of truth for domain state.
+        """
+
+        result = self.scan(project.metadata.root_path)
+
+        project.statistics.files = len(result.files)
+
+        project.statistics.directories = len(result.directories)
+
+        project.statistics.scan_duration_seconds = result.duration
+
+        project.root_tree = self._serialize_tree(result.tree)
+
+        project.diagnostics.extend(result.errors)
+
+        return project    
 
     def _create_node(self, path: Path) -> TreeNode:
         """
