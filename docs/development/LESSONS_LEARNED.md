@@ -133,3 +133,137 @@ Architecture Review: Approved
 Documentation: Completed
 
 Ready for Milestone 3 — Parser.
+
+
+---
+
+# Milestone 3 — Python Parser
+
+## Objective
+
+Implement the first production-ready parser capable of transforming Python source files into structured knowledge integrated with the Project aggregate.
+
+The parser extracts imports, top-level functions, classes and methods while remaining independent from Scanner internals.
+
+---
+
+## What Went Well
+
+- The parser architecture remained highly modular.
+- Separating detection, parsing, visitors and orchestration simplified testing.
+- The dual API (`parse_file` and `parse_project`) proved consistent with the Scanner architecture.
+- AST visitors avoided large monolithic parsing logic.
+- Diagnostics propagation allowed project parsing to continue even when some files could not be parsed.
+- Integration with the Project aggregate required minimal changes to the existing architecture.
+
+---
+
+## Lessons Learned
+
+### Keep Extraction Separate from Traversal
+
+Using dedicated AST visitors made symbol extraction easier to understand, test and evolve.
+
+Traversal logic and extraction logic should remain independent.
+
+---
+
+### Top-Level Functions and Methods Are Different Concepts
+
+A generic `visit_FunctionDef` initially risked extracting class methods as top-level functions.
+
+Being explicit about extraction boundaries prevents symbol duplication and simplifies future indexing.
+
+---
+
+### A Minimal Symbol Model Is Often Enough
+
+Only names and ownership information were required to unlock the next milestone.
+
+Decorators, docstrings, line ranges and inheritance can be added later without changing the overall architecture.
+
+---
+
+### Domain APIs and Technical APIs Serve Different Purposes
+
+`parse_file()` is ideal for unit tests and debugging.
+
+`parse_project()` is ideal for orchestration and domain enrichment.
+
+Maintaining both APIs increases flexibility without adding significant complexity.
+
+---
+
+### Unsupported Languages Should Produce Diagnostics, Not Failures
+
+Repositories are frequently multi-language.
+
+Recording diagnostics instead of raising exceptions keeps the pipeline robust while preserving visibility of what was not analysed.
+
+---
+
+### Ownership Information Becomes Important Earlier Than Expected
+
+Adding `class_name` to `MethodSymbol` is a small change with significant future value for indexing, references and navigation.
+
+---
+
+### Determinism Must Be Preserved Across the Pipeline
+
+The parser preserves the deterministic ordering already established by the Scanner.
+
+Stable ordering is important for testing, caching and future persistent project knowledge.
+
+---
+
+## Architectural Decisions Reinforced
+
+- Project remains the Aggregate Root.
+- Parser does not depend on Scanner internals.
+- Visitors implement symbol extraction.
+- Technical and domain APIs coexist.
+- Diagnostics are propagated through the Project aggregate.
+- Symbol extraction remains intentionally minimal.
+
+---
+
+## Future Improvements Identified
+
+### Symbol Metadata
+
+- decorators
+- docstrings
+- line ranges
+- async functions
+- class inheritance
+
+### Indexing Support
+
+- stable symbol identifiers
+- fully-qualified names
+- cross-file references
+
+### Multi-language Parsing
+
+- JavaScript
+- TypeScript
+- C#
+- Java
+
+---
+
+## Milestone Result
+
+Status: Completed
+
+Implementation: Completed
+
+Tests: Passed (11 parser tests, 28 total tests)
+
+Code Review: Approved
+
+Architecture Review: Approved
+
+Documentation: Completed
+
+Ready for Milestone 4 — Indexer.

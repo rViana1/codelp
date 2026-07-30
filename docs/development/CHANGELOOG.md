@@ -1,5 +1,40 @@
 # Changelog
 
+## v0.3.0
+
+Python Parser milestone completed.
+
+### Added
+
+- Parser package
+- Language detector
+- Python AST parser
+- Import extraction
+- Function extraction
+- Class extraction
+- Method extraction
+- Method-to-class association
+- ParsedFile model
+- ParsedProject model
+- Parser integration with Project
+- Parser diagnostics propagation
+- Parser unit tests
+- Parser integration tests
+- ADR-004 — Python AST Parser
+
+### Changed
+
+- ProjectStatistics now stores scanned_files
+- Scanner now propagates scanned files into the Project aggregate
+- Architecture updated to include the Parser implementation
+
+### Validation
+
+- 11 parser tests passing
+- 28 total automated tests passing
+
+---
+
 ## v0.2.2
 
 Project Domain Model and Scanner Integration.

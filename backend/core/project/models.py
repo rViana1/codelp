@@ -124,6 +124,8 @@ class ProjectStatistics(BaseModel):
 
     scan_duration_seconds: float = 0.0
     
+    scanned_files: list[Path] = Field(default_factory=list)
+    
     
 class Project(BaseModel):
     """

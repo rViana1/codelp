@@ -88,6 +88,8 @@ class ProjectScanner:
         result = self.scan(project.metadata.root_path)
 
         project.statistics.files = len(result.files)
+        
+        project.statistics.scanned_files = list(result.files)
 
         project.statistics.directories = len(result.directories)
 

@@ -298,25 +298,42 @@ Validation
 
 ---
 
-## Milestone 3 — Parser
+## Milestone 3 — Python Parser
 
 Status
 
-Planned
+Completed
 
-Goals
+Deliverables
 
-- Language detection
-- Python parser
-- AST support
-- Symbols
-- Imports
-- Classes
-- Functions
-- Methods
+- Parser package
+- Language detector
+- Unknown language handling
+- Python AST parser
+- Import extraction
+- Function extraction
+- Class extraction
+- Method extraction
+- Method-to-class association
+- ParsedFile model
+- ParsedProject model
 - Project integration
+- Diagnostics propagation
+- Parser unit tests
+- Integration tests
+- Architecture Review
+- Code Review
 
----
+Validation
+
+- 11 parser tests passing
+- 28 total automated tests passing
+
+Future Reviews
+
+- Stable symbol identifiers before Milestone 4
+- Richer symbol metadata (decorators, docstrings, line ranges) before Milestone 4
+- Parser result strategy before advanced indexing
 
 ## Milestone 4 — Indexer
 

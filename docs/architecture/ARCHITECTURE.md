@@ -1,8 +1,8 @@
 # Codelp Architecture
 
-> **Version:** 1.1  
+> **Version:** 1.2  
 > **Status:** In Development  
-> **Last Updated:** Milestone 2.2
+> **Last Updated:** Milestone 3
 
 ---
 
@@ -159,18 +159,33 @@ Outputs
 
 Responsible for understanding source code.
 
+Current implementation: **Python AST Parser**.
+
 Responsibilities
 
-- parse files
 - detect programming language
+- parse Python source files
 - extract imports
+- extract top-level functions
 - extract classes
 - extract methods
-- extract functions
+- associate methods with their owning class
+- update Project parser state
 
-Output
+Outputs
 
-ParsedProject
+- ParsedFile
+- ParsedProject
+- Project enrichment
+
+Public APIs
+
+```python
+parse_file(path: Path) -> ParsedFile
+parse_project(project: Project) -> Project
+```
+
+The parser is designed to be language-agnostic at the orchestration level while using language-specific parsers internally.
 
 ---
 
@@ -264,6 +279,7 @@ Project
 ├── configuration
 
 ├── statistics
+│   └── scanned_files
 
 ├── root_tree
 
@@ -292,7 +308,7 @@ Communication always happens through the Project model.
 Examples
 
 - scanner.scan_project(project)
-- parser.parse(project)
+- parser.parse_project(project)
 - indexer.index(project)
 - chunker.chunk(project)
 
@@ -455,6 +471,10 @@ Current validation
 - Domain model tests
 - Scanner tests
 - Scanner integration tests
+- Parser tests
+- Parser integration tests
+
+Current total: 28 passing automated tests.
 
 ---
 
@@ -494,6 +514,7 @@ Current ADRs
 - ADR-001 — Project Model
 - ADR-002 — Scanner Permission Handling
 - ADR-003 — Scanner Integration with Project
+- ADR-004 — Python AST Parser
 
 Future ADRs
 
@@ -502,7 +523,8 @@ Future ADRs
 - Plugin System
 - Cache
 - Configuration
-- Language Support
+- Multi-language Parsing
+- Stable Symbol Identifiers
 
 ---
 
@@ -518,6 +540,9 @@ Planned architectural improvements include
 - streaming parser
 - parallel chunking
 - multi-language parsing
+- richer symbol metadata
+- stable symbol identifiers
+- cross-file symbol resolution
 
 ---
 
