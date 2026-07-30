@@ -267,3 +267,129 @@ Architecture Review: Approved
 Documentation: Completed
 
 Ready for Milestone 4 — Indexer.
+
+---
+
+# Milestone 4 — Stable Symbol Index
+
+## Objective
+
+Implement the first navigable project index capable of transforming parsed knowledge into deterministic and query-efficient structures integrated with the Project aggregate.
+
+The indexer builds stable identifiers for functions, classes and methods while preserving deterministic behaviour across the entire pipeline.
+
+---
+
+## What Went Well
+
+- Stable identifiers proved simple and highly effective.
+- Separating builders from orchestration kept the indexer focused.
+- Dictionary-based indexes simplified lookup logic.
+- Deterministic ordering made tests and debugging easier.
+- Integration with the existing Project aggregate required minimal architectural changes.
+- The full pipeline remained consistent from Scanner to Indexer.
+
+---
+
+## Lessons Learned
+
+### Human-Readable Identifiers Are Extremely Valuable
+
+Identifiers such as:
+
+```text
+src/models/user.py::User.login
+```
+
+are easy to debug, serialize, log and reason about.
+
+Readability is often more valuable than compactness in early architecture stages.
+
+---
+
+### The Indexer Should Own Identity
+
+The parser should describe structure, not identity.
+
+Moving identifier generation to the Indexer preserves a clean separation between extraction and navigation concerns.
+
+---
+
+### Relative Paths Matter
+
+Using project-relative POSIX paths avoids machine-specific identifiers and keeps indexes portable across environments.
+
+---
+
+### Determinism Must Be Explicit
+
+Relying on upstream ordering is fragile.
+
+The Indexer now sorts files, functions, classes, methods and imports explicitly, making reproducibility a property of the component itself.
+
+---
+
+### Dictionaries Are the Right Default for Knowledge Graphs
+
+Using dictionaries keyed by stable identifiers immediately enables efficient navigation and prepares the architecture for future reference graphs.
+
+---
+
+### Avoid Premature Navigation Optimizations
+
+`FileEntry` stores only symbol identifiers rather than full symbol objects.
+
+This keeps the model lightweight and avoids duplication until a measurable performance or usability need appears.
+
+---
+
+## Architectural Decisions Reinforced
+
+- Project remains the Aggregate Root.
+- Parser does not generate stable identifiers.
+- Indexer owns symbol identity.
+- Deterministic indexing is mandatory.
+- Query structures are optimized for lookup, not serialization convenience.
+- Cross-file references are intentionally deferred.
+
+---
+
+## Future Improvements Identified
+
+### Reference Graph
+
+- cross-file symbol references
+- import resolution
+- call graph
+- inheritance graph
+
+### Semantic Indexing
+
+- fully-qualified names
+- module resolution
+- symbol aliases
+- generic type information
+
+### Retrieval
+
+- symbol-to-file navigation helpers
+- derived views
+- ranking metadata
+
+---
+
+## Milestone Result
+
+Status: Completed
+
+Implementation: Completed
+
+Tests: Passed (12 indexing tests, 40 total tests)
+
+Code Review: Approved
+
+Architecture Review: Approved
+
+Documentation: Completed
+
+Ready for Milestone 5 — Chunker.

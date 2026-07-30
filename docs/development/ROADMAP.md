@@ -335,19 +335,44 @@ Future Reviews
 - Richer symbol metadata (decorators, docstrings, line ranges) before Milestone 4
 - Parser result strategy before advanced indexing
 
+---
+
 ## Milestone 4 — Indexer
 
 Status
 
-Planned
+Completed
 
-Goals
+Deliverables
 
-- Symbol index
-- Dependency graph
-- Reference graph
+- Indexing package
+- Stable symbol identifiers
+- Relative path strategy
 - File index
+- Symbol index
+- Dependency index
+- Function indexing
+- Class indexing
+- Method indexing
+- Import indexing
+- Deterministic indexing order
 - Project integration
+- Indexer unit tests
+- Pipeline integration test
+- Architecture Review
+- Code Review
+
+Validation
+
+- 12 indexing tests passing
+- 40 total automated tests passing
+
+Future Reviews
+
+- Stable cross-file references before advanced indexing
+- Reference graph before retrieval features
+- Richer symbol metadata before semantic indexing
+- File navigation optimization before retrieval features
 
 ---
 

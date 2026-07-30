@@ -1,8 +1,8 @@
 # Codelp Architecture
 
-> **Version:** 1.2  
+> **Version:** 1.3  
 > **Status:** In Development  
-> **Last Updated:** Milestone 3
+> **Last Updated:** Milestone 4
 
 ---
 
@@ -191,18 +191,37 @@ The parser is designed to be language-agnostic at the orchestration level while 
 
 ## Indexer
 
-Responsible for organising project knowledge.
+Responsible for organising parsed knowledge into navigable indexes.
+
+Current implementation: **Stable Symbol Index**.
 
 Responsibilities
 
-- symbol index
-- dependency index
-- file index
-- reference index
+- build stable symbol identifiers
+- build file index
+- build symbol index
+- build dependency index
+- preserve deterministic order
+- update Project index state
 
-Output
+Outputs
 
-ProjectIndex
+- FileEntry
+- SymbolEntry
+- DependencyEntry
+- ProjectIndex
+- Project enrichment
+
+Public APIs
+
+```python
+build(project_root: Path, parsed_project: ParsedProject) -> ProjectIndex
+index_project(project: Project) -> Project
+```
+
+The current indexer performs structural indexing only.
+
+Cross-file references, semantic relationships and advanced dependency analysis are intentionally deferred to future milestones.
 
 ---
 
@@ -286,6 +305,9 @@ Project
 ├── parser_result
 
 ├── index_result
+│   ├── files
+│   ├── symbols
+│   └── dependencies
 
 ├── chunk_result
 
@@ -309,7 +331,8 @@ Examples
 
 - scanner.scan_project(project)
 - parser.parse_project(project)
-- indexer.index(project)
+- indexer.build(project.metadata.root_path, project.parser_result)
+- indexer.index_project(project)
 - chunker.chunk(project)
 
 ---
@@ -473,8 +496,10 @@ Current validation
 - Scanner integration tests
 - Parser tests
 - Parser integration tests
+- Indexer tests
+- Pipeline integration tests
 
-Current total: 28 passing automated tests.
+Current total: 40 passing automated tests.
 
 ---
 
@@ -515,6 +540,7 @@ Current ADRs
 - ADR-002 — Scanner Permission Handling
 - ADR-003 — Scanner Integration with Project
 - ADR-004 — Python AST Parser
+- ADR-005 — Stable Symbol Index
 
 Future ADRs
 
@@ -524,7 +550,7 @@ Future ADRs
 - Cache
 - Configuration
 - Multi-language Parsing
-- Stable Symbol Identifiers
+- Reference Graph
 
 ---
 
@@ -546,7 +572,38 @@ Planned architectural improvements include
 
 ---
 
-# 16. Engineering Philosophy
+# 16. Stable Symbol Identifiers
+
+The Indexer assigns a stable identifier to every indexed symbol.
+
+Format
+
+```text
+<project_relative_path>::<symbol_path>
+```
+
+Examples
+
+```text
+src/main.py::hello
+src/models/user.py::User
+src/models/user.py::User.login
+```
+
+Rules
+
+- paths are relative to the project root;
+- POSIX separators are always used;
+- methods include the owning class;
+- identifiers are deterministic across executions.
+
+The identifier is calculated by the Indexer and is not stored directly in parser symbol models.
+
+This decision keeps the parser independent from indexing concerns while providing a stable foundation for future reference graphs, retrieval and navigation.
+
+---
+
+# 17. Engineering Philosophy
 
 Codelp is designed as an engineering platform rather than a collection of utilities.
 

@@ -1,5 +1,44 @@
 # Changelog
 
+## v0.4.0
+
+Stable Symbol Index milestone completed.
+
+### Added
+
+- Indexing package
+- Stable symbol identifiers
+- Relative path strategy
+- SymbolKind enum
+- SymbolEntry
+- FileEntry
+- DependencyEntry
+- ProjectIndex
+- Indexer builders
+- Function indexing
+- Class indexing
+- Method indexing
+- Import indexing
+- Deterministic indexing order
+- ProjectIndexer
+- Indexer integration with Project
+- Indexer unit tests
+- Pipeline integration test
+- ADR-005 — Stable Symbol Index
+
+### Changed
+
+- Architecture updated for navigable indexes
+- Project index_result now contains files, symbols and dependencies
+- Indexing responsibilities separated from parsing responsibilities
+
+### Validation
+
+- 12 indexing tests passing
+- 40 total automated tests passing
+
+---
+
 ## v0.3.0
 
 Python Parser milestone completed.
