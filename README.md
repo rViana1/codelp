@@ -132,7 +132,7 @@ docs/
 ## Installation
 
 ```bash
-git clone https://github.com/<your-username>/codelp.git
+git clone https://github.com/rViana1/codelp.git
 cd codelp
 
 python -m venv .venv
@@ -238,9 +238,9 @@ Each application module enriches the same `Project` instance.
 
 ## License
 
-MIT
+No license has been granted yet.
 
----
+The repository is public for portfolio and review purposes.
 
 ## Why Codelp?
 
