@@ -1,4 +1,4 @@
-#!/Users/ricardoviana/Desktop/my-codex/.venv/bin/python
+#!/Users/ricardoviana/Desktop/codelp/.venv/bin/python3
 import sys
 from fastapi.cli import main
 if __name__ == '__main__':

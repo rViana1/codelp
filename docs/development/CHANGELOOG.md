@@ -1,5 +1,81 @@
 # Changelog
 
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+---
+
+## [Unreleased]
+
+---
+
+## [Milestone 6] — Embedding Engine
+
+### Added
+
+- Added provider-independent Embedding Engine architecture.
+- Added `EmbeddingProvider` protocol abstraction.
+- Added embedding domain models:
+  - `Embedding`
+  - `EmbeddingCollection`
+  - `EmbeddingProviderInfo`
+- Added deterministic `FakeEmbeddingProvider` for testing.
+- Added embedding generation workflow:
+  - single chunk embedding;
+  - multiple chunk embedding;
+  - deterministic ordering.
+- Added in-memory vector store implementation.
+- Added project integration through:
+  - `embed(...)`
+  - `embed_project(...)`
+- Added embedding metadata propagation into project state.
+
+### Improved
+
+- Extended the project analysis pipeline with embedding generation.
+- Extended the architecture to support future embedding providers.
+- Preserved stable identity flow from symbols to chunks and embeddings.
+
+### Testing
+
+- Added embedding unit tests.
+- Added provider abstraction tests.
+- Added deterministic vector generation tests.
+- Added embedding store tests.
+- Added full pipeline regression tests.
+
+Validation:
+
+- 72 automated tests passing.
+
+---
+
+## [Milestone 5] — Chunker
+
+### Added
+
+- Added deterministic semantic chunking.
+- Added chunk models:
+  - `CodeChunk`
+  - `ChunkCollection`
+  - `ChunkKind`
+- Added source extraction for:
+  - functions;
+  - classes;
+  - methods.
+- Added stable chunk identifiers derived from symbol identifiers.
+- Added project chunk integration.
+
+### Testing
+
+- Added chunking tests.
+- Added deterministic ordering tests.
+- Added exact source extraction tests.
+
+Validation:
+
+- 55 automated tests passing.
 
 ## v0.5.0
 

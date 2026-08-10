@@ -1,4 +1,4 @@
-#!/Users/ricardoviana/Desktop/my-codex/.venv/bin/python
+#!/Users/ricardoviana/Desktop/codelp/.venv/bin/python3
 # -*- coding: utf-8 -*-
 import re
 import sys

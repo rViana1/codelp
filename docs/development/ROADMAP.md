@@ -394,17 +394,41 @@ Future Reviews
 
 ## Milestone 6 — Embedding Engine
 
-**Status:** Planned
+Status
 
-### Goals
+Completed
 
-- Embedding models
+Goals
+
 - Provider abstraction
-- Batch generation
-- Embedding cache
-- In-memory vector store
-- Persistence
+- Deterministic embedding generation
 - Project integration
+
+Implemented
+
+- Embedding domain models
+- EmbeddingProvider protocol
+- Deterministic fake embedding provider
+- Embedding engine
+- In-memory vector store
+- Project embedding state integration
+
+Deferred
+
+- Embedding cache
+- Persistent vector storage
+- Provider batching optimization
+
+Validation
+
+- Provider abstraction validated
+- Stable embedding identity validated
+- Deterministic embedding generation validated
+- Full pipeline regression validated
+
+Tests
+
+- 72 passing automated tests
 
 ---
 

@@ -534,3 +534,119 @@ Architecture Review: Approved
 Documentation: Completed
 
 Ready for Milestone 6 — Embeddings.
+
+# Milestone 6 — Embedding Engine
+
+## Provider Abstraction
+
+Embedding generation should not be coupled to a concrete provider.
+
+Using an explicit provider contract allows:
+
+- replacing embedding implementations;
+- testing without external dependencies;
+- supporting multiple providers in the future;
+- keeping orchestration logic independent.
+
+The Embedding Engine depends on the provider abstraction, not on provider implementations.
+
+---
+
+## Stable Embedding Identity
+
+Embeddings should not introduce a new independent identity system.
+
+The identity chain remains:
+
+Source File
+
+↓
+
+Symbol ID
+
+↓
+
+Chunk ID
+
+↓
+
+Embedding.chunk_id
+
+Reusing chunk identity simplifies:
+
+- navigation;
+- caching strategies;
+- incremental updates;
+- vector store synchronization.
+
+---
+
+## Deterministic Testing
+
+External AI services should not be required to validate embedding behaviour.
+
+A deterministic fake provider provides:
+
+- reproducible tests;
+- stable vectors;
+- dependency-free validation;
+- predictable pipeline behaviour.
+
+This keeps architectural validation independent from external providers.
+
+---
+
+## Domain Flexibility
+
+The embedding domain should not assume fixed vector dimensions.
+
+Vector size belongs to the provider metadata.
+
+This allows future support for different embedding models without changing the domain model.
+
+---
+
+## Storage Boundaries
+
+The first embedding storage implementation should remain simple.
+
+An in-memory store is sufficient to validate:
+
+- embedding persistence boundaries;
+- lookup behaviour;
+- insertion ordering;
+- future vector store interfaces.
+
+Persistent storage should only be introduced when retrieval requirements justify the additional complexity.
+
+---
+
+## Project Pipeline Integration
+
+Each processing stage should enrich the Project aggregate without creating direct dependencies between stages.
+
+The current pipeline remains:
+
+Scanner
+
+↓
+
+Parser
+
+↓
+
+Indexer
+
+↓
+
+Chunker
+
+↓
+
+Embedding Engine
+
+↓
+
+Future Retrieval
+
+This preserves modularity and allows each stage to evolve independently.

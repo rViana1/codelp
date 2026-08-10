@@ -1,8 +1,8 @@
 # Codelp Architecture
 
-> **Version:** 1.4  
+> **Version:** 1.5
 > **Status:** In Development  
-> **Last Updated:** Milestone 5
+> **Last Updated:** Milestone 6
 
 ---
 
@@ -267,17 +267,32 @@ Token-based chunking, sliding windows, large-symbol splitting and hybrid retriev
 
 ## Embedding Engine
 
-Responsible for generating vector representations.
+Responsible for transforming semantic chunks into vector embeddings.
+
+Current implementation: Provider-independent Embedding Engine.
 
 Responsibilities
 
-- embedding generation
-- cache
-- batching
+- generate embeddings from chunks
+- preserve deterministic ordering
+- attach chunk identity
+- attach provider metadata
+- update Project embedding state
 
-Output
+Outputs
 
-EmbeddingCollection
+- EmbeddingCollection
+- Project enrichment
+
+Public APIs
+
+embed(chunks: ChunkCollection) -> EmbeddingCollection
+
+embed_project(project: Project) -> Project
+
+The embedding engine depends on an abstract EmbeddingProvider and is independent from concrete embedding implementations.
+
+Caching, batching and persistent vector storage are intentionally deferred to future milestones.
 
 ---
 
@@ -334,8 +349,11 @@ Project
 │   └── dependencies
 
 ├── chunk_result
+│   ├── chunks
 
 ├── embedding_result
+│   ├── embeddings
+│   └── provider_metadata
 
 └── diagnostics
 
@@ -358,7 +376,7 @@ Examples
 - indexer.build(project.metadata.root_path, project.parser_result)
 - indexer.index_project(project)
 - chunker.chunk_project(project)
-
+- embedding.embed_project(project)
 ---
 
 # 7. Data Flow
@@ -531,7 +549,7 @@ Chunk ID
 Embedding ID
 ```
 
-The strategy simplifies embedding caching, incremental updates and vector store synchronization.
+The strategy provides a stable foundation for future embedding caching, incremental updates and vector store synchronization.
 
 ---
 
@@ -549,7 +567,7 @@ Priority
 
 Implementation details should not be tested directly.
 
-Current validation
+# Current validation
 
 - Domain model tests
 - Scanner tests
@@ -557,9 +575,11 @@ Current validation
 - Parser tests
 - Parser integration tests
 - Indexer tests
+- Chunker tests
+- Embedding tests
 - Pipeline integration tests
 
-Current total: 55 passing automated tests.
+Current total: 72 passing automated tests.
 
 ---
 
@@ -602,6 +622,7 @@ Current ADRs
 - ADR-004 — Python AST Parser
 - ADR-005 — Stable Symbol Index
 - ADR-006 — Stable Chunk Identity
+- ADR-007 — Embedding Provider Abstraction
 
 Future ADRs
 
@@ -628,9 +649,11 @@ Planned architectural improvements include
 - parallel chunking
 - multi-language parsing
 - richer symbol metadata
-- stable symbol identifiers
 - cross-file symbol resolution
 - multi-chunk symbols
+- embedding caching
+- persistent vector storage
+- similarity retrieval
 
 ---
 
