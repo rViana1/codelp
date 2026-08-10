@@ -378,29 +378,31 @@ Future Reviews
 
 ## Milestone 5 — Chunker
 
-Status
+**Status:** Completed
 
-Planned
+### Goals
 
-Goals
-
-- Semantic chunking
-- Metadata
-- Context preservation
+- Stable chunk identifiers
+- Semantic chunk boundaries
+- Exact source extraction
+- Deterministic ordering
+- Chunk metadata
 - Project integration
+- Full pipeline validation
 
 ---
 
 ## Milestone 6 — Embedding Engine
 
-Status
+**Status:** Planned
 
-Planned
+### Goals
 
-Goals
-
+- Embedding models
 - Provider abstraction
-- Cache
+- Batch generation
+- Embedding cache
+- In-memory vector store
 - Persistence
 - Project integration
 

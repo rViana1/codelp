@@ -1,5 +1,40 @@
 # Changelog
 
+
+## v0.5.0
+
+Semantic Chunking and Full Pipeline Integration.
+
+### Added
+
+- `ProjectChunker`
+- `CodeChunk`
+- `ChunkCollection`
+- `ChunkKind`
+- Exact source extractors for functions
+- Exact source extractors for classes
+- Exact source extractors for methods
+- Chunk builders
+- Deterministic semantic chunking
+- Stable chunk identifiers derived from symbol identifiers
+- Project integration for chunking
+- Full pipeline integration tests
+
+### Changed
+
+- Parser symbols now include `start_line` and `end_line`
+- Architecture updated for semantic chunking
+- Documentation updated for chunk identity and pipeline integration
+
+### Validation
+
+- Stable chunk identifiers
+- Deterministic ordering
+- Exact source extraction
+- Full Scanner → Parser → Indexer → Chunker pipeline validation
+- 55 passing automated tests
+
+
 ## v0.4.0
 
 Stable Symbol Index milestone completed.

@@ -69,7 +69,8 @@ def test_parse_functions(tmp_path: Path) -> None:
     names = [function.name for function in result.functions]
 
     assert names == ["a", "b"]
-
+    assert result.functions[0].start_line == 1
+    assert result.functions[0].end_line == 2
 
 def test_parse_classes_and_methods(tmp_path: Path) -> None:
 
@@ -100,6 +101,12 @@ def test_parse_classes_and_methods(tmp_path: Path) -> None:
     assert cls.methods[0].class_name == "User"
     
     assert cls.methods[1].class_name == "User"
+    
+    assert cls.start_line == 1
+    assert cls.end_line == 6
+
+    assert cls.methods[0].start_line == 2
+    assert cls.methods[0].end_line == 3
 
 
 def test_methods_are_not_top_level_functions(tmp_path: Path) -> None:

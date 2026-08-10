@@ -36,7 +36,11 @@ def test_index_single_function() -> None:
                 path=Path("/project/src/main.py"),
                 language="python",
                 functions=[
-                    FunctionSymbol(name="hello"),
+                    FunctionSymbol(
+                        name="hello",
+                        start_line=1,
+                        end_line=2,
+                    ),
                 ],
             )
         ]
@@ -65,7 +69,11 @@ def test_index_single_class() -> None:
                 path=Path("/project/src/models.py"),
                 language="python",
                 classes=[
-                    ClassSymbol(name="User"),
+                    ClassSymbol(
+                        name="User",
+                        start_line=1,
+                        end_line=2,
+                    ),
                 ],
             )
         ]
@@ -92,10 +100,14 @@ def test_index_single_method() -> None:
                 classes=[
                     ClassSymbol(
                         name="User",
+                        start_line=1,
+                        end_line=3,
                         methods=[
                             MethodSymbol(
                                 name="login",
                                 class_name="User",
+                                start_line=2,
+                                end_line=3,
                             )
                         ],
                     )
@@ -123,15 +135,23 @@ def test_index_multiple_symbols() -> None:
                 path=Path("/project/src/main.py"),
                 language="python",
                 functions=[
-                    FunctionSymbol(name="helper"),
+                    FunctionSymbol(
+                        name="helper",
+                        start_line=1,
+                        end_line=2,
+                    ),
                 ],
                 classes=[
                     ClassSymbol(
                         name="Service",
+                        start_line=4,
+                        end_line=6,
                         methods=[
                             MethodSymbol(
                                 name="run",
                                 class_name="Service",
+                                start_line=5,
+                                end_line=6,
                             )
                         ],
                     )

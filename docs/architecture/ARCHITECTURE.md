@@ -1,8 +1,8 @@
 # Codelp Architecture
 
-> **Version:** 1.3  
+> **Version:** 1.4  
 > **Status:** In Development  
-> **Last Updated:** Milestone 4
+> **Last Updated:** Milestone 5
 
 ---
 
@@ -227,17 +227,41 @@ Cross-file references, semantic relationships and advanced dependency analysis a
 
 ## Chunker
 
-Responsible for preparing semantic chunks.
+Responsible for preparing semantic chunks from indexed project knowledge.
 
 Responsibilities
 
-- preserve context
+- build chunks for functions
+- build chunks for classes
+- build chunks for methods
+- preserve exact source text
+- preserve semantic boundaries
+- preserve deterministic ordering
 - generate chunk metadata
-- optimise chunk boundaries
+- derive chunk identifiers from symbol identifiers
+- update Project chunk state
 
-Output
+Outputs
 
-ChunkCollection
+- CodeChunk
+- ChunkCollection
+- Project enrichment
+
+Public APIs
+
+```python
+build(
+    project_root: Path,
+    parsed_project: ParsedProject,
+    index: ProjectIndex,
+) -> ChunkCollection
+
+chunk_project(project: Project) -> Project
+```
+
+The current chunker performs semantic chunking only.
+
+Token-based chunking, sliding windows, large-symbol splitting and hybrid retrieval chunking are intentionally deferred to future milestones.
 
 ---
 
@@ -333,7 +357,7 @@ Examples
 - parser.parse_project(project)
 - indexer.build(project.metadata.root_path, project.parser_result)
 - indexer.index_project(project)
-- chunker.chunk(project)
+- chunker.chunk_project(project)
 
 ---
 
@@ -475,6 +499,42 @@ This representation is:
 
 ---
 
+# 10.1 Chunk Identity
+
+The Chunker does not generate independent semantic identifiers.
+
+Chunk identifiers are derived directly from the stable symbol identifiers produced by the Indexer.
+
+Relationship:
+
+```text
+chunk.id == symbol.id
+```
+
+Examples:
+
+- `src/main.py::hello`
+- `src/models/user.py::User`
+- `src/models/user.py::User.login`
+
+This creates a deterministic identity chain:
+
+```text
+Source File
+    ↓
+Parser Symbol
+    ↓
+Indexer Symbol ID
+    ↓
+Chunk ID
+    ↓
+Embedding ID
+```
+
+The strategy simplifies embedding caching, incremental updates and vector store synchronization.
+
+---
+
 # 11. Testing Strategy
 
 Every module must include automated tests.
@@ -499,7 +559,7 @@ Current validation
 - Indexer tests
 - Pipeline integration tests
 
-Current total: 40 passing automated tests.
+Current total: 55 passing automated tests.
 
 ---
 
@@ -541,6 +601,7 @@ Current ADRs
 - ADR-003 — Scanner Integration with Project
 - ADR-004 — Python AST Parser
 - ADR-005 — Stable Symbol Index
+- ADR-006 — Stable Chunk Identity
 
 Future ADRs
 
@@ -569,6 +630,7 @@ Planned architectural improvements include
 - richer symbol metadata
 - stable symbol identifiers
 - cross-file symbol resolution
+- multi-chunk symbols
 
 ---
 

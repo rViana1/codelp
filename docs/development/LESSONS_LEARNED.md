@@ -393,3 +393,144 @@ Architecture Review: Approved
 Documentation: Completed
 
 Ready for Milestone 5 — Chunker.
+
+
+---
+
+# Milestone 5 — Chunker
+
+## Objective
+
+Transform indexed project knowledge into deterministic semantic chunks suitable for embeddings, retrieval and LLM context generation.
+
+The Chunker is responsible for preserving semantic boundaries while extracting the exact source code associated with functions, classes and methods.
+
+---
+
+## What Went Well
+
+- Symbol-based chunking produced clear and predictable chunk boundaries.
+- Exact source extraction preserved the original formatting and indentation.
+- Reusing stable symbol identifiers avoided introducing a second identity system.
+- Deterministic ordering simplified testing and future embedding synchronization.
+- Separating extractors, builders and orchestration kept responsibilities clear.
+- Full pipeline tests detected regressions introduced by parser model changes.
+
+---
+
+## Lessons Learned
+
+### Stable Identity Should Flow Through the Pipeline
+
+The most important architectural decision was deriving chunk identifiers directly from symbol identifiers.
+
+A single identity chain:
+
+```text
+Source File
+    ↓
+Parser Symbol
+    ↓
+Indexer Symbol ID
+    ↓
+Chunk ID
+```
+
+greatly simplifies embeddings, retrieval, persistence and incremental updates.
+
+---
+
+### Exact Source Extraction Is More Important Than Pretty Formatting
+
+The chunker must preserve the exact text from the source file.
+
+Any normalization of whitespace, indentation or line endings would make future embeddings and diagnostics less reliable.
+
+---
+
+### Parser Metadata Enables Downstream Features
+
+Adding `start_line` and `end_line` to parser symbols unlocked precise chunk extraction.
+
+This reinforced the idea that parser metadata should be designed with downstream consumers in mind.
+
+---
+
+### Deterministic Ordering Prevents Hidden Instability
+
+Explicit sorting of:
+
+- files;
+- functions;
+- classes;
+- methods;
+
+eliminated non-deterministic behaviour and made chunk IDs and ordering reproducible across executions.
+
+---
+
+### Integration Tests Catch Real Regressions
+
+The most valuable regression was not in the Chunker itself, but in older Indexer tests that instantiated parser models manually.
+
+End-to-end pipeline tests proved essential for detecting compatibility issues between milestones.
+
+---
+
+### Keep Chunking Semantic Before Optimizing Retrieval
+
+The first implementation intentionally prioritised semantic coherence over retrieval optimisation.
+
+Future features such as token-based chunking, overlap or hybrid chunking should be introduced only after retrieval behaviour is measurable.
+
+---
+
+## Architectural Decisions Reinforced
+
+- Chunk IDs are derived from symbol IDs.
+- Semantic chunk boundaries are the default strategy.
+- Exact source text is preserved.
+- Deterministic ordering is mandatory.
+- The Chunker remains independent from the AST and the Scanner.
+
+---
+
+## Future Improvements Identified
+
+### Chunking
+
+- Token-based chunking.
+- Large-symbol splitting.
+- Overlapping windows.
+- Hybrid semantic + token chunking.
+- Language-specific chunking strategies.
+
+### Retrieval
+
+- Parent-child chunk relationships.
+- Context expansion around chunks.
+- Retrieval-aware chunk metadata.
+
+### Performance
+
+- Lazy source extraction.
+- Incremental chunk regeneration.
+- Chunk hashing for cache invalidation.
+
+---
+
+## Milestone Result
+
+Status: Completed
+
+Implementation: Completed
+
+Tests: Passed
+
+Code Review: Approved
+
+Architecture Review: Approved
+
+Documentation: Completed
+
+Ready for Milestone 6 — Embeddings.

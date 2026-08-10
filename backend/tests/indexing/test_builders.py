@@ -24,7 +24,11 @@ def test_function_identifier() -> None:
 
     result = function_id(
         "src/main.py",
-        FunctionSymbol(name="hello"),
+        FunctionSymbol(
+            name="hello",
+            start_line=1,
+            end_line=2,
+        ),
     )
 
     assert result == "src/main.py::hello"
@@ -34,7 +38,11 @@ def test_class_identifier() -> None:
 
     result = class_id(
         "src/models/user.py",
-        ClassSymbol(name="User"),
+        ClassSymbol(
+            name="User",
+            start_line=1,
+            end_line=2,
+        ),
     )
 
     assert result == "src/models/user.py::User"
@@ -47,6 +55,8 @@ def test_method_identifier() -> None:
         MethodSymbol(
             name="login",
             class_name="User",
+            start_line=2,
+            end_line=3,
         ),
     )
 
@@ -60,6 +70,8 @@ def test_identifiers_are_deterministic() -> None:
         MethodSymbol(
             name="login",
             class_name="User",
+            start_line=2,
+            end_line=3,
         ),
     )
 
@@ -68,6 +80,8 @@ def test_identifiers_are_deterministic() -> None:
         MethodSymbol(
             name="login",
             class_name="User",
+            start_line=2,
+            end_line=3,
         ),
     )
 

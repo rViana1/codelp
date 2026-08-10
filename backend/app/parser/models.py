@@ -5,33 +5,14 @@ from pathlib import Path
 from pydantic import BaseModel, Field
 
 
-"""
-Parser domain models.
-
-These models represent the structured knowledge extracted from
-source files.
-
-They are intentionally language-agnostic whenever possible so that
-future parsers (JavaScript, Java, C#, etc.) can reuse the same
-high-level contracts.
-"""
-
-
 class ImportSymbol(BaseModel):
     """
     Represents an import statement.
-
-    Examples:
-        import os
-        import os as operating_system
-        from pathlib import Path
     """
 
     module: str
 
     name: str | None = None
-
-    alias: str | None = None
 
 
 class FunctionSymbol(BaseModel):
@@ -41,6 +22,10 @@ class FunctionSymbol(BaseModel):
 
     name: str
 
+    start_line: int
+
+    end_line: int
+
 
 class MethodSymbol(BaseModel):
     """
@@ -48,15 +33,24 @@ class MethodSymbol(BaseModel):
     """
 
     name: str
+
     class_name: str
+
+    start_line: int
+
+    end_line: int
 
 
 class ClassSymbol(BaseModel):
     """
-    Represents a class declaration.
+    Represents a class and its methods.
     """
 
     name: str
+
+    start_line: int
+
+    end_line: int
 
     methods: list[MethodSymbol] = Field(default_factory=list)
 
