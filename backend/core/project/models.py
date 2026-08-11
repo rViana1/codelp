@@ -180,5 +180,7 @@ class Project(BaseModel):
     chunk_result: object | None = None
 
     embedding_result: object | None = None
+    
+    retrieval_result: object | None = None
 
     diagnostics: list[str] = Field(default_factory=list)

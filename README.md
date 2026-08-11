@@ -15,20 +15,20 @@ Indexer
     ↓
 Chunker
     ↓
-Embeddings (planned)
+Embedding Engine
     ↓
-Retriever (planned)
+Retriever
     ↓
 LLM Context (planned)
 ```
 
-The project is designed around **determinism, modularity and testability**, providing a strong foundation for future semantic search, retrieval-augmented generation (RAG) and persistent project knowledge.
+The project is designed around **determinism, modularity and testability**, providing a strong foundation for semantic search, retrieval-augmented generation (RAG) and persistent project knowledge.
 
 ---
 
 ## Current Status
 
-**Version:** `v0.5.0`
+**Version:** `v0.7.0`
 
 Implemented:
 
@@ -36,15 +36,18 @@ Implemented:
 - Python AST Parser
 - Stable Symbol Index
 - Deterministic Semantic Chunker
+- Provider-independent Embedding Engine
+- Vector Store abstraction
+- Semantic Retrieval Engine
 - Full pipeline integration
 - Architecture documentation
 - ADRs (Architecture Decision Records)
 
 Validation:
 
-- **55 automated tests passing**
+- **91 automated tests passing**
 - Deterministic outputs across executions
-- Stable symbol and chunk identifiers
+- Stable symbol, chunk and embedding identities
 
 ---
 
@@ -58,6 +61,8 @@ Validation:
 - Symbolic link protection
 - Project integration
 
+---
+
 ### Parser
 
 - Python AST parsing
@@ -66,6 +71,9 @@ Validation:
 - Class extraction
 - Method extraction
 - Source location metadata
+- Diagnostics propagation
+
+---
 
 ### Indexer
 
@@ -74,6 +82,9 @@ Validation:
 - O(1) symbol lookup
 - Dependency indexing
 - Deterministic ordering
+- File and symbol navigation structures
+
+---
 
 ### Chunker
 
@@ -83,14 +94,41 @@ Validation:
 - Exact source extraction
 - Stable chunk identifiers
 - Deterministic ordering
+- Semantic chunk boundaries
 
 ---
 
-## Stable Symbol & Chunk Identity
+### Embedding Engine
+
+- Provider abstraction
+- Deterministic embedding generation
+- Embedding metadata tracking
+- Chunk identity preservation
+- In-memory vector storage
+- Project integration
+
+The Embedding Engine remains independent from concrete embedding providers.
+
+---
+
+### Retriever
+
+- Semantic similarity search
+- Cosine similarity ranking
+- Deterministic result ordering
+- Query result limiting
+- Vector storage abstraction
+- Project retrieval integration
+
+The Retriever consumes existing project knowledge without introducing a new identity system.
+
+---
+
+## Knowledge Identity Flow
 
 Codelp uses deterministic identifiers throughout the pipeline.
 
-Examples:
+Example:
 
 ```text
 src/main.py::hello
@@ -98,13 +136,29 @@ src/models/user.py::User
 src/models/user.py::User.login
 ```
 
-Chunk identifiers are derived directly from symbol identifiers:
+The identity chain is:
 
 ```text
-chunk.id == symbol.id
+Source File
+    ↓
+Parser Symbol
+    ↓
+Symbol ID
+    ↓
+Chunk ID
+    ↓
+Embedding.chunk_id
+    ↓
+RetrievalResult.chunk_id
 ```
 
-This strategy simplifies embeddings, caching, persistence and incremental updates.
+This strategy simplifies:
+
+- embeddings;
+- retrieval;
+- caching strategies;
+- persistence;
+- incremental updates.
 
 ---
 
@@ -116,7 +170,9 @@ backend/
 │   ├── scanner/
 │   ├── parser/
 │   ├── indexing/
-│   └── chunking/
+│   ├── chunking/
+│   ├── embeddings/
+│   └── retrieval/
 ├── core/
 │   └── project/
 └── tests/
@@ -152,7 +208,7 @@ pytest backend/tests -v
 Expected result:
 
 ```text
-55 passed
+91 passed
 ```
 
 ---
@@ -171,10 +227,45 @@ Project
 ├── index_result
 ├── chunk_result
 ├── embedding_result
+├── retrieval_result
 └── diagnostics
 ```
 
 Each application module enriches the same `Project` instance.
+
+The complete processing pipeline is:
+
+```text
+Repository
+    ↓
+Scanner
+    ↓
+Project
+    ↓
+Parser
+    ↓
+Project
+    ↓
+Indexer
+    ↓
+Project
+    ↓
+Chunker
+    ↓
+Project
+    ↓
+Embedding Engine
+    ↓
+Project
+    ↓
+Retriever
+    ↓
+Project
+    ↓
+Context Builder (planned)
+    ↓
+LLM
+```
 
 ---
 
@@ -187,8 +278,8 @@ Each application module enriches the same `Project` instance.
 | Parser | Completed |
 | Indexer | Completed |
 | Chunker | Completed |
-| Embedding Engine | Planned |
-| Retriever | Planned |
+| Embedding Engine | Completed |
+| Retriever | Completed |
 | Context Builder | Planned |
 | API / CLI | Planned |
 
@@ -196,13 +287,12 @@ Each application module enriches the same `Project` instance.
 
 ## Roadmap
 
-### Next — Embedding Engine
+### Next — Context Builder
 
-- Provider abstraction
-- Batch generation
-- Embedding cache
-- In-memory vector store
-- Persistence
+- Prompt context generation
+- Retrieval context assembly
+- Token budget management
+- Context ranking
 - Project integration
 
 ### Future
@@ -213,6 +303,8 @@ Each application module enriches the same `Project` instance.
 - Retrieval-optimized chunking
 - Cross-file context
 - Distributed indexing
+- MCP integration
+- API and CLI interfaces
 
 ---
 
@@ -242,6 +334,8 @@ No license has been granted yet.
 
 The repository is public for portfolio and review purposes.
 
+---
+
 ## Why Codelp?
 
 Most code-assistant systems treat repositories as collections of text files.
@@ -251,6 +345,7 @@ Codelp treats a repository as **structured knowledge**:
 - files become indexed artifacts;
 - symbols become stable entities;
 - chunks become semantic retrieval units;
-- embeddings become reusable knowledge vectors.
+- embeddings become reusable knowledge vectors;
+- retrieval becomes semantic project understanding.
 
 The goal is not only to search code, but to build a **deterministic and evolvable understanding of a software project**.

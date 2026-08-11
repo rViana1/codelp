@@ -1,12 +1,58 @@
 # Changelog
 
-# Changelog
-
 All notable changes to this project will be documented in this file.
 
 ---
 
 ## [Unreleased]
+
+---
+
+## [Milestone 7] — Retrieval Engine
+
+### Added
+
+- Added Retrieval Engine architecture.
+- Added retrieval domain models:
+  - `RetrievalQuery`
+  - `RetrievalResult`
+  - `RetrievalCollection`
+- Added cosine similarity calculation.
+- Added deterministic similarity validation.
+- Added vector comparison error handling.
+- Added vector store abstraction through `VectorStore`.
+- Added retrieval workflow:
+  - embedding retrieval;
+  - similarity ranking;
+  - deterministic result ordering;
+  - result limiting.
+- Added chunk identity preservation during retrieval.
+- Added project retrieval integration through:
+  - `retrieve(...)`
+  - `retrieve_project(...)`
+- Added retrieval diagnostics propagation.
+
+### Improved
+
+- Extended the project knowledge pipeline with semantic search capabilities.
+- Extended the architecture to support future vector database implementations.
+- Preserved independence between:
+  - embedding providers;
+  - retrieval engine;
+  - vector storage implementation.
+
+### Testing
+
+- Added retrieval unit tests.
+- Added similarity tests.
+- Added vector store integration tests.
+- Added project retrieval integration tests.
+- Added deterministic retrieval validation.
+- Added full retrieval regression tests.
+
+Validation:
+
+- 23 retrieval tests passing.
 
 ---
 

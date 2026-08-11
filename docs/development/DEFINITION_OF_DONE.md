@@ -33,6 +33,8 @@ A milestone is considered complete only when all of the following conditions are
 ## Architecture Review
 
 - Architecture validated
+- Architectural boundaries reviewed
+- Dependencies reviewed
 - ADRs updated if needed
 
 ---
@@ -40,6 +42,7 @@ A milestone is considered complete only when all of the following conditions are
 ## Documentation
 
 - ROADMAP updated
+- CHANGELOG updated
 - LESSONS_LEARNED updated
 - Relevant documentation updated
 

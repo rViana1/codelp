@@ -650,3 +650,90 @@ Embedding Engine
 Future Retrieval
 
 This preserves modularity and allows each stage to evolve independently.
+
+
+---
+
+# Milestone 7 — Retrieval Engine
+
+## Objective
+
+Transform generated embeddings into searchable project knowledge through a deterministic retrieval layer.
+
+The Retrieval Engine introduces semantic search capabilities while preserving the architectural boundaries established by previous milestones.
+
+---
+
+## What Went Well
+
+- Retrieval remained independent from embedding generation.
+- Vector storage was abstracted behind a dedicated contract.
+- The Retriever depends on retrieval behaviour rather than concrete storage implementations.
+- Stable chunk identity flowed correctly from embeddings into retrieval results.
+- Deterministic ranking made retrieval behaviour predictable and testable.
+- Project integration followed the existing aggregate enrichment pattern.
+- Diagnostics propagation remained consistent with previous pipeline stages.
+
+---
+
+## Lessons Learned
+
+### Retrieval Should Not Own Query Generation
+
+The Retriever should not know how queries are converted into vectors.
+
+Keeping query vector generation outside the Retriever allows future integration with different embedding providers without changing retrieval logic.
+
+---
+
+### Vector Storage Must Remain Replaceable
+
+The retrieval layer should depend on a storage contract rather than a concrete implementation.
+
+The initial in-memory store is enough for validation, while the architecture remains prepared for future vector databases.
+
+---
+
+### Similarity Calculation Needs Explicit Boundaries
+
+Similarity behaviour should be isolated from retrieval orchestration.
+
+Separating cosine similarity from ranking logic makes future strategies possible, such as:
+
+- hybrid retrieval;
+- metadata filtering;
+- alternative ranking algorithms.
+
+---
+
+### Determinism Is a Retrieval Requirement
+
+Retrieval results must be reproducible.
+
+Explicit ordering rules are required when multiple embeddings have similar scores.
+
+Deterministic ranking improves:
+
+- testing;
+- debugging;
+- caching;
+- user confidence.
+
+---
+
+### Identity Preservation Enables Knowledge Navigation
+
+Retrieval should return references to existing project knowledge, not create new identities.
+
+The identity chain remains:
+
+```text
+Source File
+    ↓
+Symbol ID
+    ↓
+Chunk ID
+    ↓
+Embedding.chunk_id
+    ↓
+RetrievalResult.chunk_id

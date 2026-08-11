@@ -1,8 +1,8 @@
 # Codelp Architecture
 
-> **Version:** 1.5
+> **Version:** 1.6
 > **Status:** In Development  
-> **Last Updated:** Milestone 6
+> **Last Updated:** Milestone 7
 
 ---
 
@@ -298,13 +298,43 @@ Caching, batching and persistent vector storage are intentionally deferred to fu
 
 ## Retriever
 
-Responsible for semantic search.
+Responsible for semantic retrieval from project embeddings.
 
 Responsibilities
 
-- similarity search
-- ranking
-- filtering
+- similarity calculation
+- vector comparison
+- deterministic ranking
+- result limiting
+- chunk identity preservation
+- retrieval through vector storage abstraction
+- Project knowledge integration
+
+Outputs
+
+- RetrievalResult
+- RetrievalCollection
+- Project enrichment
+
+Public APIs
+
+retrieve(
+    query: RetrievalQuery,
+    query_vector: list[float],
+    store: VectorStore,
+) -> RetrievalCollection
+
+retrieve_project(
+    project: Project,
+    query: RetrievalQuery,
+    query_vector: list[float],
+) -> Project
+
+The Retriever is independent from embedding providers and concrete vector storage implementations.
+
+Similarity strategy currently uses cosine similarity.
+
+Hybrid retrieval, filtering strategies and persistent vector databases are intentionally deferred to future milestones.
 
 ---
 
@@ -354,7 +384,7 @@ Project
 ├── embedding_result
 │   ├── embeddings
 │   └── provider_metadata
-
+├── retrieval_result
 └── diagnostics
 
 The domain is implemented in `backend/core/project`.

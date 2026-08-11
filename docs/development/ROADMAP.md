@@ -192,13 +192,20 @@ Output
 
 ## Retriever
 
-Responsible for semantic retrieval.
+Responsible for semantic retrieval over project embeddings.
 
 Responsibilities
 
-- similarity search
+- vector similarity search
+- similarity scoring
+- deterministic ranking
+- retrieval result generation
+- vector store abstraction
+
+Deferred
+
 - hybrid retrieval
-- ranking
+- advanced ranking strategies
 
 ---
 
@@ -436,13 +443,52 @@ Tests
 
 Status
 
-Planned
+Completed
 
 Goals
 
 - Semantic search
+- Vector similarity retrieval
+- Deterministic ranking
+- Project knowledge retrieval
+- Vector store abstraction
+
+Implemented
+
+- Retrieval package
+- Retrieval domain models
+- RetrievalQuery
+- RetrievalResult
+- RetrievalCollection
+- Cosine similarity strategy
+- Similarity validation
+- Retriever engine
+- Deterministic ranking
+- VectorStore abstraction
+- In-memory vector store integration
+- Project retrieval integration
+- Diagnostics propagation
+
+Deferred
+
+- Query embedding generation
 - Hybrid retrieval
-- Ranking
+- Persistent vector database integration
+- Advanced ranking strategies
+- Retrieval caching
+
+Validation
+
+- Retrieval boundaries validated
+- Vector store independence validated
+- Embedding compatibility validated
+- Context Builder compatibility validated
+- Incremental retrieval strategy validated
+
+Tests
+
+- 23 retrieval tests passing
+- Full regression suite validated
 
 ---
 

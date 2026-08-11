@@ -29,3 +29,13 @@ class EmbeddingCollection(BaseModel):
 
     provider: EmbeddingProviderInfo
     embeddings: list[Embedding] = Field(default_factory=list)
+    
+    def all(self) -> list[Embedding]:
+        """
+        Returns all stored embeddings.
+
+        This abstraction allows retrieval systems to consume
+        embeddings without depending on the storage implementation.
+        """
+
+        return self.embeddings
