@@ -1,8 +1,8 @@
 # Codelp Architecture
 
-> **Version:** 1.6
+> **Version:** 1.7
 > **Status:** In Development  
-> **Last Updated:** Milestone 7
+> **Last Updated:** Milestone 8
 
 ---
 
@@ -340,17 +340,38 @@ Hybrid retrieval, filtering strategies and persistent vector databases are inten
 
 ## Context Builder
 
-Responsible for constructing prompts.
+Responsible for transforming retrieved project knowledge into structured context.
 
 Responsibilities
 
-- retrieve information
-- merge context
-- enforce token limits
+- consume RetrievalCollection results
+- resolve retrieved chunk identities
+- preserve retrieval ranking
+- preserve deterministic ordering
+- preserve chunk-to-context relationships
+- build structured PromptContext
+- update Project context state
+- prepare project knowledge for future LLM consumers
 
-Output
+Outputs
 
-PromptContext
+- PromptContext
+- Project enrichment
+
+Public APIs
+
+```python
+build(
+    retrieval: RetrievalCollection,
+    chunks: ChunkCollection,
+) -> PromptContext
+
+```
+
+build_project(project: Project) -> Project
+The Context Builder is independent from LLM providers.
+It does not perform retrieval, embedding generation or prompt execution.
+Token optimisation, context compression and prompt templates are intentionally deferred to future milestones.
 
 ---
 
@@ -384,7 +405,14 @@ Project
 ├── embedding_result
 │   ├── embeddings
 │   └── provider_metadata
+
 ├── retrieval_result
+
+├── context_result
+│   ├── context_id
+│   ├── query
+│   └── chunks
+
 └── diagnostics
 
 The domain is implemented in `backend/core/project`.
@@ -476,7 +504,8 @@ Allowed dependencies
 - app.indexing → core.project
 - app.chunking → core.project
 - app.embeddings → core.project
-- app.rag → core.project
+- app.retrieval → core.project
+- app.context → core.project
 
 Forbidden dependencies
 
@@ -544,10 +573,10 @@ This representation is:
 - JSON-friendly
 - persistence-friendly
 - independent from the scanner implementation
-
+'''
 ---
 
-# 10.1 Chunk Identity
+# 11. Chunk Identity
 
 The Chunker does not generate independent semantic identifiers.
 
@@ -583,7 +612,7 @@ The strategy provides a stable foundation for future embedding caching, incremen
 
 ---
 
-# 11. Testing Strategy
+# 12. Testing Strategy
 
 Every module must include automated tests.
 
@@ -597,7 +626,7 @@ Priority
 
 Implementation details should not be tested directly.
 
-# Current validation
+Current validation
 
 - Domain model tests
 - Scanner tests
@@ -607,13 +636,15 @@ Implementation details should not be tested directly.
 - Indexer tests
 - Chunker tests
 - Embedding tests
+- Retrieval tests
+- Context Builder tests
 - Pipeline integration tests
 
-Current total: 72 passing automated tests.
+Current total: 103 passing automated tests.
 
 ---
 
-# 12. Performance Goals
+# 13. Performance Goals
 
 Future milestones should optimise
 
@@ -627,7 +658,7 @@ Performance optimisations should never compromise determinism.
 
 ---
 
-# 13. Extensibility
+# 14. Extensibility
 
 The architecture must support
 
@@ -640,7 +671,7 @@ without changing the core architecture.
 
 ---
 
-# 14. Architecture Decision Records
+# 15. Architecture Decision Records
 
 Major engineering decisions are documented separately.
 
@@ -653,6 +684,8 @@ Current ADRs
 - ADR-005 — Stable Symbol Index
 - ADR-006 — Stable Chunk Identity
 - ADR-007 — Embedding Provider Abstraction
+- ADR-008 — Retrieval Engine Abstraction
+- ADR-009 — Context Builder Abstraction
 
 Future ADRs
 
@@ -666,7 +699,7 @@ Future ADRs
 
 ---
 
-# 15. Future Evolution
+# 16. Future Evolution
 
 Planned architectural improvements include
 
@@ -687,7 +720,7 @@ Planned architectural improvements include
 
 ---
 
-# 16. Stable Symbol Identifiers
+# 17. Stable Symbol Identifiers
 
 The Indexer assigns a stable identifier to every indexed symbol.
 
@@ -718,7 +751,7 @@ This decision keeps the parser independent from indexing concerns while providin
 
 ---
 
-# 17. Engineering Philosophy
+# 18. Engineering Philosophy
 
 Codelp is designed as an engineering platform rather than a collection of utilities.
 

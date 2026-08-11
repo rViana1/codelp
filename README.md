@@ -19,7 +19,9 @@ Embedding Engine
     ↓
 Retriever
     ↓
-LLM Context (planned)
+Context Builder
+    ↓
+LLM Context
 ```
 
 The project is designed around **determinism, modularity and testability**, providing a strong foundation for semantic search, retrieval-augmented generation (RAG) and persistent project knowledge.
@@ -28,7 +30,7 @@ The project is designed around **determinism, modularity and testability**, prov
 
 ## Current Status
 
-**Version:** `v0.7.0`
+**Version:** `v0.8.0`
 
 Implemented:
 
@@ -39,15 +41,16 @@ Implemented:
 - Provider-independent Embedding Engine
 - Vector Store abstraction
 - Semantic Retrieval Engine
+- Context Builder
 - Full pipeline integration
 - Architecture documentation
 - ADRs (Architecture Decision Records)
 
 Validation:
 
-- **95 automated tests passing**
+- **103 automated tests passing**
 - Deterministic outputs across executions
-- Stable symbol, chunk and embedding identities
+- Stable symbol, chunk, embedding and context identities
 
 ---
 
@@ -124,6 +127,19 @@ The Retriever consumes existing project knowledge without introducing a new iden
 
 ---
 
+### Context Builder
+
+- Retrieval result consumption
+- Chunk identity resolution
+- Structured context generation
+- Deterministic context ordering
+- Project context integration
+- Diagnostics propagation
+
+The Context Builder prepares structured project knowledge for future LLM consumers without depending on any LLM provider.
+
+---
+
 ## Knowledge Identity Flow
 
 Codelp uses deterministic identifiers throughout the pipeline.
@@ -150,6 +166,8 @@ Chunk ID
 Embedding.chunk_id
     ↓
 RetrievalResult.chunk_id
+    ↓
+ContextChunk.chunk_id
 ```
 
 This strategy simplifies:
@@ -172,7 +190,8 @@ backend/
 │   ├── indexing/
 │   ├── chunking/
 │   ├── embeddings/
-│   └── retrieval/
+│   ├── retrieval/
+│   └── context/
 ├── core/
 │   └── project/
 └── tests/
@@ -228,6 +247,7 @@ Project
 ├── chunk_result
 ├── embedding_result
 ├── retrieval_result
+├── context_result
 └── diagnostics
 ```
 
@@ -262,7 +282,7 @@ Retriever
     ↓
 Project
     ↓
-Context Builder (planned)
+Context Builder
     ↓
 LLM
 ```
@@ -287,13 +307,12 @@ LLM
 
 ## Roadmap
 
-### Next — Context Builder
+### Next — MCP Integration
 
-- Prompt context generation
-- Retrieval context assembly
-- Token budget management
-- Context ranking
-- Project integration
+- Model Context Protocol support
+- IDE integration
+- External development tools
+- AI-assisted workflows
 
 ### Future
 
@@ -305,6 +324,9 @@ LLM
 - Distributed indexing
 - MCP integration
 - API and CLI interfaces
+- LLM provider integration
+- Prompt generation
+- Context optimisation
 
 ---
 
@@ -347,5 +369,6 @@ Codelp treats a repository as **structured knowledge**:
 - chunks become semantic retrieval units;
 - embeddings become reusable knowledge vectors;
 - retrieval becomes semantic project understanding.
+- contexts become structured knowledge prepared for AI consumption.
 
 The goal is not only to search code, but to build a **deterministic and evolvable understanding of a software project**.

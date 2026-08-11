@@ -737,3 +737,168 @@ Chunk ID
 Embedding.chunk_id
     ↓
 RetrievalResult.chunk_id
+    ↓
+ContextChunk.chunk_id
+```
+
+---
+
+# Milestone 8 — Context Builder
+
+## Objective
+
+Transform retrieval results into structured context suitable for future LLM consumption.
+
+The Context Builder introduces the final preparation layer between project knowledge retrieval and external consumers, while preserving architectural independence from LLM providers.
+
+---
+
+## What Went Well
+
+- The Context Builder remained independent from LLM providers.
+- Retrieval results were transformed into a structured `PromptContext` model.
+- Chunk identity was preserved from retrieval results into generated context.
+- The existing Project aggregate enrichment pattern was reused successfully.
+- Diagnostics propagation remained consistent with previous pipeline stages.
+- Deterministic ordering was preserved from retrieval results into final context generation.
+- Existing architecture boundaries remained unchanged.
+
+---
+
+## Lessons Learned
+
+### Context Generation Should Not Belong to Retrieval
+
+The Retriever is responsible for finding relevant knowledge.
+
+The Context Builder is responsible for preparing that knowledge for consumption.
+
+Keeping these responsibilities separate allows retrieval strategies and context generation strategies to evolve independently.
+
+---
+
+### Context Must Preserve Original Knowledge Identity
+
+The Context Builder should not create new identities.
+
+The identity chain remains:
+
+```text
+Source File
+    ↓
+Symbol ID
+    ↓
+Chunk ID
+    ↓
+Embedding.chunk_id
+    ↓
+RetrievalResult.chunk_id
+    ↓
+ContextChunk.chunk_id
+```
+
+Preserving identity enables future navigation, diagnostics and incremental updates.
+
+---
+
+### Structured Context Is Preferable to Raw Text Concatenation
+
+A structured `PromptContext` model provides a clear boundary between project knowledge and future consumers.
+
+This allows future features such as:
+
+- token management;
+- context compression;
+- prompt templates;
+- multiple LLM providers.
+
+without changing retrieval or domain models.
+
+---
+
+### Diagnostics Are Better Than Silent Data Loss
+
+When retrieved chunks cannot be resolved, the Context Builder should not fail the entire pipeline.
+
+Missing knowledge should be recorded through diagnostics while allowing processing to continue.
+
+---
+
+### Deterministic Context Ordering Is Essential
+
+The same retrieval results should always produce the same context.
+
+Stable ordering improves:
+
+- testing;
+- reproducibility;
+- future caching;
+- prompt consistency.
+
+---
+
+### Token Management Should Be Introduced Separately
+
+The first Context Builder implementation focuses on structure and identity preservation.
+
+Token counting, compression and context window optimisation should be introduced only when real LLM integration requirements exist.
+
+---
+
+## Architectural Decisions Reinforced
+
+- Context Builder depends on retrieval output, not retrieval implementation.
+- Context generation is independent from LLM providers.
+- Project remains the Aggregate Root.
+- Chunk identity flows through the complete knowledge pipeline.
+- Structured context is preferred over unstructured text generation.
+- Missing knowledge produces diagnostics instead of failures.
+
+---
+
+## Future Improvements Identified
+
+### Context Management
+
+- Token counting.
+- Context window optimisation.
+- Context compression.
+- Priority-based chunk selection.
+- Parent-child context expansion.
+
+---
+
+### LLM Integration
+
+- Prompt templates.
+- Multiple LLM providers.
+- Streaming responses.
+- Conversation context management.
+
+---
+
+### Knowledge Persistence
+
+- Persist generated contexts.
+- Store context history.
+- Incremental context regeneration.
+
+---
+
+## Milestone Result
+
+Status: Completed
+
+Implementation: Completed
+
+Tests: Passed (8 context tests, 103 total tests)
+
+Code Review: Approved
+
+Architecture Review: Approved
+
+Documentation: Completed
+
+Ready for Milestone 9 — MCP Integration.
+
+---

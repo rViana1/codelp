@@ -211,17 +211,24 @@ Deferred
 
 ## Context Builder
 
-Responsible for constructing LLM prompts.
+Responsible for transforming retrieved project knowledge into structured context.
 
 Responsibilities
 
-- retrieve knowledge
-- merge context
-- token optimisation
+- consume RetrievalCollection results
+- resolve chunk identities
+- preserve retrieval ranking
+- preserve deterministic ordering
+- build structured PromptContext
+- prepare knowledge for future LLM consumers
 
 Output
 
 `PromptContext`
+
+The Context Builder does not depend on any LLM provider.
+
+Its responsibility is context preparation only.
 
 ---
 
@@ -239,6 +246,8 @@ Project
 ├── index_result
 ├── chunk_result
 ├── embedding_result
+├── retrieval_result
+├── context_result
 └── diagnostics
 ```
 
@@ -482,7 +491,7 @@ Validation
 - Retrieval boundaries validated
 - Vector store independence validated
 - Embedding compatibility validated
-- Context Builder compatibility validated
+- Future Context Builder compatibility considered
 - Incremental retrieval strategy validated
 
 Tests
@@ -496,14 +505,48 @@ Tests
 
 Status
 
-Planned
+Completed
 
 Goals
 
-- Prompt optimisation
-- Context windows
-- Ranking
-- Context compression
+- Transform retrieval results into structured context
+- Preserve chunk identity
+- Prepare project knowledge for future LLM consumption
+- Maintain deterministic context generation
+
+Implemented
+
+- Context package
+- ContextChunk model
+- PromptContext model
+- Context metadata structure
+- ContextBuilder
+- RetrievalCollection integration
+- Chunk identity resolution
+- Project context integration
+- Diagnostics propagation
+- Deterministic context ordering
+
+Deferred
+
+- Token counting optimization
+- Context compression strategies
+- Prompt templates
+- LLM provider integration
+
+Validation
+
+- Context boundaries validated
+- Retrieval → Context flow validated
+- Retrieval independence validated
+- Chunk identity propagation validated
+- LLM independence validated
+- Deterministic context generation validated
+
+Tests
+
+- 8 context tests passing
+- 103 total automated tests passing
 
 ---
 
@@ -562,15 +605,22 @@ Current ADRs
 - ADR-001 — Project Model
 - ADR-002 — Scanner Permission Handling
 - ADR-003 — Scanner Integration with Project
+- ADR-004 — Python AST Parser
+- ADR-005 — Stable Symbol Index
+- ADR-006 — Stable Chunk Identity
+- ADR-007 — Embedding Provider Abstraction
+- ADR-008 — Retrieval Engine Abstraction
+- ADR-009 — Context Builder Abstraction
 
 Planned ADRs
 
 - Persistent Project Knowledge
 - Incremental Scanner
-- Indexer Design
 - Plugin System
 - Configuration System
 - Multi-language Support
+- Vector Database Integration
+- LLM Provider Abstraction
 
 ---
 

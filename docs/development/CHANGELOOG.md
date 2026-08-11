@@ -6,7 +6,53 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+Future changes will be documented here.
+
 ---
+
+## [Milestone 8] — Context Builder
+
+### Added
+
+- Added Context Builder architecture.
+- Added context domain models:
+  - `ContextChunk`
+  - `PromptContext`
+- Added context generation workflow:
+  - retrieval result consumption;
+  - chunk identity resolution;
+  - structured context generation.
+- Added deterministic context ordering.
+- Added project context integration through:
+  - `build(...)`
+  - `build_project(...)`
+- Added context diagnostics propagation.
+
+### Improved
+
+- Extended the project knowledge pipeline with structured context generation.
+- Added a clear boundary between:
+  - retrieval;
+  - context preparation;
+  - future LLM consumption.
+- Preserved chunk identity throughout the complete knowledge pipeline.
+- Maintained LLM provider independence by keeping context generation separate from LLM integration.
+
+### Testing
+
+- Added context model tests.
+- Added context ordering tests.
+- Added retrieval-to-context integration validation.
+- Added project context integration tests.
+- Added missing chunk handling validation.
+- Added full pipeline regression tests.
+
+Validation:
+
+- 8 context tests passing.
+- 103 total automated tests passing.
+
+--- 
 
 ## [Milestone 7] — Retrieval Engine
 
@@ -40,6 +86,7 @@ All notable changes to this project will be documented in this file.
   - embedding providers;
   - retrieval engine;
   - vector storage implementation.
+  - Prepared retrieval output for future Context Builder integration.
 
 ### Testing
 

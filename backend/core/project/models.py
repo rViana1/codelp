@@ -158,7 +158,8 @@ class Project(BaseModel):
     Evolution
     ---------
     Future milestones will extend this model with parser, index,
-    chunking, embedding, diagnostic and knowledge information.
+    chunking, embedding, retrieval, context, diagnostic and
+    knowledge information.
     """
 
     metadata: ProjectMetadata
@@ -182,5 +183,7 @@ class Project(BaseModel):
     embedding_result: object | None = None
     
     retrieval_result: object | None = None
+    
+    context_result: object | None = None
 
     diagnostics: list[str] = Field(default_factory=list)
