@@ -45,7 +45,7 @@ Implemented:
 
 Validation:
 
-- **91 automated tests passing**
+- **5 automated tests passing**
 - Deterministic outputs across executions
 - Stable symbol, chunk and embedding identities
 
