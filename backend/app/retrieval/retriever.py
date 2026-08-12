@@ -10,9 +10,7 @@ from app.retrieval.models import (
     RetrievalResult,
 )
 from app.retrieval.similarity import cosine_similarity
-from app.retrieval.store import VectorStore
-from core.project import Project
-
+from app.vectorstore.interfaces import VectorStore
 
 class Retriever:
     """
@@ -71,28 +69,3 @@ class Retriever:
             query=query,
             results=results[: query.limit],
         )
-        
-    def retrieve_project(
-        self,
-        project: Project,
-        query: RetrievalQuery,
-        query_vector: list[float],
-    ) -> Project:
-        """
-        Retrieves relevant embeddings from the project knowledge
-        and updates the Project aggregate.
-        """
-
-        if project.embedding_result is None:
-            project.diagnostics.append(
-                "Project has no embedding_result"
-            )
-            return project
-
-        project.retrieval_result = self.retrieve(
-            query,
-            query_vector,
-            project.embedding_result,
-        )
-
-        return project

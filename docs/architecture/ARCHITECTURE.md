@@ -1,8 +1,8 @@
 # Codelp Architecture
 
-> **Version:** 1.7
+> **Version:** 1.8
 > **Status:** In Development  
-> **Last Updated:** Milestone 8
+> **Last Updated:** Milestone 7.1 — Vector Store Lifecycle Management
 
 ---
 
@@ -296,6 +296,59 @@ Caching, batching and persistent vector storage are intentionally deferred to fu
 
 ---
 
+## Vector Store Management
+
+Responsible for managing the lifecycle of vector storage associated with projects.
+
+The Vector Store layer separates storage lifecycle concerns from retrieval logic.
+
+Responsibilities
+
+- create project vector stores;
+- register project vector stores;
+- retrieve project vector stores;
+- remove project vector stores;
+- hide concrete storage implementations;
+- prepare the architecture for persistent vector databases.
+
+Outputs
+
+- VectorStore instances
+- Project vector store registrations
+
+Public APIs
+
+```python
+register_project(
+    project_path: Path,
+    embeddings: EmbeddingCollection,
+) -> None
+
+get_project_store(
+    project_path: Path,
+) -> VectorStore | None
+
+remove_project(
+    project_path: Path,
+) -> None
+```
+
+The VectorStoreManager is responsible for storage lifecycle only.
+It does not perform similarity search, ranking or retrieval decisions.
+
+Current implementation:
+
+InMemoryVectorStore
+
+Future implementations may include:
+- persistent vector databases;
+- remote vector services;
+- distributed vector storage.
+
+The Vector Store layer belongs to the application/infrastructure boundary and is intentionally independent from the Project domain model.
+
+---
+
 ## Retriever
 
 Responsible for semantic retrieval from project embeddings.
@@ -307,7 +360,7 @@ Responsibilities
 - deterministic ranking
 - result limiting
 - chunk identity preservation
-- retrieval through vector storage abstraction
+- retrieval through VectorStore abstraction
 - Project knowledge integration
 
 Outputs
@@ -330,11 +383,17 @@ retrieve_project(
     query_vector: list[float],
 ) -> Project
 
-The Retriever is independent from embedding providers and concrete vector storage implementations.
+The Retriever is independent from:
+
+- embedding providers;
+- VectorStore implementations;
+- storage lifecycle management.
+
+Vector storage creation and management are handled by VectorStoreManager.
 
 Similarity strategy currently uses cosine similarity.
 
-Hybrid retrieval, filtering strategies and persistent vector databases are intentionally deferred to future milestones.
+Hybrid retrieval, filtering strategies and advanced ranking strategies are intentionally deferred to future milestones.
 
 ---
 
@@ -497,7 +556,7 @@ LLM
 
 # 8. Dependency Rules
 
-Allowed dependencies
+## Allowed dependencies
 
 - app.scanner → core.project
 - app.parser → core.project
@@ -505,15 +564,19 @@ Allowed dependencies
 - app.chunking → core.project
 - app.embeddings → core.project
 - app.retrieval → core.project
+- app.retrieval → app.vectorstore
+- app.vectorstore → app.embeddings
 - app.context → core.project
 
-Forbidden dependencies
+## Forbidden dependencies
 
 - scanner → parser
 - parser → chunker
 - chunker → retriever
 - retriever → scanner
 - core → app
+- core → vectorstore
+- retriever → concrete vector database implementations
 
 No module should depend on a future processing stage.
 
@@ -636,11 +699,12 @@ Current validation
 - Indexer tests
 - Chunker tests
 - Embedding tests
+- Vector Store tests
 - Retrieval tests
 - Context Builder tests
 - Pipeline integration tests
 
-Current total: 103 passing automated tests.
+Current total: 108 passing automated tests.
 
 ---
 
@@ -686,6 +750,7 @@ Current ADRs
 - ADR-007 — Embedding Provider Abstraction
 - ADR-008 — Retrieval Engine Abstraction
 - ADR-009 — Context Builder Abstraction
+- ADR-010 — Vector Store Lifecycle Management
 
 Future ADRs
 
@@ -715,7 +780,7 @@ Planned architectural improvements include
 - cross-file symbol resolution
 - multi-chunk symbols
 - embedding caching
-- persistent vector storage
+- persistent vector database implementations
 - similarity retrieval
 
 ---

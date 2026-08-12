@@ -54,6 +54,57 @@ Validation:
 
 --- 
 
+## [Milestone 7.1] — Vector Store Lifecycle Management
+
+### Added
+
+- Added Vector Store lifecycle management architecture.
+- Added `VectorStoreManager`.
+- Added project vector store registration workflow.
+- Added project vector store retrieval workflow.
+- Added project vector store removal workflow.
+- Added vector store lifecycle abstraction.
+- Added `VectorStoreFactory` for vector store creation.
+- Added support for replaceable vector storage implementations.
+- Added project-specific vector store management.
+
+### Improved
+
+- Decoupled vector storage lifecycle from retrieval logic.
+- Preserved Retriever independence from storage implementations.
+- Improved separation between:
+  - retrieval;
+  - vector storage management;
+  - vector storage implementation.
+- Prepared architecture for future persistent vector databases.
+- Preserved project domain independence from storage concerns.
+
+### Architecture
+
+- Added Vector Store lifecycle management layer:
+
+  - `RetrievalService`
+  - `VectorStoreManager`
+  - `VectorStoreFactory`
+  - `VectorStore`
+
+- Added ADR-010 — Vector Store Lifecycle Management.
+
+### Testing
+
+- Added VectorStoreManager tests.
+- Added project vector store registration tests.
+- Added project vector store retrieval tests.
+- Added missing vector store handling tests.
+- Added vector store lifecycle regression tests.
+- Added retrieval regression validation.
+
+Validation:
+
+- 108 automated tests passing.
+
+---
+
 ## [Milestone 7] — Retrieval Engine
 
 ### Added

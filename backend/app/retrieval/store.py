@@ -1,20 +1,10 @@
-from __future__ import annotations
+"""
+Deprecated module.
 
-from typing import Protocol
+VectorStore was moved to app.vectorstore.interfaces
+during Milestone 7.1.
+"""
 
-from app.embeddings.models import Embedding
+from app.vectorstore.interfaces import VectorStore
 
-
-class VectorStore(Protocol):
-    """
-    Abstraction for vector storage.
-
-    Retrieval depends only on this contract,
-    not on a concrete storage implementation.
-    """
-
-    def all(self) -> list[Embedding]:
-        """
-        Return all stored embeddings.
-        """
-        ...
+__all__ = ["VectorStore"]

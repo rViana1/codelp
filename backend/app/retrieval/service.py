@@ -16,6 +16,7 @@ from .models import (
 )
 from .retriever import Retriever
 
+from app.vectorstore.manager import VectorStoreManager
 
 class RetrievalService:
     """
@@ -35,9 +36,11 @@ class RetrievalService:
     def __init__(
         self,
         retriever: Retriever,
+        store_manager: VectorStoreManager,
     ) -> None:
 
         self.retriever = retriever
+        self.store_manager = store_manager
 
     def retrieve_project(
         self,
@@ -79,13 +82,22 @@ class RetrievalService:
             project.embedding_result
         )
 
-        from app.embeddings.store import InMemoryVectorStore
+        project_path = project.metadata.root_path
 
-        store = InMemoryVectorStore()
-
-        store.add_many(
-            embeddings.embeddings
+        self.store_manager.register_project(
+            project_path,
+            embeddings,
         )
+
+        store = self.store_manager.get_project_store(
+            project_path
+        )
+
+        if store is None:
+            return RetrievalCollection(
+                query=query,
+                results=[],
+            )
 
         return self.retriever.retrieve(
             query,

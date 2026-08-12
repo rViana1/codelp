@@ -10,6 +10,7 @@ from app.embeddings.models import (
 from app.retrieval.models import RetrievalQuery
 from app.retrieval.retriever import Retriever
 from app.retrieval.service import RetrievalService
+from app.vectorstore.manager import VectorStoreManager
 
 
 def create_project() -> Project:
@@ -49,7 +50,8 @@ def create_project() -> Project:
 def test_project_retrieval_returns_chunks() -> None:
 
     service = RetrievalService(
-        Retriever()
+        Retriever(),
+        VectorStoreManager(),
     )
 
     result = service.retrieve_project(
@@ -77,7 +79,8 @@ def test_project_embedding_state_is_not_modified() -> None:
     original_embeddings = project.embedding_result
 
     service = RetrievalService(
-        Retriever()
+        Retriever(),
+        VectorStoreManager(),
     )
 
     service.retrieve_project(
@@ -101,7 +104,8 @@ def test_project_without_embeddings_adds_diagnostic() -> None:
     )
 
     service = RetrievalService(
-        Retriever()
+        Retriever(),
+        VectorStoreManager(),
     )
 
     result = service.retrieve_project(

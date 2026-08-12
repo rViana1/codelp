@@ -86,7 +86,7 @@ Chunker
 Embedding Engine
       │
       ▼
-Knowledge Store
+Vector Store Management
       │
       ▼
 Retriever
@@ -181,12 +181,55 @@ Responsible for vector generation.
 Responsibilities
 
 - embedding providers
-- batching
-- cache
+- deterministic embedding generation
+- embedding metadata generation
 
 Output
 
 `EmbeddingCollection`
+
+Deferred
+
+- Embedding cache
+- Provider batching optimization
+
+---
+
+## Vector Store Management
+
+Responsible for managing the lifecycle of project vector stores.
+
+Responsibilities
+
+- create project vector stores
+- register project vector stores
+- retrieve project vector stores
+- remove project vector stores
+- hide concrete storage implementations
+- prepare architecture for persistent vector databases
+
+Output
+
+`VectorStore`
+
+Current implementation
+
+- InMemoryVectorStore
+
+Implemented
+
+- VectorStore abstraction
+- VectorStoreManager
+- Project vector store registration
+- Project vector store retrieval
+- Project vector store removal
+- Storage lifecycle separation from retrieval
+
+Deferred
+
+- Persistent vector database implementations
+- Remote vector storage
+- Distributed vector storage
 
 ---
 
@@ -460,7 +503,7 @@ Goals
 - Vector similarity retrieval
 - Deterministic ranking
 - Project knowledge retrieval
-- Vector store abstraction
+- VectorStore abstraction consumption
 
 Implemented
 
@@ -477,14 +520,16 @@ Implemented
 - In-memory vector store integration
 - Project retrieval integration
 - Diagnostics propagation
+- Retrieval through managed vector stores
+- Separation between retrieval logic and vector storage lifecycle
 
 Deferred
 
 - Query embedding generation
 - Hybrid retrieval
-- Persistent vector database integration
 - Advanced ranking strategies
 - Retrieval caching
+- Advanced persistent vector database implementations
 
 Validation
 
@@ -498,6 +543,50 @@ Tests
 
 - 23 retrieval tests passing
 - Full regression suite validated
+
+---
+
+## Milestone 7.1 — Vector Store Lifecycle Management
+
+Status
+
+Completed
+
+Goals
+
+- Separate vector storage lifecycle from retrieval logic
+- Introduce vector store management layer
+- Prepare architecture for persistent vector databases
+- Preserve domain boundaries
+
+Implemented
+
+- VectorStoreManager
+- VectorStore lifecycle management
+- Project vector store registration
+- Project vector store retrieval
+- Project vector store removal
+- VectorStore abstraction preservation
+- Retrieval integration through managed stores
+
+Architecture Validation
+
+- Vector storage responsibility separated from Retriever
+- Domain remains independent from storage concerns
+- Future vector database migration path validated
+
+Tests
+
+- VectorStoreManager tests
+- Project registration tests
+- Project retrieval tests
+- Missing store handling tests
+- Retrieval regression tests
+- Full pipeline regression
+
+Validation
+
+- 108 automated tests passing
 
 ---
 
@@ -611,6 +700,7 @@ Current ADRs
 - ADR-007 — Embedding Provider Abstraction
 - ADR-008 — Retrieval Engine Abstraction
 - ADR-009 — Context Builder Abstraction
+- ADR-010 — Vector Store Lifecycle Management
 
 Planned ADRs
 
@@ -619,7 +709,7 @@ Planned ADRs
 - Plugin System
 - Configuration System
 - Multi-language Support
-- Vector Database Integration
+- Persistent Vector Database Implementation
 - LLM Provider Abstraction
 
 ---

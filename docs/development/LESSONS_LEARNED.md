@@ -902,3 +902,166 @@ Documentation: Completed
 Ready for Milestone 9 — MCP Integration.
 
 ---
+
+---
+
+# Milestone 7.1 — Vector Store Lifecycle Management
+
+## Objective
+
+Introduce a dedicated vector store lifecycle management layer after the completion of the Retrieval and Context Builder milestones.
+
+This milestone was introduced as an architectural correction after reviewing the evolution of the knowledge pipeline.
+
+The initial Retrieval implementation correctly introduced the VectorStore abstraction, but further architectural analysis revealed that vector store ownership and lifecycle management required a dedicated responsibility.
+
+The goal was to separate:
+
+- vector storage lifecycle;
+- retrieval behaviour;
+- future persistence strategies.
+
+This change prepares the architecture for future persistent vector databases without coupling retrieval logic to storage management.
+
+---
+
+## Reason for Introduction After Milestone 8
+
+This milestone represents an architectural refinement rather than a planned pipeline stage.
+
+During the implementation of the Retrieval and Context Builder layers, the architecture evolved and exposed a missing responsibility boundary.
+
+The original retrieval design successfully isolated similarity search from concrete storage implementations, but the lifecycle of vector stores was still owned too closely by retrieval orchestration.
+
+Further review identified that future requirements such as:
+
+- persistent vector databases;
+- project knowledge persistence;
+- incremental updates;
+- storage replacement strategies;
+
+would require an explicit owner for vector store management.
+
+Instead of introducing storage concerns into existing milestones, a dedicated milestone was created to correct the responsibility boundary while preserving the completed work.
+
+This demonstrates the importance of continuous architecture review during incremental development.
+
+---
+
+## What Went Well
+
+- The architecture review identified the missing responsibility before persistent storage integration.
+- Existing Retrieval and Context Builder behaviour remained unchanged.
+- Vector storage lifecycle was successfully separated from retrieval logic.
+- The new `VectorStoreManager` introduced a clear ownership boundary.
+- The Retriever remained independent from concrete storage implementations.
+- Existing project domain boundaries were preserved.
+- Future persistent vector database integration became possible without redesigning retrieval behaviour.
+
+---
+
+## Lessons Learned
+
+### Architecture Must Evolve With New Knowledge
+
+Early architectural decisions are based on available requirements and understanding.
+
+As the platform grows, new responsibilities may emerge that were not visible initially.
+
+The important principle is not avoiding change, but introducing changes that improve boundaries without breaking existing behaviour.
+
+---
+
+### A Storage Abstraction Needs a Lifecycle Owner
+
+Introducing `VectorStore` as an interface solved replacement concerns, but it did not define who owns:
+
+- creation;
+- registration;
+- replacement;
+- removal.
+
+The `VectorStoreManager` provides that missing ownership.
+
+---
+
+### Retrieval Should Consume Knowledge, Not Manage Storage
+
+The Retriever should answer:
+
+"Which embeddings are relevant?"
+
+It should not answer:
+
+"How are vector stores created and maintained?"
+
+Keeping these concerns separate improves modularity and future extensibility.
+
+---
+
+### Refactoring Completed Milestones Can Be Necessary
+
+The existing Retrieval implementation was functional and fully tested.
+
+However, architectural quality sometimes requires revisiting previous assumptions.
+
+The change was performed through a controlled refactor with regression validation rather than through redesign.
+
+---
+
+### Persistent Storage Should Be Introduced Only After Boundaries Are Stable
+
+Introducing a real vector database before defining lifecycle ownership would couple infrastructure decisions too early.
+
+The in-memory implementation was enough to validate the architecture first.
+
+---
+
+## Architectural Decisions Reinforced
+
+- Vector store lifecycle belongs to a dedicated application service.
+- Retriever depends only on the VectorStore contract.
+- Storage implementations remain replaceable.
+- Project domain remains independent from persistence concerns.
+- Future vector databases can replace the current implementation without changing retrieval behaviour.
+
+---
+
+## Future Improvements Identified
+
+### Vector Storage
+
+- Persistent vector database implementation.
+- Storage migration strategy.
+- Vector indexing optimisation.
+- Distributed storage support.
+
+### Knowledge Persistence
+
+- Persist project knowledge state.
+- Synchronise embeddings with project changes.
+- Incremental vector updates.
+
+### Retrieval
+
+- Metadata filtering.
+- Hybrid retrieval.
+- Advanced ranking strategies.
+
+---
+
+## Milestone Result
+
+Status: Completed
+
+Implementation: Completed
+
+Tests: Passed (108 automated tests)
+
+Code Review: Approved
+
+Architecture Review: Approved
+
+Documentation: Completed
+
+---

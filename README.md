@@ -17,6 +17,8 @@ Chunker
     ↓
 Embedding Engine
     ↓
+Vector Store
+    ↓
 Retriever
     ↓
 Context Builder
@@ -30,7 +32,7 @@ The project is designed around **determinism, modularity and testability**, prov
 
 ## Current Status
 
-**Version:** `v0.8.0`
+**Version:** `v0.8.1`
 
 Implemented:
 
@@ -48,9 +50,9 @@ Implemented:
 
 Validation:
 
-- **103 automated tests passing**
+- **108 automated tests passing**
 - Deterministic outputs across executions
-- Stable symbol, chunk, embedding and context identities
+Stable symbol, chunk, embedding, retrieval and context identities
 
 ---
 
@@ -111,6 +113,18 @@ Validation:
 - Project integration
 
 The Embedding Engine remains independent from concrete embedding providers.
+
+---
+
+### Vector Store
+
+- Vector storage abstraction
+- Vector store lifecycle management
+- Project-based store registration
+- Replaceable storage implementations
+- In-memory vector store implementation
+
+The vector storage layer remains independent from retrieval logic and prepares the architecture for future persistent vector databases.
 
 ---
 
@@ -227,7 +241,7 @@ pytest backend/tests -v
 Expected result:
 
 ```text
-91 passed
+108 passed
 ```
 
 ---
@@ -300,13 +314,15 @@ LLM
 | Chunker | Completed |
 | Embedding Engine | Completed |
 | Retriever | Completed |
-| Context Builder | Planned |
+| Context Builder | Completed |
 | API / CLI | Planned |
 
 ---
 
 ## Roadmap
 
+
+The current architecture is prepared for MCP integration after stabilising knowledge lifecycle management and storage boundaries.
 ### Next — MCP Integration
 
 - Model Context Protocol support
@@ -332,11 +348,40 @@ LLM
 
 ## Documentation
 
+### Architecture
+
 - `docs/architecture/ARCHITECTURE.md`
 - `docs/architecture/adr/`
-- `docs/lessons/LESSONS_LEARNED.md`
-- `CHANGELOG.md`
-- `ROADMAP.md`
+
+Architecture Decision Records:
+
+- `ADR-001` — Project Model
+- `ADR-002` — Scanner Permission Handling
+- `ADR-003` — Scanner Integration with Project
+- `ADR-004` — Python AST Parser
+- `ADR-005` — Stable Symbol Index
+- `ADR-006` — Stable Chunk Identity
+- `ADR-007` — Embedding Provider Abstraction
+- `ADR-008` — Retrieval Engine Abstraction
+- `ADR-009` — Context Builder Abstraction
+- `ADR-010` — Vector Store Lifecycle Management
+
+---
+
+### Development
+
+- `docs/development/ROADMAP.md`
+- `docs/development/LESSONS_LEARNED.md`
+- `docs/development/DEFINITION_OF_DONE.md`
+- `docs/development/DEVELOPMENT_GUIDELINES.md`
+- `docs/development/CHANGELOOG.md`
+
+---
+
+### User Documentation
+
+- `docs/user/GETTING_STARTED.md`
+- `docs/user/CONFIGURATION.md`
 
 ---
 
@@ -368,7 +413,7 @@ Codelp treats a repository as **structured knowledge**:
 - symbols become stable entities;
 - chunks become semantic retrieval units;
 - embeddings become reusable knowledge vectors;
-- retrieval becomes semantic project understanding.
+- retrieval becomes semantic project understanding;
 - contexts become structured knowledge prepared for AI consumption.
 
 The goal is not only to search code, but to build a **deterministic and evolvable understanding of a software project**.
