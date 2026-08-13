@@ -33,3 +33,7 @@ dist/
 
 # Logs
 *.log
+
+.venv/
+venv/
+env/
