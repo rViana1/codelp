@@ -23,7 +23,11 @@ Retriever
     ↓
 Context Builder
     ↓
-LLM Context
+Project Knowledge
+    ↓
+MCP Server
+    ↓
+External Tools / IDE Integrations / LLM Consumers
 ```
 
 The project is designed around **determinism, modularity and testability**, providing a strong foundation for semantic search, retrieval-augmented generation (RAG) and persistent project knowledge.
@@ -32,7 +36,7 @@ The project is designed around **determinism, modularity and testability**, prov
 
 ## Current Status
 
-**Version:** `v0.8.1`
+**Version:** `v0.10.0`
 
 Implemented:
 
@@ -44,15 +48,17 @@ Implemented:
 - Vector Store abstraction
 - Semantic Retrieval Engine
 - Context Builder
+- Model Context Protocol (MCP) integration
 - Full pipeline integration
 - Architecture documentation
+- ADRs (Architecture Decision Records)
 - ADRs (Architecture Decision Records)
 
 Validation:
 
-- **108 automated tests passing**
+- **175+ automated tests passing**
 - Deterministic outputs across executions
-Stable symbol, chunk, embedding, retrieval and context identities
+- Stable symbol, chunk, embedding, retrieval and context identities
 
 ---
 
@@ -154,6 +160,18 @@ The Context Builder prepares structured project knowledge for future LLM consume
 
 ---
 
+### MCP Integration
+
+- Model Context Protocol server
+- Project knowledge exposure
+- Structured context access
+- External tool integration boundary
+- IDE integration foundation
+
+The MCP layer exposes Codelp project knowledge without coupling the core pipeline to specific clients, IDEs or LLM providers.
+
+---
+
 ## Knowledge Identity Flow
 
 Codelp uses deterministic identifiers throughout the pipeline.
@@ -204,8 +222,10 @@ backend/
 │   ├── indexing/
 │   ├── chunking/
 │   ├── embeddings/
+│   ├── vectorstore/
 │   ├── retrieval/
-│   └── context/
+│   ├── context/
+│   └── mcp/
 ├── core/
 │   └── project/
 └── tests/
@@ -240,9 +260,7 @@ pytest backend/tests -v
 
 Expected result:
 
-```text
-108 passed
-```
+175+ passed
 
 ---
 
@@ -298,7 +316,11 @@ Project
     ↓
 Context Builder
     ↓
-LLM
+Project
+    ↓
+MCP Server
+    ↓
+External Tools / IDE Integrations / LLM Consumers
 ```
 
 ---
@@ -315,6 +337,7 @@ LLM
 | Embedding Engine | Completed |
 | Retriever | Completed |
 | Context Builder | Completed |
+| MCP Integration | In Progress |
 | API / CLI | Planned |
 
 ---
@@ -322,8 +345,9 @@ LLM
 ## Roadmap
 
 
-The current architecture is prepared for MCP integration after stabilising knowledge lifecycle management and storage boundaries.
-### Next — MCP Integration
+The architecture now exposes project knowledge through MCP while preserving existing pipeline boundaries.
+
+### Next — MCP Integration Improvements
 
 - Model Context Protocol support
 - IDE integration
@@ -338,7 +362,6 @@ The current architecture is prepared for MCP integration after stabilising knowl
 - Retrieval-optimized chunking
 - Cross-file context
 - Distributed indexing
-- MCP integration
 - API and CLI interfaces
 - LLM provider integration
 - Prompt generation
@@ -374,7 +397,7 @@ Architecture Decision Records:
 - `docs/development/LESSONS_LEARNED.md`
 - `docs/development/DEFINITION_OF_DONE.md`
 - `docs/development/DEVELOPMENT_GUIDELINES.md`
-- `docs/development/CHANGELOOG.md`
+- `docs/development/CHANGELOG.md`
 
 ---
 

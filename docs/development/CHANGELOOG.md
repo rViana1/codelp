@@ -10,6 +10,75 @@ Future changes will be documented here.
 
 ---
 
+## [Milestone 9] — MCP Integration
+
+### Added
+
+- Added Model Context Protocol (MCP) integration layer.
+- Added MCP domain models:
+  - `MCPRequest`
+  - `MCPResponse`
+  - `MCPToolDefinition`
+  - `MCPResourceDefinition`
+  - `MCPToolRequest`
+  - `MCPToolResponse`
+  - `MCPRetrievalResult`
+  - `MCPRetrievalResponse`
+- Added MCP server architecture.
+- Added MCP lifecycle management:
+  - server creation;
+  - initialization;
+  - shutdown handling.
+- Added MCP tool registry.
+- Added MCP resource registry.
+- Added MCP tool execution layer.
+- Added MCP bootstrap workflow.
+- Added MCP resources:
+  - `ProjectInformationResource`
+  - `ProjectStructureResource`
+  - `ContextResource`
+  - `SymbolResource`
+- Added MCP tools:
+  - `SymbolLookupTool`
+  - `SemanticSearchTool`
+  - `ContextRetrievalTool`.
+
+### Improved
+
+- Exposed project knowledge through a structured MCP interface.
+- Added a clear separation between:
+  - MCP contracts;
+  - MCP resources and tools;
+  - application services;
+  - domain models.
+- Preserved domain independence from MCP implementation details.
+- Extended project knowledge access capabilities for future IDE and external tool integrations.
+- Preserved deterministic behaviour across MCP operations.
+
+### Architecture
+
+- Added MCP integration boundary.
+- Added MCP adapter layer between external consumers and application services.
+- Validated dependency boundaries ensuring MCP does not depend on internal implementation details.
+- Added ADR-011 — Model Context Protocol Integration.
+
+### Testing
+
+- Added MCP model tests.
+- Added MCP resource tests.
+- Added MCP tool tests.
+- Added MCP registry tests.
+- Added MCP execution tests.
+- Added MCP server lifecycle tests.
+- Added MCP bootstrap tests.
+- Added deterministic failure validation tests.
+- Added architecture boundary validation tests.
+
+Validation:
+
+- 67 MCP tests passing.
+- 175 total automated tests passing.
+
 ## [Milestone 8] — Context Builder
 
 ### Added

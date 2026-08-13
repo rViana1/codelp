@@ -1,8 +1,8 @@
 # Codelp Architecture
 
-> **Version:** 1.8
+> **Version:** 1.9
 > **Status:** In Development  
-> **Last Updated:** Milestone 7.1 — Vector Store Lifecycle Management
+> **Last Updated:** Milestone 9 — MCP Integration
 
 ---
 
@@ -116,7 +116,7 @@ Embedding Engine
 
 ↓
 
-Knowledge Store
+Vector Store Management
 
 ↓
 
@@ -128,9 +128,17 @@ Context Builder
 
 ↓
 
-LLM
+┌───────────────┐
+│               │
+▼               ▼
+MCP Integration  LLM
+│
+▼
+External AI Clients / Developer Tools
 
 Each application module enriches the same Project aggregate.
+
+MCP exposes project knowledge through application boundaries and does not access domain internals directly.
 
 ---
 
@@ -434,6 +442,64 @@ Token optimisation, context compression and prompt templates are intentionally d
 
 ---
 
+## MCP Integration
+
+Responsible for exposing Codelp project knowledge through Model Context Protocol.
+
+The MCP layer provides external consumers access to structured project knowledge while preserving existing architecture boundaries.
+
+Responsibilities
+
+- expose project information resources
+- expose project structure resources
+- expose symbol resources
+- expose context resources
+- provide semantic search tools
+- provide context retrieval tools
+- preserve deterministic responses
+- isolate external protocol concerns from domain logic
+- communicate through application services
+
+Outputs
+
+- MCP Resources
+- MCP Tools
+- MCP Responses
+
+Current implementation
+
+- MCP server abstraction
+- MCP lifecycle management
+- MCP resource registry
+- MCP tool registry
+- MCP execution layer
+- MCP application services
+
+Supported capabilities
+
+- Project information
+- Project structure
+- Symbol lookup
+- Semantic search
+- Context retrieval
+
+The MCP layer does not:
+
+- modify the Project aggregate directly;
+- access parser internals;
+- access index internals;
+- manage vector storage;
+- generate embeddings.
+
+Future improvements
+
+- Real MCP transport implementation
+- IDE integrations
+- External MCP clients
+- Authentication and permissions
+
+---
+
 # 6. Domain Model
 
 The central entity of the architecture is the Project aggregate root.
@@ -567,6 +633,8 @@ LLM
 - app.retrieval → app.vectorstore
 - app.vectorstore → app.embeddings
 - app.context → core.project
+- app.mcp → application services
+- app.mcp → core.project
 
 ## Forbidden dependencies
 
@@ -602,6 +670,7 @@ Infrastructure
 
 Current mapping
 
+- Presentation → future CLI/API/MCP transports
 - Application → app/*
 - Domain → core/*
 - Infrastructure → storage, vector stores, external APIs
@@ -702,9 +771,15 @@ Current validation
 - Vector Store tests
 - Retrieval tests
 - Context Builder tests
+- MCP lifecycle tests
+- MCP resource tests
+- MCP tool tests
+- MCP execution tests
+- MCP resilience tests
+- MCP architecture boundary tests
 - Pipeline integration tests
 
-Current total: 108 passing automated tests.
+Current total: 175 passing automated tests.
 
 ---
 
@@ -751,6 +826,7 @@ Current ADRs
 - ADR-008 — Retrieval Engine Abstraction
 - ADR-009 — Context Builder Abstraction
 - ADR-010 — Vector Store Lifecycle Management
+- ADR-011 — MCP Integration Boundary
 
 Future ADRs
 
@@ -782,6 +858,9 @@ Planned architectural improvements include
 - embedding caching
 - persistent vector database implementations
 - similarity retrieval
+- MCP transport implementation
+- IDE integrations
+- external AI client support
 
 ---
 

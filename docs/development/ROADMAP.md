@@ -94,6 +94,11 @@ Retriever
       ▼
 Context Builder
       │
+      ├──────────────► MCP Integration
+      │                     │
+      │                     ▼
+      │              External AI Clients
+      │
       ▼
 LLM
 ```
@@ -272,6 +277,49 @@ Output
 The Context Builder does not depend on any LLM provider.
 
 Its responsibility is context preparation only.
+
+
+## MCP Integration
+
+Responsible for exposing project knowledge to external consumers.
+
+Responsibilities
+
+- expose project resources
+- expose project tools
+- provide structured project information
+- provide semantic search capabilities
+- provide context retrieval
+- preserve application boundaries
+- avoid domain coupling
+
+Output
+
+MCP Resources
+MCP Tools
+
+Current implementation
+
+- MCP server abstraction
+- MCP resource registry
+- MCP tool registry
+- MCP execution layer
+
+Supported capabilities
+
+- Project information
+- Project structure
+- Symbol lookup
+- Semantic search
+- Context retrieval
+
+Deferred
+
+- Real MCP transport implementation
+- IDE integrations
+- External client validation
+- Authentication and permissions
+
 
 ---
 
@@ -636,6 +684,8 @@ Tests
 
 - 8 context tests passing
 - 103 total automated tests passing
+- Context integration validated through MCP layer
+- Full regression suite passing
 
 ---
 
@@ -643,17 +693,66 @@ Tests
 
 Status
 
-Planned
+Completed
 
 Goals
 
-- Model Context Protocol
-- IDE integration
-- External tools
+- Expose Codelp project knowledge through Model Context Protocol.
+- Allow external AI clients and developer tools to consume project knowledge.
+- Preserve existing architecture boundaries.
+- Keep MCP independent from domain implementation details.
+- Introduce external integration without modifying existing pipeline responsibilities.
+
+Implemented
+
+- MCP package structure
+- MCP server abstraction
+- MCP lifecycle management
+- MCP tool registry
+- MCP resource registry
+- MCP execution layer
+- MCP request/response models
+- MCP resource definitions
+- Project information resource
+- Project structure resource
+- Symbol information resource
+- Context resource
+- Symbol lookup tool
+- Semantic search tool
+- Context retrieval tool
+- MCP application service boundaries
+- Retrieval integration through existing abstractions
+- Context integration through existing abstractions
+- Deterministic MCP responses
+- Diagnostics propagation
+- Architecture boundary validation
+
+Validation
+
+- MCP boundaries validated
+- Domain independence validated
+- Application layer boundaries validated
+- Retrieval abstraction preserved
+- Context Builder independence preserved
+- Vector storage hidden from MCP
+- Deterministic behaviour validated
+
+Tests
+
+- MCP lifecycle tests passing
+- MCP resource tests passing
+- MCP tool tests passing
+- MCP retrieval integration tests passing
+- MCP context integration tests passing
+- Architecture boundary tests passing
+
+Validation
+
+- 175 MCP and integration tests passing
 
 ---
 
-## Milestone 10 — Production Ready
+## Milestone 10 — External Integration & Production Ready
 
 Status
 
@@ -663,6 +762,8 @@ Goals
 
 - CLI
 - REST API
+- Real MCP transport
+- IDE integrations
 - Configuration
 - Plugin system
 - Documentation
@@ -701,6 +802,7 @@ Current ADRs
 - ADR-008 — Retrieval Engine Abstraction
 - ADR-009 — Context Builder Abstraction
 - ADR-010 — Vector Store Lifecycle Management
+- ADR-011 — MCP Integration Boundary
 
 Planned ADRs
 

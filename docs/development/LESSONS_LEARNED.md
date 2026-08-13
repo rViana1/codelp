@@ -1065,3 +1065,152 @@ Architecture Review: Approved
 Documentation: Completed
 
 ---
+
+# Milestone 9 — MCP Integration
+
+## Objective
+
+Introduce Model Context Protocol (MCP) as an external interface layer capable of exposing Codelp project knowledge and capabilities to external tools while preserving the existing architectural boundaries.
+
+This milestone establishes the foundation for future IDE integrations, AI assistants and external development tools without coupling the domain model or internal processing pipeline to the MCP protocol.
+
+---
+
+## What Went Well
+
+- MCP integration was introduced without modifying the Project aggregate design.
+- The existing knowledge pipeline remained independent from external protocol concerns.
+- MCP resources provided a structured way to expose project information.
+- MCP tools provided a controlled way to execute project-related operations.
+- Application services remained responsible for business logic while MCP acted as an adaptation layer.
+- Tool execution was separated from tool registration and definition.
+- Resource and tool registries provided an extensible foundation for future capabilities.
+- Architecture boundary tests prevented MCP from depending on internal implementation details.
+- Existing functionality remained stable after introducing the MCP layer.
+
+---
+
+## Lessons Learned
+
+### External Protocols Should Be Introduced Through Adapter Layers
+
+MCP should not influence the internal architecture of the platform.
+
+The protocol acts as an external interface and should adapt existing application capabilities rather than introduce new business logic.
+
+The dependency direction remains:
+
+External Consumer
+
+↓
+
+MCP
+
+↓
+
+Application Services
+
+↓
+
+Domain
+
+---
+
+### Resources and Tools Represent Different Concepts
+
+Resources expose structured project information.
+
+Tools execute project-related operations.
+
+Keeping these responsibilities separate avoids mixing data access with execution behaviour and provides clearer extension points.
+
+---
+
+### MCP Should Delegate, Not Duplicate Logic
+
+MCP components should not contain domain or application logic.
+
+They should delegate operations to existing services, ensuring that the same business rules are reused regardless of the consumer.
+
+---
+
+### External Consumers Should Not Affect Domain Design
+
+The Project aggregate remains the source of truth.
+
+The domain should not know that MCP exists or how external tools consume project knowledge.
+
+This keeps the platform independent from specific protocols and integrations.
+
+---
+
+### Registries Enable Incremental Capability Growth
+
+Tool and resource registries provide a simple extension mechanism.
+
+New capabilities can be added without modifying the MCP server core, reducing coupling and improving maintainability.
+
+---
+
+### Architecture Tests Are Essential for Boundary Validation
+
+Architecture tests proved valuable for ensuring that MCP remained isolated from internal implementation details.
+
+Automated boundary validation prevents architectural erosion as new integrations are introduced.
+
+---
+
+## Architectural Decisions Reinforced
+
+- MCP belongs to the application/interface boundary.
+- The domain remains independent from external protocols.
+- Resources expose structured knowledge without duplicating business logic.
+- Tools delegate execution to application services.
+- MCP contracts define communication boundaries, not business rules.
+- External integrations should be replaceable without changing the core architecture.
+
+---
+
+## Future Improvements Identified
+
+### MCP Integration
+
+- Implement complete MCP protocol transport support.
+- Add dynamic capability discovery.
+- Support additional MCP resources and tools.
+- Introduce authentication and access control mechanisms.
+
+---
+
+### Knowledge Exposure
+
+- Expose project dependency information.
+- Expose symbol navigation capabilities.
+- Expose project evolution history.
+- Add project analysis and impact exploration tools.
+
+---
+
+### Developer Experience
+
+- IDE integration.
+- AI assistant integration.
+- CLI MCP client support.
+
+---
+
+## Milestone Result
+
+Status: Completed
+
+Implementation: Completed
+
+Tests: Passed (175 automated tests)
+
+Code Review: Approved
+
+Architecture Review: Approved
+
+Documentation: Completed
+
+Ready for Milestone 10 — Production Ready.
