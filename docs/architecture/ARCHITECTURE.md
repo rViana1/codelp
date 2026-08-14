@@ -1,8 +1,8 @@
 # Codelp Architecture
 
-> **Version:** 1.9
+> **Version:** 2.0
 > **Status:** In Development  
-> **Last Updated:** Milestone 9 — MCP Integration
+> **Last Updated:** Milestone 10.1 — Persistent Project Knowledge Boundary
 
 ---
 
@@ -830,7 +830,7 @@ Current ADRs
 
 Future ADRs
 
-- Persistent Project Knowledge
+- ADR-012 — Persistent Project Knowledge Boundary
 - Incremental Scanner
 - Plugin System
 - Cache
@@ -844,9 +844,11 @@ Future ADRs
 
 Planned architectural improvements include
 
+- persistent project knowledge lifecycle
+- incremental knowledge loading
+- knowledge reconstruction
 - dedicated ProjectTree model
-- incremental scanning
-- persistent project knowledge
+- incremental scannings
 - remote repository support
 - distributed indexing
 - streaming parser
@@ -861,6 +863,29 @@ Planned architectural improvements include
 - MCP transport implementation
 - IDE integrations
 - external AI client support
+
+## Persistent Knowledge Evolution
+
+Persistent Project Knowledge was intentionally divided into multiple milestones.
+
+Milestone 10.1 establishes the architectural boundary between the active analysis pipeline and persistent knowledge storage.
+
+This milestone introduces the foundations required for persistence:
+
+- persistent knowledge boundary definition;
+- storage independence;
+- deterministic identity preservation;
+- separation between domain state and storage implementation.
+
+The following milestones will extend this foundation with:
+
+- knowledge serialization;
+- knowledge restoration;
+- update lifecycle;
+- incremental analysis compatibility;
+- persistent identity reconstruction.
+
+This separation avoids coupling unfinished persistence behaviour into the existing pipeline and preserves the stability achieved by previous milestones.
 
 ---
 
@@ -895,6 +920,26 @@ This decision keeps the parser independent from indexing concerns while providin
 
 ---
 
+# 17.1 Persistent Project Knowledge Boundary
+
+Persistent knowledge is treated as an external representation of the Project aggregate state.
+
+The Project aggregate remains the source of truth during execution.
+
+Persistence layers must not:
+
+- modify domain behaviour;
+- own project lifecycle;
+- bypass application services;
+- replace runtime project state.
+
+The persistence boundary exists to allow knowledge produced by the analysis pipeline to survive between executions without coupling the domain model to storage mechanisms.
+
+The first implementation phase focuses on defining ownership and boundaries.
+
+Serialization, restoration and incremental synchronisation are intentionally deferred to future milestones.
+
+---
 # 18. Engineering Philosophy
 
 Codelp is designed as an engineering platform rather than a collection of utilities.

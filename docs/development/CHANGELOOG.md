@@ -10,6 +10,53 @@ Future changes will be documented here.
 
 ---
 
+## [Milestone 10.1] — Persistent Project Knowledge Boundary
+
+### Added
+
+- Added the architectural foundation for Persistent Project Knowledge.
+- Added persistent knowledge boundary definition.
+- Added separation between:
+  - runtime Project state;
+  - persisted project knowledge;
+  - future storage implementations.
+- Added knowledge storage abstraction foundation.
+- Added replaceable storage architecture without coupling the domain model to persistence concerns.
+- Added persistent knowledge lifecycle ownership definition.
+- Preserved deterministic project identity strategy.
+
+### Improved
+
+- Clarified the responsibility boundary between:
+  - Project aggregate;
+  - analysis pipeline;
+  - persistence layer.
+- Preserved Project aggregate as the single source of truth during execution.
+- Prevented persistence concerns from leaking into domain models.
+- Prepared the architecture for future:
+  - knowledge restoration;
+  - incremental analysis;
+  - persisted identity reconstruction.
+- Maintained compatibility with existing Scanner, Parser, Indexer, Chunker, Embedding, Retrieval, Context and MCP components.
+
+### Architecture
+
+- Split Persistent Project Knowledge implementation into independent milestones.
+- Established Milestone 10.1 as the architectural boundary phase.
+- Deferred serialization, restoration and incremental synchronisation to future milestones.
+- Added ADR-012 — Persistent Project Knowledge Boundary.
+
+### Testing
+
+- Preserved all existing pipeline behaviour.
+- Validated compatibility with existing project lifecycle.
+- Full regression validation completed.
+
+Validation:
+
+- 206 automated tests passing.
+
+---
 ## [Milestone 9] — MCP Integration
 
 ### Added
@@ -78,6 +125,8 @@ Validation:
 
 - 67 MCP tests passing.
 - 175 total automated tests passing.
+
+---
 
 ## [Milestone 8] — Context Builder
 

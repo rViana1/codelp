@@ -89,6 +89,9 @@ Embedding Engine
 Vector Store Management
       │
       ▼
+Persistent Project Knowledge
+      │
+      ▼
 Retriever
       │
       ▼
@@ -235,6 +238,52 @@ Deferred
 - Persistent vector database implementations
 - Remote vector storage
 - Distributed vector storage
+
+---
+
+## Persistent Project Knowledge
+
+Responsible for preserving analysed project knowledge between executions.
+
+Responsibilities
+
+- define persistent knowledge boundary
+- preserve project identity
+- persist project metadata
+- preserve analysis state
+- restore project knowledge
+- maintain storage independence from domain logic
+- prepare architecture for incremental analysis
+
+Output
+
+Persistent Project Knowledge
+
+Current implementation
+
+- Knowledge storage abstraction
+- Storage repository interface
+- InMemory knowledge storage
+- File-based knowledge storage
+
+Implemented
+
+- Persistent knowledge boundary definition
+- Knowledge lifecycle separation
+- Storage abstraction
+- Project knowledge registration
+- Project knowledge retrieval
+- Project knowledge removal
+
+Deferred
+
+- Incremental project updates
+- File identity persistence
+- Symbol identity persistence
+- Chunk identity persistence
+- Embedding metadata persistence
+- Retrieval metadata persistence
+- Knowledge version migration
 
 ---
 
@@ -752,7 +801,100 @@ Validation
 
 ---
 
-## Milestone 10 — External Integration & Production Ready
+## Milestone 10.1 — Persistent Project Knowledge Boundary
+
+Status
+
+Completed
+
+Goals
+
+- Introduce persistent storage for Codelp project knowledge.
+- Allow analysed project knowledge to survive between executions.
+- Preserve deterministic project identities.
+- Keep persistence independent from domain logic.
+- Preserve Project aggregate as source of truth.
+- Prepare architecture for future incremental analysis.
+
+Implemented
+
+- Persistent knowledge boundary definition
+- Knowledge storage abstraction
+- Knowledge repository interface
+- Storage lifecycle operations
+- Project knowledge registration
+- Project knowledge retrieval
+- Project knowledge removal
+- InMemory knowledge storage implementation
+- File-based knowledge storage implementation
+- Deterministic storage output
+- Storage independence from domain layer
+
+Architecture Validation
+
+- Domain remains independent from persistence concerns
+- Project aggregate remains the source of truth
+- Existing pipeline responsibilities preserved
+- Existing module boundaries preserved
+- Vector storage remains independent
+- Retrieval architecture remains unchanged
+
+Deferred
+
+- Persisted file identities
+- Persisted symbol identities
+- Persisted chunk identities
+- Persisted embedding metadata
+- Persisted retrieval metadata
+- Knowledge versioning
+- Incremental analysis workflows
+
+Tests
+
+- Knowledge storage contract tests
+- Storage lifecycle tests
+- Persistence regression tests
+- Full pipeline regression tests
+
+Validation
+
+- Persistent knowledge boundary validated
+- Existing pipeline compatibility validated
+- Storage abstraction validated
+
+
+---
+
+## Milestone 10.2 — Incremental Analysis Foundation
+
+Status
+
+Planned
+
+Goals
+
+- Analyse only changed project components.
+- Reuse previously persisted knowledge.
+- Reduce unnecessary processing.
+- Preserve deterministic project evolution.
+
+Planned
+
+- File identity persistence
+- Symbol identity persistence
+- Chunk identity persistence
+- Change detection strategy
+- Knowledge invalidation rules
+- Incremental scanner support
+- Incremental parser updates
+- Incremental indexing
+- Incremental chunk regeneration
+- Incremental embedding updates
+
+
+---
+
+## Milestone 11 — External Integration & Production Ready
 
 Status
 
@@ -768,7 +910,6 @@ Goals
 - Plugin system
 - Documentation
 - Release pipeline
-
 ---
 
 # 7. Versioning
@@ -806,7 +947,8 @@ Current ADRs
 
 Planned ADRs
 
-- Persistent Project Knowledge
+- ADR-012 — Persistent Project Knowledge Boundary
+- Incremental Analysis Foundation
 - Incremental Scanner
 - Plugin System
 - Configuration System

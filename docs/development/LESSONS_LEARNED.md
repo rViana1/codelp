@@ -1214,3 +1214,192 @@ Architecture Review: Approved
 Documentation: Completed
 
 Ready for Milestone 10 — Production Ready.
+
+---
+
+# Milestone 10.1 — Persistent Project Knowledge Boundary
+
+## Objective
+
+Introduce the architectural foundation required for persistent project knowledge without coupling storage concerns to the existing analysis pipeline.
+
+This milestone represents the first step towards persistent Codelp knowledge.
+
+The original Milestone 10 combined multiple large objectives:
+
+- persistent project knowledge;
+- external integrations;
+- production readiness;
+- configuration;
+- plugin system;
+- release preparation.
+
+During architecture review, persistent knowledge was identified as a foundational capability that required independent design before production features could be introduced.
+
+The milestone was separated to reduce architectural risk, preserve the completed pipeline and allow persistence concerns to evolve independently.
+
+---
+
+## Reason for Separation from Milestone 10
+
+Persistent project knowledge introduces a fundamental architectural capability.
+
+Unlike previous milestones that enriched the `Project` aggregate during a single execution, persistence requires Codelp to answer new questions:
+
+- what project knowledge should survive between executions;
+- who owns persisted state;
+- how identities are reconstructed;
+- how existing knowledge is loaded and updated;
+- how storage remains independent from the domain.
+
+Introducing these concerns together with external integrations and production features would increase complexity and make architectural validation harder.
+
+A dedicated milestone was created to establish the persistence boundary first.
+
+This allows future milestones to build on a stable foundation without modifying previous architectural decisions.
+
+---
+
+## What Went Well
+
+- The existing Project aggregate remained unchanged as the source of truth.
+- Persistence concerns were introduced without coupling storage to domain models.
+- Existing pipeline responsibilities were preserved.
+- Storage abstractions allowed future implementations without architectural changes.
+- Deterministic identities created a strong foundation for future incremental analysis.
+- Previous milestones remained stable and regression tests continued passing.
+- The architecture review identified persistence boundaries before introducing real storage systems.
+
+---
+
+## Lessons Learned
+
+### Persistence Should Be Designed Around Existing Domain Boundaries
+
+Persistent storage should not become the source of truth.
+
+The `Project` aggregate remains responsible for representing project knowledge.
+
+Persistence is only a mechanism to store and restore that knowledge.
+
+---
+
+### Stable Identity Is a Requirement Before Persistence
+
+Persistent knowledge depends on being able to recognise the same entity across executions.
+
+The identity chain established in previous milestones:
+
+```text
+Source File
+    ↓
+Symbol ID
+    ↓
+Chunk ID
+    ↓
+Embedding Identity
+```
+
+provides the foundation required for future restoration and incremental updates.
+
+---
+
+### Storage Abstraction Should Exist Before Storage Technology
+
+Choosing a database before defining ownership and lifecycle responsibilities would couple the architecture to infrastructure decisions too early.
+
+The correct order is:
+
+```text
+Domain boundary
+
+↓
+
+Storage abstraction
+
+↓
+
+Lifecycle definition
+
+↓
+
+Concrete implementation
+```
+
+---
+
+### Milestone Boundaries Should Follow Architectural Responsibility
+
+Milestones are not only delivery checkpoints.
+
+They are also architectural boundaries.
+
+Separating Persistent Project Knowledge from Production Readiness allows each concern to be validated independently.
+
+---
+
+### Incremental Evolution Is Safer Than Large Architectural Changes
+
+The completed pipeline from Scanner to MCP remained untouched.
+
+The persistence work was introduced as an additional capability instead of modifying existing responsibilities.
+
+This reduces regression risk and preserves previous architectural investments.
+
+---
+
+## Architectural Decisions Reinforced
+
+- Project remains the Aggregate Root.
+- Persistence must remain outside the domain.
+- Storage implementations must be replaceable.
+- Existing pipeline modules remain responsible only for knowledge generation.
+- Persistent knowledge lifecycle requires an explicit architectural boundary.
+- Deterministic identities are mandatory for future incremental analysis.
+
+---
+
+## Future Improvements Identified
+
+### Persistent Knowledge
+
+- Complete project metadata persistence.
+- Persist file identities.
+- Persist symbol identities.
+- Persist chunk identities.
+- Persist embedding metadata.
+- Persist retrieval metadata.
+- Knowledge versioning.
+
+---
+
+### Incremental Analysis
+
+- Detect project changes.
+- Identify affected files.
+- Rebuild only invalidated knowledge.
+- Synchronise changed embeddings.
+- Preserve unchanged identities.
+
+---
+
+### Storage
+
+- Validate serialization strategy.
+- Handle corrupted knowledge state.
+- Introduce persistent storage backend.
+- Support knowledge migration between versions.
+
+---
+
+## Milestone Result
+
+Status: In Progress
+
+Implementation: Partially Completed
+
+Architecture Review: Completed
+
+Documentation: Updated
+
+Prepared for Milestone 10.2 — Persistent Knowledge Lifecycle.
