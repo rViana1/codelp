@@ -36,7 +36,7 @@ The project is designed around **determinism, modularity and testability**, prov
 
 ## Current Status
 
-**Version:** `v0.10.0`
+**Version:** `v0.10.1`
 
 Implemented:
 
@@ -49,9 +49,9 @@ Implemented:
 - Semantic Retrieval Engine
 - Context Builder
 - Model Context Protocol (MCP) integration
+- Persistent project knowledge boundary
 - Full pipeline integration
 - Architecture documentation
-- ADRs (Architecture Decision Records)
 - ADRs (Architecture Decision Records)
 
 Validation:
@@ -160,6 +160,18 @@ The Context Builder prepares structured project knowledge for future LLM consume
 
 ---
 
+### Persistent Project Knowledge
+
+- Persistent knowledge architecture boundary
+- Separation between domain knowledge and storage concerns
+- Stable identity preservation strategy
+- Foundation for project knowledge restoration
+- Preparation for incremental analysis
+
+The persistence layer is designed around existing domain boundaries and does not make storage implementations part of the core architecture.
+
+---
+
 ### MCP Integration
 
 - Model Context Protocol server
@@ -195,7 +207,7 @@ Symbol ID
     ↓
 Chunk ID
     ↓
-Embedding.chunk_id
+Embedding Identity
     ↓
 RetrievalResult.chunk_id
     ↓
@@ -337,28 +349,29 @@ External Tools / IDE Integrations / LLM Consumers
 | Embedding Engine | Completed |
 | Retriever | Completed |
 | Context Builder | Completed |
-| MCP Integration | In Progress |
+| MCP Integration | Completed |
+| Persistent Project Knowledge Boundary | Completed |
 | API / CLI | Planned |
 
 ---
 
 ## Roadmap
 
+The architecture now exposes project knowledge through MCP and establishes the foundation for persistent knowledge lifecycle management while preserving existing pipeline boundaries.
 
-The architecture now exposes project knowledge through MCP while preserving existing pipeline boundaries.
+### Next — Persistent Knowledge Lifecycle
 
-### Next — MCP Integration Improvements
-
-- Model Context Protocol support
-- IDE integration
-- External development tools
-- AI-assisted workflows
+- Project knowledge persistence
+- Knowledge restoration between executions
+- Knowledge versioning
+- Incremental knowledge updates
+- Change detection
+- Synchronisation of updated project knowledge
 
 ### Future
 
 - Multi-language parsing
 - Incremental scanning
-- Persistent project knowledge
 - Retrieval-optimized chunking
 - Cross-file context
 - Distributed indexing
@@ -366,6 +379,9 @@ The architecture now exposes project knowledge through MCP while preserving exis
 - LLM provider integration
 - Prompt generation
 - Context optimisation
+- IDE integration
+- External development tools
+- AI-assisted workflows
 
 ---
 
@@ -388,6 +404,8 @@ Architecture Decision Records:
 - `ADR-008` — Retrieval Engine Abstraction
 - `ADR-009` — Context Builder Abstraction
 - `ADR-010` — Vector Store Lifecycle Management
+- `ADR-011` — MCP Integration Boundary
+- `ADR-012` — Persistent Project Knowledge Boundary
 
 ---
 
