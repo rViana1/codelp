@@ -1,16 +1,21 @@
 from datetime import datetime, timezone
 from pydantic import BaseModel, Field
 
+from app.knowledge.constants import CURRENT_KNOWLEDGE_VERSION
+
 
 class PersistentKnowledgeMetadata(BaseModel):
     project_id: str
+
+    version: str = CURRENT_KNOWLEDGE_VERSION
+
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc)
     )
+
     updated_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc)
     )
-
 
 class PersistentSymbol(BaseModel):
     symbol_id: str

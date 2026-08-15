@@ -30,13 +30,13 @@ MCP Server
 External Tools / IDE Integrations / LLM Consumers
 ```
 
-The project is designed around **determinism, modularity and testability**, providing a strong foundation for semantic search, retrieval-augmented generation (RAG) and persistent project knowledge.
+The project is designed around **determinism, modularity and testability**, providing a strong foundation for semantic search, retrieval-augmented generation (RAG), persistent project knowledge and incremental project understanding.
 
 ---
 
 ## Current Status
 
-**Version:** `v0.10.1`
+**Version:** `v0.10.2`
 
 Implemented:
 
@@ -49,14 +49,15 @@ Implemented:
 - Semantic Retrieval Engine
 - Context Builder
 - Model Context Protocol (MCP) integration
-- Persistent project knowledge boundary
+- Persistent project knowledge lifecycle foundation
+- Pipeline knowledge integration
 - Full pipeline integration
 - Architecture documentation
 - ADRs (Architecture Decision Records)
 
 Validation:
 
-- **175+ automated tests passing**
+- **206+ automated tests passing**
 - Deterministic outputs across executions
 - Stable symbol, chunk, embedding, retrieval and context identities
 
@@ -162,13 +163,14 @@ The Context Builder prepares structured project knowledge for future LLM consume
 
 ### Persistent Project Knowledge
 
-- Persistent knowledge architecture boundary
-- Separation between domain knowledge and storage concerns
-- Stable identity preservation strategy
-- Foundation for project knowledge restoration
-- Preparation for incremental analysis
+- Persistent knowledge lifecycle foundation
+- Project knowledge storage abstraction
+- Knowledge loading and restoration boundaries
+- Separation between runtime project state and persisted knowledge
+- Pipeline integration with persistent knowledge workflows
+- Foundation for future incremental analysis
 
-The persistence layer is designed around existing domain boundaries and does not make storage implementations part of the core architecture.
+The persistence architecture preserves the Project aggregate as the runtime source of truth while allowing project knowledge to evolve across executions.
 
 ---
 
@@ -351,6 +353,8 @@ External Tools / IDE Integrations / LLM Consumers
 | Context Builder | Completed |
 | MCP Integration | Completed |
 | Persistent Project Knowledge Boundary | Completed |
+| Pipeline Knowledge Integration | Completed |
+| Incremental Knowledge Analysis | Planned |
 | API / CLI | Planned |
 
 ---
@@ -359,17 +363,22 @@ External Tools / IDE Integrations / LLM Consumers
 
 The architecture now exposes project knowledge through MCP and establishes the foundation for persistent knowledge lifecycle management while preserving existing pipeline boundaries.
 
-### Next — Persistent Knowledge Lifecycle
+### Next — Incremental Knowledge Analysis
 
-- Project knowledge persistence
-- Knowledge restoration between executions
-- Knowledge versioning
-- Incremental knowledge updates
-- Change detection
-- Synchronisation of updated project knowledge
+- File identity persistence
+- Symbol identity persistence
+- Chunk identity persistence
+- Change detection strategy
+- Knowledge invalidation rules
+- Incremental scanner support
+- Incremental parser updates
+- Incremental indexing
+- Incremental chunk regeneration
+- Incremental embedding updates
 
 ### Future
 
+- Persistent vector database implementations
 - Multi-language parsing
 - Incremental scanning
 - Retrieval-optimized chunking
@@ -406,6 +415,7 @@ Architecture Decision Records:
 - `ADR-010` — Vector Store Lifecycle Management
 - `ADR-011` — MCP Integration Boundary
 - `ADR-012` — Persistent Project Knowledge Boundary
+- `ADR-013` — Pipeline Knowledge Integration
 
 ---
 

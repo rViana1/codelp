@@ -39,7 +39,7 @@ def test_save_and_reload_knowledge(tmp_path):
 
     storage.save(knowledge)
 
-    restored = storage.get(
+    restored = storage.load(
         "test-project"
     )
 
@@ -58,7 +58,7 @@ def test_storage_contains_project(tmp_path):
 
     storage.save(knowledge)
 
-    assert storage.contains(
+    assert storage.exists(
         "test-project"
     )
 
@@ -79,11 +79,11 @@ def test_storage_isolated_between_projects(tmp_path):
     storage.save(project_a)
     storage.save(project_b)
 
-    assert storage.get(
+    assert storage.load(
         "project-a"
     ).metadata.project_id == "project-a"
 
-    assert storage.get(
+    assert storage.load(
         "project-b"
     ).metadata.project_id == "project-b"
 
@@ -97,7 +97,7 @@ def test_delete_project_knowledge(tmp_path):
 
     storage.save(knowledge)
 
-    assert storage.contains(
+    assert storage.exists(
         "test-project"
     )
 
@@ -105,7 +105,7 @@ def test_delete_project_knowledge(tmp_path):
         "test-project"
     )
 
-    assert not storage.contains(
+    assert not storage.exists(
         "test-project"
     )
 
@@ -115,7 +115,7 @@ def test_missing_project_returns_none(tmp_path):
         str(tmp_path)
     )
 
-    result = storage.get(
+    result = storage.load(
         "unknown-project"
     )
 

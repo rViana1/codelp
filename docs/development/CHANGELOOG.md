@@ -10,6 +10,57 @@ Future changes will be documented here.
 
 ---
 
+
+---
+
+## [Milestone 10.2] — Pipeline Knowledge Integration
+
+### Added
+
+- Added knowledge lifecycle orchestration into the analysis pipeline.
+- Added project knowledge loading before analysis execution.
+- Added project knowledge restoration workflow.
+- Added updated project knowledge snapshot generation after analysis.
+- Added automatic persistence of project knowledge after pipeline completion.
+- Added lifecycle coordination through `KnowledgeLifecycleService`.
+- Added PipelineAnalyzer integration with persistent knowledge lifecycle.
+- Added stable project identity restoration between executions.
+
+### Improved
+
+- Preserved existing analysis pipeline responsibilities.
+- Kept Scanner, Parser, Indexer, Chunker and Embedding Engine independent from persistence concerns.
+- Preserved Retriever and Context Builder independence from knowledge storage lifecycle.
+- Improved separation between:
+  - analysis execution;
+  - knowledge lifecycle;
+  - storage implementation.
+- Prepared the architecture for future incremental analysis workflows.
+
+### Architecture
+
+- Added knowledge lifecycle integration boundary.
+- Preserved Project aggregate as the single source of truth.
+- Preserved storage replaceability through existing abstractions.
+- Added ADR-013 — Knowledge Lifecycle Integration Boundary.
+
+### Testing
+
+- Added knowledge lifecycle integration tests.
+- Added pipeline persistence tests.
+- Added project knowledge restoration tests.
+- Added stable identity restoration tests.
+- Added architecture boundary validation tests.
+
+Validation:
+
+- Pipeline knowledge restoration validated.
+- Knowledge persistence workflow validated.
+- Existing pipeline behaviour preserved.
+- Architecture boundaries validated.
+- 225 automated tests passing.
+
+
 ## [Milestone 10.1] — Persistent Project Knowledge Boundary
 
 ### Added

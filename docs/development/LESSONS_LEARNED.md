@@ -1394,12 +1394,172 @@ This reduces regression risk and preserves previous architectural investments.
 
 ## Milestone Result
 
-Status: In Progress
+Status: Completed
 
-Implementation: Partially Completed
+Implementation: Completed
 
 Architecture Review: Completed
 
 Documentation: Updated
 
-Prepared for Milestone 10.2 — Persistent Knowledge Lifecycle.
+Prepared for Milestone 10.2 — Pipeline Knowledge Integration.
+
+---
+
+# Milestone 10.2 — Pipeline Knowledge Integration
+
+## Objective
+
+Integrate persistent project knowledge into the existing analysis pipeline while preserving existing module responsibilities and architectural boundaries.
+
+This milestone connects the Persistent Project Knowledge capability with the execution lifecycle without making persistence a responsibility of individual pipeline components.
+
+The goal was to establish:
+
+- knowledge preparation before analysis;
+- knowledge persistence after analysis;
+- lifecycle ownership independent from storage implementation;
+- compatibility with the existing Scanner → Parser → Indexer → Chunker → Embedding → Retrieval → Context pipeline.
+
+---
+
+## What Went Well
+
+- Persistent knowledge integration was introduced without modifying existing pipeline responsibilities.
+- The Project aggregate remained the source of truth during execution.
+- Knowledge lifecycle management was isolated into a dedicated service.
+- Existing analysis stages remained unaware of persistence concerns.
+- Storage implementations remained replaceable through existing abstractions.
+- The pipeline continued to preserve deterministic behaviour.
+- Existing regression tests remained valid after lifecycle integration.
+- Architecture boundary tests successfully prevented persistence concerns from leaking into unrelated modules.
+
+---
+
+## Lessons Learned
+
+### Lifecycle Ownership Should Be Explicit
+
+Persistence requires clear ownership of when knowledge is:
+
+- loaded;
+- prepared;
+- updated;
+- persisted.
+
+Introducing a dedicated lifecycle service avoided spreading persistence decisions across multiple pipeline stages.
+
+---
+
+### The Pipeline Should Not Know About Storage
+
+The analysis pipeline should coordinate knowledge generation, not persistence details.
+
+The correct dependency direction remains:
+
+```text
+Pipeline
+↓
+Knowledge Lifecycle
+↓
+Knowledge Storage Abstraction
+↓
+Storage Implementation
+```
+
+
+This keeps future storage migrations independent from pipeline evolution.
+
+---
+
+### Optional Capabilities Should Preserve Existing Behaviour
+
+Persistent knowledge integration was introduced as an additional capability.
+
+The pipeline continues to operate correctly when persistence services are not provided.
+
+This avoids forcing infrastructure concerns into the core execution flow.
+
+---
+
+### Architecture Tests Protect Long-Term Design
+
+Functional tests validate behaviour.
+
+Architecture tests validate boundaries.
+
+Both are required to prevent future changes from accidentally coupling:
+
+- domain;
+- pipeline;
+- persistence;
+- storage implementations.
+
+---
+
+### Compatibility Is More Valuable Than Immediate Optimisation
+
+The first integration focused on establishing correct ownership and boundaries.
+
+Optimisations such as:
+
+- selective restoration;
+- incremental updates;
+- partial pipeline execution;
+
+remain future concerns after the architecture is stable.
+
+---
+
+## Architectural Decisions Reinforced
+
+- Project remains the Aggregate Root.
+- Pipeline modules remain responsible only for knowledge generation.
+- Persistence lifecycle belongs to a dedicated application service.
+- Storage remains replaceable through abstraction.
+- Domain remains independent from persistence concerns.
+- Existing deterministic identity strategy is preserved.
+
+---
+
+## Future Improvements Identified
+
+### Incremental Analysis
+
+- Detect changed project components.
+- Reuse persisted knowledge.
+- Invalidate affected knowledge selectively.
+- Rebuild only required pipeline stages.
+
+### Knowledge Evolution
+
+- Persist file identities.
+- Persist symbol identities.
+- Persist chunk identities.
+- Persist embedding metadata.
+- Persist retrieval metadata.
+- Introduce knowledge versioning.
+
+### Storage
+
+- Improve persistence backend capabilities.
+- Add migration strategies.
+- Handle incompatible knowledge versions.
+
+---
+
+## Milestone Result
+
+Status: Completed
+
+Implementation: Completed
+
+Tests: Passed
+
+Architecture Review: Completed
+
+Code Review: Completed
+
+Documentation: Completed
+
+Ready for Milestone 10.3 — Incremental Analysis Foundation.

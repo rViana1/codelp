@@ -865,7 +865,63 @@ Validation
 
 ---
 
-## Milestone 10.2 — Incremental Analysis Foundation
+## Milestone 10.2 — Pipeline Knowledge Integration
+
+Status
+
+Completed
+
+Goals
+
+- Integrate persistent project knowledge into the analysis lifecycle.
+- Restore previous project knowledge before analysis execution.
+- Preserve existing pipeline module responsibilities.
+- Generate updated knowledge snapshots after analysis.
+- Persist project knowledge independently from storage implementation.
+
+Implemented
+
+- Knowledge lifecycle orchestration
+- Knowledge loading before pipeline execution
+- Project knowledge restoration
+- Existing pipeline execution preservation
+- Knowledge snapshot generation after analysis
+- Knowledge persistence after analysis completion
+- Pipeline integration through PipelineAnalyzer
+- Storage-independent persistence workflow
+- Stable project identity restoration
+
+Architecture Validation
+
+- Scanner remains independent from persistence
+- Parser remains independent from persistence
+- Indexer remains independent from persistence
+- Chunker remains independent from persistence
+- Embedding Engine remains independent from persistence
+- Retriever remains independent from persistence
+- Context Builder remains independent from persistence
+- Project remains the Aggregate Root
+- Persistence lifecycle remains separated from storage implementation
+
+Tests
+
+- Pipeline knowledge integration tests
+- Knowledge restoration tests
+- Identity preservation tests
+- Architecture boundary tests
+- Full regression suite passing
+
+Validation
+
+- Pipeline lifecycle validated
+- Knowledge restoration validated
+- Knowledge persistence validated
+- Existing analysis pipeline preserved
+- 225 automated tests passing
+
+---
+
+## Milestone 10.3 — Incremental Analysis Foundation
 
 Status
 
@@ -880,9 +936,6 @@ Goals
 
 Planned
 
-- File identity persistence
-- Symbol identity persistence
-- Chunk identity persistence
 - Change detection strategy
 - Knowledge invalidation rules
 - Incremental scanner support
@@ -890,7 +943,7 @@ Planned
 - Incremental indexing
 - Incremental chunk regeneration
 - Incremental embedding updates
-
+- Knowledge migration between versions
 
 ---
 
@@ -944,12 +997,16 @@ Current ADRs
 - ADR-009 — Context Builder Abstraction
 - ADR-010 — Vector Store Lifecycle Management
 - ADR-011 — MCP Integration Boundary
+- ADR-012 — Persistent Project Knowledge Boundary
+- ADR-013 — Knowledge Lifecycle Integration Boundary
 
 Planned ADRs
 
-- ADR-012 — Persistent Project Knowledge Boundary
-- Incremental Analysis Foundation
-- Incremental Scanner
+Planned ADRs
+
+- ADR-014 — Incremental Change Detection Strategy
+- ADR-015 — Knowledge Invalidation Model
+- ADR-016 — Incremental Pipeline Execution Strategy
 - Plugin System
 - Configuration System
 - Multi-language Support

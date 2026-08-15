@@ -185,5 +185,7 @@ class Project(BaseModel):
     retrieval_result: object | None = None
     
     context_result: object | None = None
+    
+    knowledge_state: object | None = None
 
     diagnostics: list[str] = Field(default_factory=list)

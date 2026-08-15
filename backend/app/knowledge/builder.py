@@ -14,6 +14,7 @@ class KnowledgeBuilder:
     def build(
         self,
         project: Project,
+        previous: PersistentProjectKnowledge | None = None,
     ) -> PersistentProjectKnowledge:
 
         project_id = self._create_project_id(
@@ -23,6 +24,7 @@ class KnowledgeBuilder:
         return KnowledgeMapper.from_project(
             project,
             project_id=project_id,
+            previous=previous,
         )
 
 

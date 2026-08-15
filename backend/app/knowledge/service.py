@@ -26,7 +26,7 @@ class KnowledgeService:
         project_id: str,
     ) -> PersistentProjectKnowledge | None:
 
-        return self.storage.get(
+        return self.storage.load(
             project_id
         )
 
@@ -36,7 +36,7 @@ class KnowledgeService:
         project_id: str,
     ) -> bool:
 
-        return self.storage.contains(
+        return self.storage.exists(
             project_id
         )
 

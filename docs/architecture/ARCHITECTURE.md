@@ -2,7 +2,7 @@
 
 > **Version:** 2.0
 > **Status:** In Development  
-> **Last Updated:** Milestone 10.1 — Persistent Project Knowledge Boundary
+> **Last Updated:** Milestone 10.2 — Pipeline Knowledge Integration
 
 ---
 
@@ -500,6 +500,67 @@ Future improvements
 
 ---
 
+## Persistent Project Knowledge
+
+Responsible for managing the lifecycle of persisted project knowledge.
+
+Persistent Project Knowledge is an external representation of analysed project state.
+
+The persistence layer does not replace the Project aggregate.
+
+The runtime Project remains the source of truth during execution.
+
+Responsibilities
+
+- prepare project knowledge before analysis;
+- persist analysed project knowledge;
+- restore previously persisted knowledge;
+- coordinate persistence lifecycle;
+- maintain storage independence.
+
+Outputs
+
+- PersistentProjectKnowledge
+
+Current implementation
+
+- Knowledge lifecycle service
+- Knowledge storage abstraction
+
+Architecture rules
+
+The Persistent Project Knowledge layer:
+
+- does not modify domain behaviour;
+- does not bypass application services;
+- does not become the source of truth;
+- does not couple the domain to storage technology.
+
+The dependency direction remains:
+
+Analysis Pipeline
+
+↓
+
+Knowledge Lifecycle
+
+↓
+
+Knowledge Storage Abstraction
+
+↓
+
+Storage Implementation
+
+Future improvements
+
+- incremental knowledge updates;
+- persisted identity reconstruction;
+- knowledge versioning;
+- selective restoration.
+
+---
+
 # 6. Domain Model
 
 The central entity of the architecture is the Project aggregate root.
@@ -538,6 +599,8 @@ Project
 │   ├── query
 │   └── chunks
 
+├── knowledge_state
+
 └── diagnostics
 
 The domain is implemented in `backend/core/project`.
@@ -565,6 +628,10 @@ Examples
 # 7. Data Flow
 
 Repository
+
+↓
+
+Knowledge Lifecycle
 
 ↓
 
@@ -616,7 +683,15 @@ Context Builder
 
 ↓
 
-LLM
+Project
+
+↓
+
+Knowledge Lifecycle
+
+↓
+
+Knowledge Storage
 
 ---
 
@@ -635,6 +710,8 @@ LLM
 - app.context → core.project
 - app.mcp → application services
 - app.mcp → core.project
+- app.knowledge → core.project
+- app.pipeline → app.knowledge
 
 ## Forbidden dependencies
 
@@ -705,7 +782,7 @@ This representation is:
 - JSON-friendly
 - persistence-friendly
 - independent from the scanner implementation
-'''
+
 ---
 
 # 11. Chunk Identity
@@ -778,8 +855,19 @@ Current validation
 - MCP resilience tests
 - MCP architecture boundary tests
 - Pipeline integration tests
+- Knowledge lifecycle tests
+- Knowledge storage contract tests
+- Persistence boundary tests
+- Architecture boundary tests
 
-Current total: 175 passing automated tests.
+Current validation includes:
+
+- Pipeline regression tests
+- Knowledge lifecycle tests
+- Knowledge storage tests
+- Architecture boundary tests
+
+Current total: 225 passing automated tests.
 
 ---
 
@@ -827,10 +915,11 @@ Current ADRs
 - ADR-009 — Context Builder Abstraction
 - ADR-010 — Vector Store Lifecycle Management
 - ADR-011 — MCP Integration Boundary
+- ADR-012 — Persistent Project Knowledge Boundary
+- ADR-013 — Pipeline Knowledge Integration
 
 Future ADRs
 
-- ADR-012 — Persistent Project Knowledge Boundary
 - Incremental Scanner
 - Plugin System
 - Cache
@@ -868,7 +957,9 @@ Planned architectural improvements include
 
 Persistent Project Knowledge was intentionally divided into multiple milestones.
 
-Milestone 10.1 establishes the architectural boundary between the active analysis pipeline and persistent knowledge storage.
+Milestone 10.1 established the architectural boundary between the active analysis pipeline and persistent knowledge storage.
+
+Milestone 10.2 integrated the persistent knowledge lifecycle into the analysis execution flow without coupling pipeline components to persistence concerns.
 
 This milestone introduces the foundations required for persistence:
 
@@ -886,6 +977,13 @@ The following milestones will extend this foundation with:
 - persistent identity reconstruction.
 
 This separation avoids coupling unfinished persistence behaviour into the existing pipeline and preserves the stability achieved by previous milestones.
+
+Milestone 10.2 introduced:
+
+- knowledge lifecycle coordination;
+- pipeline preparation and finalization hooks;
+- persistence lifecycle independence from storage implementation;
+- architecture validation for persistence boundaries.
 
 ---
 
@@ -937,9 +1035,50 @@ The persistence boundary exists to allow knowledge produced by the analysis pipe
 
 The first implementation phase focuses on defining ownership and boundaries.
 
-Serialization, restoration and incremental synchronisation are intentionally deferred to future milestones.
+Serialization and restoration strategies are still evolving and remain isolated behind the knowledge lifecycle boundary.
+
+Incremental synchronisation is intentionally deferred to future milestones.
 
 ---
+
+# 17.2 Pipeline Knowledge Integration
+
+Persistent Project Knowledge is integrated into the execution lifecycle through a dedicated knowledge lifecycle service.
+
+The pipeline does not directly manage persistence.
+
+The execution flow is:
+
+```text
+Prepare Knowledge
+
+↓
+
+Analyse Project
+
+↓
+
+Update Project State
+
+↓
+
+Persist Knowledge
+```
+
+The lifecycle service coordinates persistence operations while keeping:
+
+- Scanner responsibility unchanged;
+- Parser responsibility unchanged;
+- Indexer responsibility unchanged;
+- Chunker responsibility unchanged;
+- Embedding responsibility unchanged;
+- Retrieval responsibility unchanged;
+- Context Builder responsibility unchanged.
+
+This design preserves the modular pipeline architecture and prepares the foundation for future incremental analysis.
+
+---
+
 # 18. Engineering Philosophy
 
 Codelp is designed as an engineering platform rather than a collection of utilities.
