@@ -61,7 +61,7 @@ def create_analyzer(
     )
 
 
-def test_pipeline_preserves_file_identity_after_restore(
+def test_pipeline_preserves_knowledge_identity_after_restore(
     tmp_path: Path,
 ):
 
@@ -98,10 +98,23 @@ def test_pipeline_preserves_file_identity_after_restore(
         "project"
     )
 
+    assert first_knowledge is not None
+
+    assert len(first_knowledge.files) == 1
+    assert len(first_knowledge.symbols) == 1
+    assert len(first_knowledge.chunks) == 1
+
     first_file_id = (
         first_knowledge.files[0].file_id
     )
 
+    first_symbol_id = (
+        first_knowledge.symbols[0].symbol_id
+    )
+
+    first_chunk_id = (
+        first_knowledge.chunks[0].chunk_id
+    )
 
     second_project = create_project(
         project_path
@@ -115,9 +128,24 @@ def test_pipeline_preserves_file_identity_after_restore(
         "project"
     )
 
+    assert second_knowledge is not None
+
+    assert len(second_knowledge.files) == 1
+    assert len(second_knowledge.symbols) == 1
+    assert len(second_knowledge.chunks) == 1
+
     second_file_id = (
         second_knowledge.files[0].file_id
     )
 
+    second_symbol_id = (
+        second_knowledge.symbols[0].symbol_id
+    )
+
+    second_chunk_id = (
+        second_knowledge.chunks[0].chunk_id
+    )
 
     assert first_file_id == second_file_id
+    assert first_symbol_id == second_symbol_id
+    assert first_chunk_id == second_chunk_id

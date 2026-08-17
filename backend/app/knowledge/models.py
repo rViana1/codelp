@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+
 from pydantic import BaseModel, Field
 
 from app.knowledge.constants import CURRENT_KNOWLEDGE_VERSION
@@ -16,6 +17,30 @@ class PersistentKnowledgeMetadata(BaseModel):
     updated_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc)
     )
+
+
+class PersistentProjectConfiguration(BaseModel):
+    """
+    Represents the persisted configuration of a project.
+
+    Only stable configuration values are persisted.
+    Runtime analysis state is intentionally excluded.
+    """
+
+    follow_symlinks: bool = False
+
+    ignore_hidden: bool = True
+
+    max_file_size_bytes: int = 5 * 1024 * 1024
+
+    ignored_directories: set[str] = Field(
+        default_factory=set
+    )
+
+    ignored_extensions: set[str] = Field(
+        default_factory=set
+    )
+
 
 class PersistentSymbol(BaseModel):
     symbol_id: str
@@ -41,6 +66,7 @@ class PersistentRetrievalMetadata(BaseModel):
     chunk_id: str
     query_hash: str
     score: float
+
 
 class PersistentFileIdentity(BaseModel):
     """
@@ -81,9 +107,14 @@ class PersistentChunkIdentity(BaseModel):
 
     content_hash: str
 
+
 class PersistentProjectKnowledge(BaseModel):
 
     metadata: PersistentKnowledgeMetadata
+
+    configuration: PersistentProjectConfiguration = Field(
+        default_factory=PersistentProjectConfiguration
+    )
 
     files: list[PersistentFileIdentity] = Field(
         default_factory=list

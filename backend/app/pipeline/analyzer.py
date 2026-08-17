@@ -55,7 +55,7 @@ class PipelineAnalyzer:
         """
 
         if self.knowledge_lifecycle is not None:
-            self.knowledge_lifecycle.prepare(
+            project = self.knowledge_lifecycle.prepare(
                 project
             )
 

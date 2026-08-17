@@ -42,7 +42,7 @@ class KnowledgeLifecycleService:
         project_id = project.metadata.root_path.name
 
         knowledge = self.loader.load(
-            project_id
+            project_id,
         )
 
         if knowledge is None:

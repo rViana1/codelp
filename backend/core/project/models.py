@@ -14,6 +14,13 @@ from pathlib import Path
 
 from pydantic import BaseModel, Field
 
+from typing import TYPE_CHECKING
+
+from core.project.knowledge import ProjectKnowledgeState
+
+if TYPE_CHECKING:
+    from core.project.persistence import ProjectPersistentState
+
 class ProjectMetadata(BaseModel):
     """
     Describes immutable and descriptive information about a software project.
@@ -186,6 +193,23 @@ class Project(BaseModel):
     
     context_result: object | None = None
     
-    knowledge_state: object | None = None
+    knowledge_state: ProjectKnowledgeState | None = None
 
     diagnostics: list[str] = Field(default_factory=list)
+    
+    def export_persistent_state(
+        self,
+    ) -> "ProjectPersistentState":
+        """
+        Exports the portion of the Project aggregate that is
+        eligible for persistence.
+
+        Runtime analysis objects are intentionally excluded.
+        """
+
+        from core.project.persistence import ProjectPersistentState
+
+        return ProjectPersistentState(
+            metadata=self.metadata,
+            configuration=self.configuration,
+        )

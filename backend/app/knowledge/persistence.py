@@ -50,8 +50,15 @@ class KnowledgePersistenceService:
         Creates, normalizes and persists project knowledge.
         """
 
+        project_id = project.metadata.root_path.name
+
+        previous = self.storage.load(
+            project_id
+        )
+
         knowledge = self.builder.build(
-            project
+            project,
+            previous=previous,
         )
 
         knowledge = self.normalizer.normalize(

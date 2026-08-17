@@ -9,13 +9,11 @@ def test_storage_does_not_depend_on_project_domain():
     They must not depend directly on Project aggregate.
     """
 
+    project_root = Path(__file__).resolve().parents[3]
+
     storage_files = [
-        Path(
-            "backend/app/knowledge/storage.py"
-        ),
-        Path(
-            "backend/app/knowledge/file_storage.py"
-        ),
+        project_root / "backend/app/knowledge/storage.py",
+        project_root / "backend/app/knowledge/file_storage.py",
     ]
 
     for file in storage_files:
