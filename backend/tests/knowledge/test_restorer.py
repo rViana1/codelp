@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from backend.app.knowledge.parser_mapper import ParserKnowledgeMapper
+from backend.tests.core import project
 from core.project import Project, ProjectMetadata, ProjectConfiguration
 
 from app.knowledge.models import (

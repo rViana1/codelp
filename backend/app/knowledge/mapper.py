@@ -13,6 +13,7 @@ from app.knowledge.index_mapper import IndexKnowledgeMapper
 from app.knowledge.chunk_mapper import ChunkKnowledgeMapper
 from app.knowledge.embedding_mapper import EmbeddingKnowledgeMapper
 from app.knowledge.retrieval_mapper import RetrievalKnowledgeMapper
+from app.knowledge.hash import FileContentHasher
 
 
 class KnowledgeMapper:
@@ -107,7 +108,12 @@ class KnowledgeMapper:
             else:
 
                 file_id = path_str
-                content_hash = ""
+
+                content_hash = (
+                    FileContentHasher.hash_file(path)
+                    if path.exists()
+                    else ""
+                )
 
             file_identity_map[path_str] = file_id
 
