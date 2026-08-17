@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from app.knowledge.constants import CURRENT_KNOWLEDGE_VERSION
+from app.knowledge.compatibility import (
+    KnowledgeSchemaCompatibility,
+)
 from app.knowledge.models import PersistentProjectKnowledge
 from app.knowledge.storage import KnowledgeStorage
 
@@ -18,6 +20,7 @@ class KnowledgeLoader:
         storage: KnowledgeStorage,
     ) -> None:
         self.storage = storage
+
 
     def load(
         self,
@@ -56,12 +59,19 @@ class KnowledgeLoader:
         self,
         knowledge: PersistentProjectKnowledge,
     ) -> None:
+        """
+        Validates that stored knowledge schema
+        can be consumed safely.
+        """
 
-        if (
+        version = (
             knowledge.metadata.version
-            != CURRENT_KNOWLEDGE_VERSION
+        )
+
+        if not KnowledgeSchemaCompatibility.is_compatible(
+            version
         ):
             raise ValueError(
                 "Unsupported knowledge version: "
-                f"{knowledge.metadata.version}"
+                f"{version}"
             )

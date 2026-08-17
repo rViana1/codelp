@@ -1,15 +1,19 @@
 from __future__ import annotations
 
-from app.knowledge.constants import CURRENT_KNOWLEDGE_VERSION
 from app.knowledge.models import PersistentProjectKnowledge
+from app.knowledge.schema import is_supported_version
+
 from backend.app.knowledge.errors import KnowledgeValidationError
-from backend.app.knowledge.validation_codes import KNOWLEDGE_UNSUPPORTED_VERSION
+from backend.app.knowledge.validation_codes import (
+    KNOWLEDGE_UNSUPPORTED_VERSION,
+)
 
 
 class KnowledgeValidator:
     """
     Validates persisted project knowledge consistency.
     """
+
 
     def validate(
         self,
@@ -19,79 +23,124 @@ class KnowledgeValidator:
         Validates knowledge invariants.
         """
 
-        if (
+
+        self._validate_schema_version(
+            knowledge
+        )
+
+        self._validate_metadata(
+            knowledge
+        )
+
+        self._validate_identity_references(
+            knowledge
+        )
+
+        self._validate_required_fields(
+            knowledge
+        )
+
+
+    def _validate_schema_version(
+        self,
+        knowledge: PersistentProjectKnowledge,
+    ) -> None:
+
+        if not is_supported_version(
             knowledge.metadata.version
-            != CURRENT_KNOWLEDGE_VERSION
         ):
             raise KnowledgeValidationError(
                 KNOWLEDGE_UNSUPPORTED_VERSION,
                 "Unsupported knowledge version",
             )
-            
+
+
+    def _validate_metadata(
+        self,
+        knowledge: PersistentProjectKnowledge,
+    ) -> None:
+
         if not knowledge.metadata.project_id:
             raise ValueError(
                 "Knowledge requires project_id"
             )
 
-        file_ids = [
+
+    def _validate_identity_references(
+        self,
+        knowledge: PersistentProjectKnowledge,
+    ) -> None:
+
+        file_ids = {
             file.file_id
             for file in knowledge.files
-        ]
+        }
 
-        if len(file_ids) != len(set(file_ids)):
+
+        symbol_ids = {
+            symbol.symbol_id
+            for symbol in knowledge.symbols
+        }
+
+
+        chunk_ids = {
+            chunk.chunk_id
+            for chunk in knowledge.chunks
+        }
+
+
+        if len(file_ids) != len(knowledge.files):
             raise ValueError(
                 "Duplicate file identities detected"
             )
 
-        file_id_set = set(file_ids)
 
-        symbol_ids = [
-            symbol.symbol_id
-            for symbol in knowledge.symbols
-        ]
-
-        if len(symbol_ids) != len(set(symbol_ids)):
+        if len(symbol_ids) != len(knowledge.symbols):
             raise ValueError(
                 "Duplicate symbol identities detected"
             )
 
-        for symbol in knowledge.symbols:
-            if symbol.file_id not in file_id_set:
-                raise ValueError(
-                    "Symbol references unknown file identity"
-                )
 
-        symbol_id_set = set(symbol_ids)
-
-        chunk_ids = [
-            chunk.chunk_id
-            for chunk in knowledge.chunks
-        ]
-
-        if len(chunk_ids) != len(set(chunk_ids)):
+        if len(chunk_ids) != len(knowledge.chunks):
             raise ValueError(
                 "Duplicate chunk identities detected"
             )
 
+
+        for symbol in knowledge.symbols:
+            if symbol.file_id not in file_ids:
+                raise ValueError(
+                    "Symbol references unknown file identity"
+                )
+
+
         for chunk in knowledge.chunks:
-            if chunk.symbol_id not in symbol_id_set:
+            if chunk.symbol_id not in symbol_ids:
                 raise ValueError(
                     "Chunk references unknown symbol identity"
                 )
-                
-        chunk_id_set = set(chunk_ids)
+
 
         for embedding in knowledge.embeddings:
-            if embedding.chunk_id not in chunk_id_set:
+            if embedding.chunk_id not in chunk_ids:
                 raise ValueError(
                     "Embedding references unknown chunk identity"
                 )
-                
+
+
         for retrieval in knowledge.retrieval:
-            if retrieval.chunk_id not in chunk_id_set:
+            if retrieval.chunk_id not in chunk_ids:
                 raise ValueError(
                     "Retrieval references unknown chunk identity"
                 )
+
+
+    def _validate_required_fields(
+        self,
+        knowledge: PersistentProjectKnowledge,
+    ) -> None:
+
+
         for file in knowledge.files:
 
             if not file.file_id:
@@ -102,6 +151,11 @@ class KnowledgeValidator:
             if not file.path:
                 raise ValueError(
                     "File requires path"
+                )
+
+            if not file.content_hash:
+                raise ValueError(
+                    "File requires content hash"
                 )
 
 
@@ -128,13 +182,6 @@ class KnowledgeValidator:
             if not chunk.content_hash:
                 raise ValueError(
                     "Chunk requires content hash"
-                )
-                
-        for file in knowledge.files:
-
-            if not file.content_hash:
-                raise ValueError(
-                    "File requires content hash"
                 )
 
 
@@ -172,20 +219,15 @@ class KnowledgeValidator:
                 raise ValueError(
                     "Retrieval score cannot be negative"
                 )
-                
+
+
     def validate_project_identity(
         self,
         project_id: str,
         knowledge: PersistentProjectKnowledge,
     ) -> None:
-        """
-        Validates that persisted knowledge belongs to the project.
-        """
 
-        if (
-            knowledge.metadata.project_id
-            != project_id
-        ):
+        if knowledge.metadata.project_id != project_id:
             raise ValueError(
                 "Knowledge belongs to a different project"
             )
