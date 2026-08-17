@@ -124,11 +124,9 @@ class FileKnowledgeStorage(KnowledgeStorage):
         except (
             json.JSONDecodeError,
             ValidationError,
-        ) as exc:
+        ):
 
-            raise KnowledgeCorruptedError(
-                "Stored knowledge is invalid"
-            ) from exc
+            return None
 
         return self.normalizer.normalize(
             knowledge
