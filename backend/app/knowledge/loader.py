@@ -6,6 +6,7 @@ from app.knowledge.compatibility import (
 from app.knowledge.models import PersistentProjectKnowledge
 from app.knowledge.storage import KnowledgeStorage
 
+from app.knowledge.validator import KnowledgeValidator
 
 class KnowledgeLoader:
     """
@@ -18,8 +19,16 @@ class KnowledgeLoader:
     def __init__(
         self,
         storage: KnowledgeStorage,
+        validator: KnowledgeValidator | None = None,
     ) -> None:
+
         self.storage = storage
+
+        self.validator = (
+            validator
+            if validator is not None
+            else KnowledgeValidator()
+        )
 
 
     def load(
@@ -49,6 +58,10 @@ class KnowledgeLoader:
 
 
         self._validate_version(
+            knowledge
+        )
+
+        self.validator.validate(
             knowledge
         )
 

@@ -103,17 +103,17 @@ class KnowledgeMapper:
             if existing:
 
                 file_id = existing.file_id
-                content_hash = existing.content_hash
 
             else:
 
                 file_id = path_str
 
-                content_hash = (
-                    FileContentHasher.hash_file(path)
-                    if path.exists()
-                    else ""
-                )
+
+            content_hash = (
+                FileContentHasher.hash_file(path)
+                if path.exists()
+                else ""
+            )
 
             file_identity_map[path_str] = file_id
 
