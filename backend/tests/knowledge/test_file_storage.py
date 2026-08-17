@@ -1,3 +1,4 @@
+import json
 from app.knowledge.file_storage import FileKnowledgeStorage
 from app.knowledge.models import (
     PersistentKnowledgeMetadata,
@@ -120,3 +121,100 @@ def test_missing_project_returns_none(tmp_path):
     )
 
     assert result is None
+    
+def test_storage_serialization_is_deterministic(
+    tmp_path,
+):
+    storage = FileKnowledgeStorage(
+        str(tmp_path)
+    )
+
+    knowledge = create_knowledge()
+
+    storage.save(
+        knowledge
+    )
+
+    first_content = (
+        tmp_path / "test-project.json"
+    ).read_text(
+        encoding="utf-8"
+    )
+
+    storage.save(
+        knowledge
+    )
+
+    second_content = (
+        tmp_path / "test-project.json"
+    ).read_text(
+        encoding="utf-8"
+    )
+
+    assert first_content == second_content
+
+
+
+def test_storage_normalizes_collection_order(
+    tmp_path,
+):
+    storage = FileKnowledgeStorage(
+        str(tmp_path)
+    )
+
+    knowledge = create_knowledge()
+
+    knowledge.symbols = list(
+        reversed(
+            knowledge.symbols
+        )
+    )
+
+    knowledge.chunks = list(
+        reversed(
+            knowledge.chunks
+        )
+    )
+
+    storage.save(
+        knowledge
+    )
+
+    restored = storage.load(
+        "test-project"
+    )
+
+    assert restored is not None
+
+    assert (
+        restored.symbols[0].symbol_id
+        ==
+        "src/main.py::hello"
+    )
+
+    assert (
+        restored.chunks[0].chunk_id
+        ==
+        "chunk-001"
+    )
+    
+def test_atomic_write_does_not_leave_temporary_files(
+    tmp_path,
+):
+    storage = FileKnowledgeStorage(
+        str(tmp_path)
+    )
+
+    knowledge = create_knowledge()
+
+    storage.save(
+        knowledge
+    )
+
+    assert (
+        tmp_path / "test-project.json"
+    ).exists()
+
+    assert not (
+        tmp_path / "test-project.json.tmp"
+    ).exists()

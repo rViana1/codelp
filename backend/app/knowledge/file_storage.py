@@ -1,8 +1,16 @@
 import json
+import os
 from pathlib import Path
 
+from pydantic import ValidationError
+
+from .exceptions import (
+    KnowledgeCorruptedError,
+    KnowledgeWriteError,
+)
 from .interfaces import KnowledgeStorage
 from .models import PersistentProjectKnowledge
+from .normalizer import KnowledgeNormalizer
 
 
 class FileKnowledgeStorage(KnowledgeStorage):
@@ -15,9 +23,15 @@ class FileKnowledgeStorage(KnowledgeStorage):
     def __init__(
         self,
         base_path: str,
+        normalizer: KnowledgeNormalizer | None = None,
     ) -> None:
 
         self.base_path = Path(base_path)
+
+        self.normalizer = (
+            normalizer
+            or KnowledgeNormalizer()
+        )
 
         self.base_path.mkdir(
             parents=True,
@@ -38,16 +52,50 @@ class FileKnowledgeStorage(KnowledgeStorage):
         knowledge: PersistentProjectKnowledge,
     ) -> None:
 
-        path = self._project_path(
-            knowledge.metadata.project_id
+        normalized = self.normalizer.normalize(
+            knowledge
         )
 
-        path.write_text(
-            knowledge.model_dump_json(
-                indent=4
-            ),
-            encoding="utf-8",
+        path = self._project_path(
+            normalized.metadata.project_id
         )
+
+        temporary_path = path.with_suffix(
+            ".json.tmp"
+        )
+
+        content = normalized.model_dump_json(
+            indent=4
+        )
+
+        try:
+            with temporary_path.open(
+                "w",
+                encoding="utf-8",
+            ) as file:
+
+                file.write(
+                    content
+                )
+
+                file.flush()
+
+                os.fsync(
+                    file.fileno()
+                )
+
+            temporary_path.replace(
+                path
+            )
+
+        except OSError as exc:
+
+            if temporary_path.exists():
+                temporary_path.unlink()
+
+            raise KnowledgeWriteError(
+                "Failed to persist knowledge safely"
+            ) from exc
 
 
     def load(
@@ -62,14 +110,28 @@ class FileKnowledgeStorage(KnowledgeStorage):
         if not path.exists():
             return None
 
-        data = json.loads(
-            path.read_text(
-                encoding="utf-8"
+        try:
+            data = json.loads(
+                path.read_text(
+                    encoding="utf-8"
+                )
             )
-        )
 
-        return PersistentProjectKnowledge(
-            **data
+            knowledge = PersistentProjectKnowledge(
+                **data
+            )
+
+        except (
+            json.JSONDecodeError,
+            ValidationError,
+        ) as exc:
+
+            raise KnowledgeCorruptedError(
+                "Stored knowledge is invalid"
+            ) from exc
+
+        return self.normalizer.normalize(
+            knowledge
         )
 
 
@@ -94,11 +156,11 @@ class FileKnowledgeStorage(KnowledgeStorage):
 
         if path.exists():
             path.unlink()
-            
-    
+
+
     def contains(
         self,
-        project_id: str
+        project_id: str,
     ) -> bool:
         """
         Checks if project knowledge exists.
