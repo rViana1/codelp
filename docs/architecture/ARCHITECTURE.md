@@ -2,7 +2,7 @@
 
 > **Version:** 2.0
 > **Status:** In Development  
-> **Last Updated:** Milestone 10.3 — Knowledge Persistence Foundation
+> **Last Updated:** Milestone 10.4 — Persistent Identity & Incremental Knowledge
 
 ---
 
@@ -613,7 +613,10 @@ Future improvements:
 - incremental knowledge updates;
 - persisted identity reconstruction;
 - knowledge versioning;
-- selective restoration.
+- selective restoration;
+- historical project evolution tracking;
+- identity tracking across file moves and renames;
+- intelligent change detection.
 
 ---
 
@@ -1001,6 +1004,7 @@ Current ADRs
 - ADR-011 — MCP Integration Boundary
 - ADR-012 — Persistent Project Knowledge Boundary
 - ADR-013 — Pipeline Knowledge Integration
+- ADR-014 — Persistent Entity Identity & Evolution Tracking
 
 Future ADRs
 
@@ -1036,6 +1040,12 @@ Planned architectural improvements include
 - MCP transport implementation
 - IDE integrations
 - external AI client support
+- persistent entity identity tracking
+- file evolution history
+- move and rename detection
+- duplicate entity detection
+- intelligent change detection
+- incremental analysis pipeline
 
 ## Persistent Knowledge Evolution
 
@@ -1096,6 +1106,12 @@ The identifier is calculated by the Indexer and is not stored directly in parser
 
 This decision keeps the parser independent from indexing concerns while providing a stable foundation for future reference graphs, retrieval and navigation.
 
+Future identity evolution will separate symbol identity from file location identity.
+
+Symbol identifiers must remain associated with persistent file identities rather than relying exclusively on physical paths.
+
+This allows symbol continuity across file moves, renames and incremental knowledge updates.
+
 ---
 
 # 17.1 Persistent Project Knowledge Boundary
@@ -1123,7 +1139,117 @@ Incremental synchronisation is intentionally deferred to future milestones.
 
 ---
 
-# 17.2 Pipeline Knowledge Integration
+# 17.2 Persistent Entity Identity & Evolution Tracking
+
+Persistent knowledge does not identify project entities only by their current physical location.
+
+Codelp separates:
+
+- entity identity;
+- physical location;
+- historical evolution;
+- current content state.
+
+A file is treated as a persistent entity that can survive changes in its location.
+
+The system does not assume that a path represents identity.
+
+A path represents only the current known location of an entity.
+
+The identity layer is responsible for maintaining continuity between executions.
+
+## Identity Principles
+
+Persistent identities must be:
+
+- deterministic;
+- stable across executions;
+- independent from physical paths;
+- preserved after moves and renames when confidence is sufficient;
+- compatible with future incremental analysis.
+
+The identity model applies to:
+
+- files;
+- symbols;
+- chunks;
+- embeddings;
+- other persistent knowledge entities.
+
+## File Identity Strategy
+
+File tracking uses multiple signals instead of relying on a single identifier.
+
+The identity resolution process considers:
+
+- previous known identity;
+- current location;
+- content fingerprint;
+- historical locations;
+- structural information.
+
+The objective is to determine whether a current file represents:
+
+- a new entity;
+- an existing entity at the same location;
+- an existing entity moved to a new location;
+- an existing entity renamed;
+- a duplicated entity.
+
+## Historical Tracking
+
+Persistent knowledge maintains historical information about entities.
+
+Historical data may include:
+
+- previous locations;
+- previous fingerprints;
+- identity transitions;
+- detected changes.
+
+Historical tracking exists only inside the Knowledge layer.
+
+The Project aggregate remains unaware of persistence history.
+
+## Identity Resolution Boundary
+
+Identity resolution belongs exclusively to the Knowledge layer.
+
+The following components must remain unaware of identity tracking:
+
+- Scanner;
+- Parser;
+- Indexer;
+- Chunker;
+- Embedding Engine;
+- Retriever;
+- Context Builder.
+
+The execution flow remains:
+
+```text
+Repository
+
+↓
+
+Analysis Pipeline
+
+↓
+
+Project Aggregate
+
+↓
+
+Knowledge Identity Resolution
+
+↓
+
+Persistent Knowledge Update
+```
+
+---
+
+# 17.3 Pipeline Knowledge Integration
 
 Persistent Project Knowledge is integrated into the execution lifecycle through a dedicated knowledge lifecycle service.
 
@@ -1167,6 +1293,15 @@ Milestone 10.3 extended this lifecycle with:
 - deterministic normalization;
 - identity preservation;
 - storage hardening.
+
+Milestone 10.4 extends this lifecycle with:
+
+- persistent entity identity tracking;
+- separation between identity and location;
+- historical entity evolution;
+- file move and rename detection foundation;
+- deterministic identity resolution;
+- incremental knowledge preparation.
 
 The lifecycle is now prepared for future incremental analysis capabilities.
 

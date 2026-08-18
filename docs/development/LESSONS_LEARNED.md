@@ -1710,3 +1710,93 @@ Documentation: Completed
 Tests: Passed (300 automated tests)
 
 Prepared for Milestone 10.4 — Incremental Knowledge & Change Detection.
+
+---
+
+# ADR-014 — Persistent Entity Identity & Historical Tracking Strategy
+
+## Lesson Learned
+
+Persistent project knowledge requires more than storing the latest analysed state.
+
+A project entity cannot be identified exclusively by its current physical location.
+
+File paths represent location, not identity.
+
+A file may:
+
+- move to another directory;
+- be renamed;
+- temporarily disappear;
+- return in a later execution;
+- change its content over time.
+
+Therefore, persistent knowledge must separate:
+
+- entity identity;
+- physical location;
+- historical locations;
+- content evolution.
+
+---
+
+## Architectural Decision
+
+Codelp will treat analysed project entities as historical entities.
+
+Identity must survive independently from the current filesystem representation.
+
+The Knowledge layer becomes responsible for:
+
+- maintaining persistent identities;
+- resolving entities across executions;
+- preserving historical information;
+- tracking project evolution.
+
+The runtime Project aggregate remains the source of truth during execution.
+
+---
+
+## Identity Strategy
+
+Future implementations must distinguish between:
+
+- stable entity identity;
+- current entity location;
+- entity content state;
+- entity history.
+
+Identity resolution should rely on deterministic strategies.
+
+Content fingerprinting will be used as part of identity resolution where required.
+
+---
+
+## Impact on Future Milestones
+
+This decision changes the evolution path of persistent knowledge.
+
+Milestone 10.3 established persistence capabilities.
+
+Milestone 10.4 will extend this foundation by introducing:
+
+- persistent entity tracking;
+- file history;
+- identity resolution;
+- change detection foundations;
+- incremental knowledge preparation.
+
+The following capabilities remain future work:
+
+- intelligent move detection;
+- intelligent rename detection;
+- knowledge invalidation;
+- selective analysis execution.
+
+---
+
+## Design Principle Reinforced
+
+Persistent knowledge should represent how a project evolves, not only the state of the project at a single execution.
+
+The objective is not only to restore previous knowledge, but to understand continuity between different project states.

@@ -275,15 +275,48 @@ Implemented
 - Project knowledge retrieval
 - Project knowledge removal
 
+Architecture Evolution
+
+Milestone 10.4 introduces a persistent identity model where analysed project entities are no longer identified exclusively by their current physical location.
+
+The architecture evolves from execution-based identity preservation into historical entity tracking.
+
+The system will distinguish:
+
+- entity identity;
+- current physical location;
+- historical locations;
+- content evolution;
+- knowledge lifecycle changes.
+
+File identity becomes independent from file paths.
+
+The persistence layer will maintain historical information required to understand project evolution across executions.
+
+The following capabilities are introduced as architectural foundations:
+
+- persistent file identity;
+- file location history;
+- file content fingerprinting;
+- identity resolution strategy;
+- move detection preparation;
+- rename detection preparation;
+- deterministic entity tracking.
+
+The intelligent analysis of project evolution remains part of future milestones.
+
 Deferred
 
 - Incremental project updates
-- File identity persistence
-- Symbol identity persistence
-- Chunk identity persistence
-- Embedding metadata persistence
-- Retrieval metadata persistence
+- File identity resolution
+- File history tracking
+- File move and rename detection
+- Symbol identity evolution
+- Chunk identity evolution
+- Embedding identity evolution
+- Retrieval metadata evolution
 - Knowledge version migration
+- Intelligent knowledge invalidation
 
 ---
 
@@ -980,7 +1013,10 @@ Architecture Validation
 Deferred
 
 - Incremental change detection
-- File content hashing strategy
+- Persistent entity tracking
+- File history tracking
+- File move and rename detection
+- Content fingerprint analysis
 - Incremental pipeline execution
 - Knowledge invalidation rules
 - Partial analysis execution
@@ -993,6 +1029,74 @@ Validation
 - Identity preservation validated
 - Round-trip persistence validated
 - Architecture boundaries validated
+
+---
+
+## Milestone 10.4 — Persistent Identity & Incremental Knowledge
+
+Status
+
+Planned
+
+Goals
+
+- Introduce persistent entity identity across executions.
+- Separate entity identity from physical file location.
+- Track project evolution over time.
+- Detect changes between project executions.
+- Enable incremental knowledge updates.
+- Preserve unaffected knowledge.
+- Reduce unnecessary analysis execution.
+- Maintain deterministic project evolution.
+
+Implemented
+
+- Architecture decision documented through ADR-014.
+- Persistent identity strategy defined.
+- Historical file identity approach defined.
+- File tracking strategy defined.
+- Fingerprint-based identity resolution strategy defined.
+- Identity tracking responsibilities defined inside Knowledge layer.
+
+Deferred
+
+- Full identity tracking implementation
+- File move detection implementation
+- File rename detection implementation
+- Incremental analysis execution
+- Knowledge invalidation engine
+- Selective parser execution
+- Selective indexing execution
+- Selective chunk regeneration
+- Selective embedding regeneration
+
+Architecture Validation
+
+- Project remains Aggregate Root.
+- Persistence remains independent from domain logic.
+- Scanner remains responsible only for discovery.
+- Parser remains responsible only for parsing.
+- Indexer remains responsible only for indexing.
+- Chunker remains responsible only for chunk generation.
+- Embedding Engine remains responsible only for embeddings.
+- Knowledge layer owns persistence intelligence.
+- Entity history does not replace runtime project state.
+
+Expected Evolution
+
+Milestone 10.4 extends the persistence foundation created in Milestone 10.3.
+
+The objective is not only to preserve the latest analysed state, but to understand how project knowledge evolves between executions.
+
+Future implementations will enable:
+
+- moved file recognition;
+- renamed file recognition;
+- modified knowledge detection;
+- unchanged knowledge reuse;
+- incremental project analysis.
+
+---
 
 ---
 
@@ -1048,12 +1152,12 @@ Current ADRs
 - ADR-011 — MCP Integration Boundary
 - ADR-012 — Persistent Project Knowledge Boundary
 - ADR-013 — Knowledge Lifecycle Integration Boundary
+- ADR-014 — Persistent Identity & Incremental Knowledge Strategy
 
 Planned ADRs
 
 Planned ADRs
 
-- ADR-014 — Incremental Change Detection Strategy
 - ADR-015 — Knowledge Invalidation Model
 - ADR-016 — Incremental Pipeline Execution Strategy
 - Plugin System
@@ -1068,7 +1172,7 @@ Planned ADRs
 
 Codelp aims to become a complete software knowledge platform.
 
-Instead of analysing isolated files, it will progressively understand an entire software system, preserve that knowledge over time and provide intelligent assistance to developers and AI systems.
+Instead of analysing isolated files, it will progressively understand an entire software system, preserve that knowledge over time, track project evolution and provide intelligent assistance to developers and AI systems.
 
 The platform should remain:
 
