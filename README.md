@@ -36,7 +36,7 @@ The project is designed around **determinism, modularity and testability**, prov
 
 ## Current Status
 
-**Version:** `v0.10.2`
+**Version:** `v0.10.3`
 
 Implemented:
 
@@ -50,16 +50,23 @@ Implemented:
 - Context Builder
 - Model Context Protocol (MCP) integration
 - Persistent project knowledge lifecycle foundation
-- Pipeline knowledge integration
+- Canonical persistent knowledge model
+- Project knowledge serialization and restoration
+- Knowledge schema validation and evolution
+- Deterministic knowledge persistence
+- Atomic knowledge storage workflow
+- Pipeline knowledge lifecycle integration
 - Full pipeline integration
 - Architecture documentation
 - ADRs (Architecture Decision Records)
 
 Validation:
 
-- **206+ automated tests passing**
+- **300+ automated tests passing**
 - Deterministic outputs across executions
 - Stable symbol, chunk, embedding, retrieval and context identities
+- Persistent knowledge round-trip validation
+- Deterministic project restoration across executions
 
 ---
 
@@ -174,6 +181,35 @@ The persistence architecture preserves the Project aggregate as the runtime sour
 
 ---
 
+### Knowledge Persistence Foundation
+
+- Canonical `PersistentProjectKnowledge` model
+- Runtime state and persistent state separation
+- Project knowledge serialization boundaries
+- Project to persistent knowledge mapping
+- Persistent knowledge restoration workflow
+- Knowledge schema versioning
+- Compatibility validation
+- Deterministic knowledge normalization
+- Deterministic serialization and loading
+- Corrupted knowledge detection
+- Atomic persistence operations
+- Knowledge lifecycle validation
+
+The persistence layer preserves the Project aggregate as the runtime source of truth while enabling deterministic restoration of project knowledge across executions.
+
+Persistent knowledge now supports:
+
+- project identity restoration;
+- metadata restoration;
+- parser knowledge restoration;
+- index knowledge restoration;
+- chunk identity preservation;
+- embedding metadata preservation;
+- retrieval metadata preservation.
+
+---
+
 ### MCP Integration
 
 - Model Context Protocol server
@@ -274,7 +310,7 @@ pytest backend/tests -v
 
 Expected result:
 
-175+ passed
+300+ passed
 
 ---
 
@@ -295,6 +331,24 @@ Project
 ├── retrieval_result
 ├── context_result
 └── diagnostics
+```
+
+Persistent project knowledge is represented separately:
+
+```text
+Project Runtime State
+
+        ↓
+
+PersistentProjectKnowledge
+
+        ↓
+
+KnowledgeStorage
+
+        ↓
+
+Storage Implementation
 ```
 
 Each application module enriches the same `Project` instance.
@@ -354,6 +408,7 @@ External Tools / IDE Integrations / LLM Consumers
 | MCP Integration | Completed |
 | Persistent Project Knowledge Boundary | Completed |
 | Pipeline Knowledge Integration | Completed |
+| Knowledge Persistence Foundation | Completed |
 | Incremental Knowledge Analysis | Planned |
 | API / CLI | Planned |
 
@@ -361,9 +416,13 @@ External Tools / IDE Integrations / LLM Consumers
 
 ## Roadmap
 
-The architecture now exposes project knowledge through MCP and establishes the foundation for persistent knowledge lifecycle management while preserving existing pipeline boundaries.
+The architecture now exposes project knowledge through MCP and provides a complete persistent knowledge foundation while preserving existing pipeline boundaries.
+
+Persistent knowledge can now be restored, validated and persisted deterministically across executions.
 
 ### Next — Incremental Knowledge Analysis
+
+Building on the persistent knowledge foundation, the next milestone introduces change detection and selective knowledge updates.
 
 - File identity persistence
 - Symbol identity persistence
@@ -443,6 +502,8 @@ Architecture Decision Records:
 - **Modularity** — replaceable components
 - **Testability** — public behavior is validated
 - **Extensibility** — future languages and providers
+- **Persistence Independence** — persistent knowledge evolves independently from storage technology
+- **Identity Preservation** — knowledge entities maintain deterministic identities across executions
 
 ---
 

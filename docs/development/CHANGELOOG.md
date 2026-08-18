@@ -10,8 +10,60 @@ Future changes will be documented here.
 
 ---
 
+## [Milestone 10.3] — Knowledge Persistence Foundation
 
----
+### Added
+
+- Added complete persistent knowledge architecture.
+- Added canonical `PersistentProjectKnowledge` model.
+- Added Project to persistent knowledge mapping.
+- Added persistent knowledge restoration workflow.
+- Added knowledge validation and schema versioning strategy.
+- Added deterministic knowledge normalization.
+- Added deterministic persistence serialization.
+- Added complete knowledge lifecycle:
+  - load;
+  - validate;
+  - restore;
+  - analyse;
+  - update;
+  - persist.
+- Added identity preservation across project knowledge entities.
+
+### Improved
+
+- Improved separation between:
+  - runtime Project state;
+  - persistent knowledge state;
+  - storage implementations.
+- Preserved Project aggregate as runtime source of truth.
+- Preserved pipeline module independence from persistence concerns.
+- Improved storage reliability through deterministic writes and validation.
+- Prepared architecture for future incremental analysis.
+
+### Architecture
+
+- Validated persistence boundaries across the complete pipeline.
+- Confirmed Scanner, Parser, Indexer, Chunker, Embedding Engine, Retrieval and Context Builder remain persistence unaware.
+- Confirmed lifecycle ownership remains independent from storage implementations.
+- Preserved replaceable storage architecture.
+
+### Testing
+
+- Added persistent knowledge mapping tests.
+- Added restoration tests.
+- Added schema validation tests.
+- Added identity preservation tests.
+- Added round-trip persistence tests.
+- Added architecture boundary tests.
+
+Validation:
+
+- Knowledge persistence lifecycle validated.
+- Restoration workflow validated.
+- Architecture boundaries validated.
+- 300 automated tests passing.
+
 
 ## [Milestone 10.2] — Pipeline Knowledge Integration
 

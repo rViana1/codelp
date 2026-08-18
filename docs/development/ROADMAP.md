@@ -921,29 +921,78 @@ Validation
 
 ---
 
-## Milestone 10.3 — Incremental Analysis Foundation
+## Milestone 10.3 — Knowledge Persistence Foundation
 
 Status
 
-Planned
+Completed
 
 Goals
 
-- Analyse only changed project components.
-- Reuse previously persisted knowledge.
-- Reduce unnecessary processing.
-- Preserve deterministic project evolution.
+- Establish the complete persistent knowledge architecture.
+- Separate runtime Project state from persisted project knowledge.
+- Preserve Project aggregate as the runtime source of truth.
+- Restore project knowledge between executions.
+- Define deterministic knowledge representation.
+- Introduce schema versioning and validation strategy.
+- Ensure persistence remains independent from storage implementations.
 
-Planned
+Implemented
 
-- Change detection strategy
+- Canonical PersistentProjectKnowledge model
+- Project to persistent knowledge mapping
+- Persistent knowledge restoration
+- Knowledge validation layer
+- Schema version contract
+- Knowledge normalization
+- Deterministic serialization
+- Storage lifecycle hardening
+- Complete knowledge lifecycle:
+  - Load
+  - Validate
+  - Restore
+  - Analyse
+  - Update
+  - Persist
+- Identity preservation across:
+  - files
+  - symbols
+  - chunks
+  - embeddings
+  - retrieval metadata
+
+Architecture Validation
+
+- Domain remains independent from persistence
+- Domain remains independent from storage
+- Scanner remains persistence unaware
+- Parser remains persistence unaware
+- Indexer remains persistence unaware
+- Chunker remains persistence unaware
+- Embedding Engine remains persistence unaware
+- Retrieval remains persistence unaware
+- Context Builder remains persistence unaware
+- Project remains Aggregate Root
+- Project remains runtime source of truth
+- Storage implementations remain replaceable
+- Persistence lifecycle remains controlled through application abstractions
+
+Deferred
+
+- Incremental change detection
+- File content hashing strategy
+- Incremental pipeline execution
 - Knowledge invalidation rules
-- Incremental scanner support
-- Incremental parser updates
-- Incremental indexing
-- Incremental chunk regeneration
-- Incremental embedding updates
-- Knowledge migration between versions
+- Partial analysis execution
+
+Validation
+
+- Persistent knowledge architecture validated
+- Knowledge restoration validated
+- Schema validation validated
+- Identity preservation validated
+- Round-trip persistence validated
+- Architecture boundaries validated
 
 ---
 

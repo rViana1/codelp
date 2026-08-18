@@ -2,7 +2,7 @@
 
 > **Version:** 2.0
 > **Status:** In Development  
-> **Last Updated:** Milestone 10.2 — Pipeline Knowledge Integration
+> **Last Updated:** Milestone 10.3 — Knowledge Persistence Foundation
 
 ---
 
@@ -500,11 +500,11 @@ Future improvements
 
 ---
 
-## Persistent Project Knowledge
+### Persistent Project Knowledge
 
 Responsible for managing the lifecycle of persisted project knowledge.
 
-Persistent Project Knowledge is an external representation of analysed project state.
+Persistent Project Knowledge is an external deterministic representation of analysed project state.
 
 The persistence layer does not replace the Project aggregate.
 
@@ -512,10 +512,12 @@ The runtime Project remains the source of truth during execution.
 
 Responsibilities
 
-- prepare project knowledge before analysis;
-- persist analysed project knowledge;
-- restore previously persisted knowledge;
+- define persistent knowledge structure;
+- serialize project knowledge;
+- validate persisted knowledge;
+- restore compatible knowledge;
 - coordinate persistence lifecycle;
+- preserve stable identities;
 - maintain storage independence.
 
 Outputs
@@ -524,8 +526,11 @@ Outputs
 
 Current implementation
 
+- PersistentProjectKnowledge model
 - Knowledge lifecycle service
 - Knowledge storage abstraction
+- Knowledge validation layer
+- Schema version contract
 
 Architecture rules
 
@@ -534,10 +539,12 @@ The Persistent Project Knowledge layer:
 - does not modify domain behaviour;
 - does not bypass application services;
 - does not become the source of truth;
-- does not couple the domain to storage technology.
+- does not couple the domain to storage technology;
+- does not create duplicate identity systems.
 
 The dependency direction remains:
 
+```text
 Analysis Pipeline
 
 ↓
@@ -546,13 +553,62 @@ Knowledge Lifecycle
 
 ↓
 
+Persistent Knowledge Model
+
+↓
+
 Knowledge Storage Abstraction
 
 ↓
 
 Storage Implementation
+```
 
-Future improvements
+Persistent knowledge lifecycle:
+
+Existing Knowledge
+
+↓
+
+Load
+
+↓
+
+Validate
+
+↓
+
+Restore
+
+↓
+
+Analyse
+
+↓
+
+Update
+
+↓
+
+Persist
+
+Current capabilities:
+
+- project knowledge serialization;
+- project knowledge restoration;
+- schema compatibility validation;
+- deterministic normalization;
+- identity preservation;
+- atomic persistence operations.
+
+Future improvements:
+
+- incremental knowledge updates;
+- selective restoration;
+- knowledge migrations;
+- project evolution tracking.
+
+Future improvements:
 
 - incremental knowledge updates;
 - persisted identity reconstruction;
@@ -635,6 +691,18 @@ Knowledge Lifecycle
 
 ↓
 
+Persistent Knowledge Load
+
+↓
+
+Validation
+
+↓
+
+Restoration
+
+↓
+
 Scanner
 
 ↓
@@ -691,6 +759,10 @@ Knowledge Lifecycle
 
 ↓
 
+Persistent Knowledge Generation
+
+↓
+
 Knowledge Storage
 
 ---
@@ -712,6 +784,8 @@ Knowledge Storage
 - app.mcp → core.project
 - app.knowledge → core.project
 - app.pipeline → app.knowledge
+- app.knowledge → persistent knowledge models
+- app.knowledge → knowledge storage abstraction
 
 ## Forbidden dependencies
 
@@ -722,6 +796,9 @@ Knowledge Storage
 - core → app
 - core → vectorstore
 - retriever → concrete vector database implementations
+- core → persistent knowledge
+- core → knowledge storage
+- pipeline modules → storage implementations
 
 No module should depend on a future processing stage.
 
@@ -858,6 +935,13 @@ Current validation
 - Knowledge lifecycle tests
 - Knowledge storage contract tests
 - Persistence boundary tests
+- Persistent knowledge model tests
+- Knowledge serialization tests
+- Knowledge restoration tests
+- Schema compatibility tests
+- Identity preservation tests
+- Persistence round-trip tests
+- Corrupted knowledge recovery tests
 - Architecture boundary tests
 
 Current validation includes:
@@ -867,7 +951,7 @@ Current validation includes:
 - Knowledge storage tests
 - Architecture boundary tests
 
-Current total: 225 passing automated tests.
+Current total: 300 passing automated tests.
 
 ---
 
@@ -957,33 +1041,29 @@ Planned architectural improvements include
 
 Persistent Project Knowledge was intentionally divided into multiple milestones.
 
-Milestone 10.1 established the architectural boundary between the active analysis pipeline and persistent knowledge storage.
+Milestone 10.1 established the architectural boundary between active project analysis and persistent knowledge storage.
 
-Milestone 10.2 integrated the persistent knowledge lifecycle into the analysis execution flow without coupling pipeline components to persistence concerns.
+Milestone 10.2 integrated persistence lifecycle coordination into the analysis execution flow without coupling pipeline components to persistence concerns.
 
-This milestone introduces the foundations required for persistence:
+Milestone 10.3 established the persistence foundation:
 
-- persistent knowledge boundary definition;
-- storage independence;
-- deterministic identity preservation;
-- separation between domain state and storage implementation.
-
-The following milestones will extend this foundation with:
-
-- knowledge serialization;
+- canonical persistent knowledge model;
+- runtime state separation;
+- deterministic serialization;
 - knowledge restoration;
-- update lifecycle;
-- incremental analysis compatibility;
-- persistent identity reconstruction.
+- schema versioning;
+- compatibility validation;
+- storage hardening;
+- identity preservation across executions.
 
-This separation avoids coupling unfinished persistence behaviour into the existing pipeline and preserves the stability achieved by previous milestones.
+The persistence lifecycle is now capable of representing, validating and restoring project knowledge independently from storage technology.
 
-Milestone 10.2 introduced:
+Future milestones will extend this foundation with:
 
-- knowledge lifecycle coordination;
-- pipeline preparation and finalization hooks;
-- persistence lifecycle independence from storage implementation;
-- architecture validation for persistence boundaries.
+- incremental change detection;
+- selective knowledge updates;
+- knowledge invalidation strategies;
+- project evolution tracking.
 
 ---
 
@@ -1035,7 +1115,9 @@ The persistence boundary exists to allow knowledge produced by the analysis pipe
 
 The first implementation phase focuses on defining ownership and boundaries.
 
-Serialization and restoration strategies are still evolving and remain isolated behind the knowledge lifecycle boundary.
+Serialization and restoration strategies are formalized through the PersistentProjectKnowledge model.
+
+Schema validation, compatibility checks and deterministic restoration are handled inside the persistence boundary.
 
 Incremental synchronisation is intentionally deferred to future milestones.
 
@@ -1076,6 +1158,17 @@ The lifecycle service coordinates persistence operations while keeping:
 - Context Builder responsibility unchanged.
 
 This design preserves the modular pipeline architecture and prepares the foundation for future incremental analysis.
+
+Milestone 10.3 extended this lifecycle with:
+
+- persistent knowledge serialization;
+- persistent knowledge restoration;
+- schema validation;
+- deterministic normalization;
+- identity preservation;
+- storage hardening.
+
+The lifecycle is now prepared for future incremental analysis capabilities.
 
 ---
 

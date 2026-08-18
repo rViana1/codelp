@@ -1563,3 +1563,150 @@ Code Review: Completed
 Documentation: Completed
 
 Ready for Milestone 10.3 — Incremental Analysis Foundation.
+
+---
+
+# Milestone 10.3 — Knowledge Persistence Foundation
+
+## Objective
+
+Establish the complete persistent knowledge foundation required for Codelp to preserve project understanding between executions.
+
+This milestone transformed persistence from an architectural concept into a complete lifecycle capability while preserving the existing Project-centric architecture.
+
+The objective was to ensure that project knowledge could be:
+
+- represented;
+- stored;
+- validated;
+- restored;
+- evolved;
+
+without coupling persistence concerns to the domain or analysis pipeline.
+
+---
+
+## What Went Well
+
+- Persistent knowledge was introduced without modifying the Project aggregate responsibility.
+- Runtime state and persisted state remained clearly separated.
+- The complete knowledge lifecycle was implemented successfully.
+- Stable identities were preserved across persistence cycles.
+- Schema versioning created a foundation for future migrations.
+- Storage implementations remained replaceable.
+- Round-trip persistence validated knowledge equivalence between executions.
+- Architecture validation confirmed existing boundaries remained intact.
+
+---
+
+## Lessons Learned
+
+### Persistence Is a Lifecycle, Not a Storage Feature
+
+Persistent knowledge requires more than saving objects.
+
+A complete lifecycle must define:
+
+- loading;
+- validation;
+- restoration;
+- analysis;
+- updating;
+- persistence.
+
+---
+
+### The Runtime Domain Must Remain the Source of Truth
+
+Persisted knowledge is a representation of project state, not the owner of project behaviour.
+
+The Project aggregate remains responsible for runtime decisions.
+
+---
+
+### Identity Preservation Is Fundamental
+
+Persistent systems require stable identities.
+
+The existing identity chain:
+
+Source File
+
+↓
+
+Symbol ID
+
+↓
+
+Chunk ID
+
+↓
+
+Embedding Identity
+
+↓
+
+Retrieval Identity
+
+must remain deterministic across executions.
+
+---
+
+### Schema Versioning Should Exist Before Migrations Are Needed
+
+Persistent data evolves over time.
+
+Defining schema compatibility boundaries early prevents future migrations from becoming uncontrolled changes.
+
+---
+
+### Architecture Tests Protect Persistence Boundaries
+
+Persistence introduces a high risk of accidental coupling.
+
+Automated architecture tests ensure that storage concerns do not leak into domain and pipeline components.
+
+---
+
+## Architectural Decisions Reinforced
+
+- Project remains Aggregate Root.
+- Persistent knowledge is separate from runtime state.
+- Domain remains independent from persistence.
+- Storage remains replaceable.
+- Lifecycle management belongs to application boundaries.
+- Persistence must not bypass application services.
+
+---
+
+## Future Improvements Identified
+
+### Incremental Analysis
+
+- File content hashing.
+- Change detection.
+- Knowledge invalidation.
+- Partial pipeline execution.
+- Incremental updates.
+
+### Knowledge Evolution
+
+- Knowledge migration strategies.
+- Historical project evolution.
+- Knowledge graph relationships.
+
+---
+
+## Milestone Result
+
+Status: Completed
+
+Implementation: Completed
+
+Architecture Review: Completed
+
+Documentation: Completed
+
+Tests: Passed (300 automated tests)
+
+Prepared for Milestone 10.4 — Incremental Knowledge & Change Detection.
