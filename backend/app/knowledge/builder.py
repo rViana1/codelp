@@ -4,12 +4,19 @@ from core.project.models import Project
 
 from app.knowledge.mapper import KnowledgeMapper
 from app.knowledge.models import PersistentProjectKnowledge
+from app.knowledge.graph import KnowledgeGraphBuilder
 
 
 class KnowledgeBuilder:
     """
     Coordinates creation of persistent project knowledge.
     """
+
+    def __init__(
+        self,
+        graph_builder: KnowledgeGraphBuilder | None = None,
+    ) -> None:
+        self.graph_builder = graph_builder or KnowledgeGraphBuilder()
 
     def build(
         self,
@@ -21,11 +28,21 @@ class KnowledgeBuilder:
             project
         )
 
-        return KnowledgeMapper.from_project(
+        knowledge = KnowledgeMapper.from_project(
             project,
             project_id=project_id,
             previous=previous,
         )
+
+        previous_graph = None
+        if previous is not None:
+            previous_graph = (
+                previous.graph
+                if previous.graph is not None
+                else self.graph_builder.build(previous)
+            )
+        knowledge.graph = self.graph_builder.build(knowledge, previous_graph)
+        return knowledge
 
 
     def _create_project_id(

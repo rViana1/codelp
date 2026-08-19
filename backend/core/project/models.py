@@ -201,6 +201,8 @@ class Project(BaseModel):
 
     knowledge_analysis_plan: object | None = None
 
+    understanding_result: object | None = None
+
     diagnostics: list[str] = Field(default_factory=list)
     
     def export_persistent_state(

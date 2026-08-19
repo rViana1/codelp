@@ -9,6 +9,7 @@ from app.mcp.services import (
     ProjectStructureService,
     SymbolInformationService,
 )
+from app.understanding.service import ProjectKnowledgeService
 
 
 class MCPResourceRegistry:
@@ -169,4 +170,24 @@ class ContextResource:
         return MCPResourceDefinition(
             uri=self.uri,
             description=self.description,
+        )
+
+
+class ProjectKnowledgeResource:
+    """MCP resource exposing a safe project knowledge overview."""
+
+    uri = "project://knowledge"
+
+    def __init__(self, service: ProjectKnowledgeService | None = None) -> None:
+        self._service = service or ProjectKnowledgeService()
+
+    def read(self, project: Project) -> dict[str, object]:
+        return self._service.explore_project(project)
+
+    def definition(self) -> MCPResourceDefinition:
+        return MCPResourceDefinition(
+            uri=self.uri,
+            description=(
+                "Provides project graph, relationship and history knowledge."
+            ),
         )

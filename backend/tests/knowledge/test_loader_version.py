@@ -16,7 +16,7 @@ def test_loader_accepts_current_version(tmp_path):
         PersistentProjectKnowledge(
             metadata=PersistentKnowledgeMetadata(
                     project_id="project-a",
-                    version="2.0",
+                    version="3.0",
             )
         )
     )
@@ -30,6 +30,24 @@ def test_loader_accepts_current_version(tmp_path):
     )
 
     assert result is not None
+
+
+def test_loader_accepts_legacy_identity_snapshot(tmp_path):
+    storage = FileKnowledgeStorage(str(tmp_path))
+    storage.save(
+        PersistentProjectKnowledge(
+            metadata=PersistentKnowledgeMetadata(
+                project_id="project-a",
+                version="2.0",
+            )
+        )
+    )
+
+    result = KnowledgeLoader(storage).load("project-a")
+
+    assert result is not None
+    assert result.metadata.version == "2.0"
+    assert result.graph is None
 
 
 

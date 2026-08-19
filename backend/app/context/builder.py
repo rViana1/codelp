@@ -5,7 +5,8 @@ into structured LLM-ready context.
 
 from __future__ import annotations
 
-from uuid import uuid4
+import hashlib
+import json
 
 from app.chunking.models import ChunkCollection
 from app.context.models import (
@@ -57,14 +58,54 @@ class ContextBuilder:
                     chunk_id=chunk.id,
                     content=chunk.content,
                     score=result.score,
+                    semantic_score=result.semantic_score,
+                    structural_score=result.structural_score,
+                    historical_score=result.historical_score,
+                    selection_reasons=result.reasons,
+                    relationship_ids=result.relationship_ids,
+                    provenance_entity_ids=result.provenance_entity_ids,
                 )
             )
 
         return PromptContext(
             query=retrieval.query.text,
-            context_id=str(uuid4()),
+            context_id=self._context_id(
+                retrieval.query.text,
+                context_chunks,
+            ),
             chunks=context_chunks,
         )
+
+    @staticmethod
+    def _context_id(
+        query: str,
+        chunks: list[ContextChunk],
+    ) -> str:
+        payload = {
+            "query": query,
+            "chunks": [
+                {
+                    "chunk_id": item.chunk_id,
+                    "content_hash": hashlib.sha256(
+                        item.content.encode("utf-8")
+                    ).hexdigest(),
+                    "score": item.score,
+                    "semantic_score": item.semantic_score,
+                    "structural_score": item.structural_score,
+                    "historical_score": item.historical_score,
+                    "reasons": item.selection_reasons,
+                    "relationships": item.relationship_ids,
+                    "provenance": item.provenance_entity_ids,
+                }
+                for item in chunks
+            ],
+        }
+        encoded = json.dumps(
+            payload,
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+        return hashlib.sha256(encoded).hexdigest()
         
     def build_project(
         self,

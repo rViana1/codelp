@@ -2,6 +2,9 @@ from __future__ import annotations
 
 from app.knowledge.models import (
     PersistentFileIdentity,
+    PersistentKnowledgeGraph,
+    PersistentKnowledgeGraphEntity,
+    PersistentKnowledgeGraphRelationship,
     PersistentProjectKnowledge,
 )
 
@@ -70,5 +73,43 @@ class KnowledgeNormalizer:
                     item.chunk_id,
                     item.query_hash,
                 ),
+            ),
+            imports=sorted(
+                knowledge.imports,
+                key=lambda item: item.import_id,
+            ),
+            graph=self._normalize_graph(knowledge.graph),
+        )
+
+    @staticmethod
+    def _normalize_graph(
+        graph: PersistentKnowledgeGraph | None,
+    ) -> PersistentKnowledgeGraph | None:
+        if graph is None:
+            return None
+        return PersistentKnowledgeGraph(
+            graph_id=graph.graph_id,
+            project_id=graph.project_id,
+            entities=sorted(
+                (
+                    PersistentKnowledgeGraphEntity(
+                        **entity.model_dump(exclude={"properties"}),
+                        properties=dict(sorted(entity.properties.items())),
+                    )
+                    for entity in graph.entities
+                ),
+                key=lambda item: item.entity_id,
+            ),
+            relationships=sorted(
+                (
+                    PersistentKnowledgeGraphRelationship(
+                        **relationship.model_dump(exclude={"properties"}),
+                        properties=dict(
+                            sorted(relationship.properties.items())
+                        ),
+                    )
+                    for relationship in graph.relationships
+                ),
+                key=lambda item: item.relationship_id,
             ),
         )

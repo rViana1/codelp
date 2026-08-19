@@ -15,6 +15,7 @@ from .models import (
     RetrievalQuery,
 )
 from .retriever import Retriever
+from .intelligent import IntelligentRetrievalEngine
 
 from app.vectorstore.manager import VectorStoreManager
 
@@ -37,10 +38,14 @@ class RetrievalService:
         self,
         retriever: Retriever,
         store_manager: VectorStoreManager,
+        intelligent_engine: IntelligentRetrievalEngine | None = None,
     ) -> None:
 
         self.retriever = retriever
         self.store_manager = store_manager
+        self.intelligent_engine = (
+            intelligent_engine or IntelligentRetrievalEngine()
+        )
 
     def retrieve_project(
         self,
@@ -99,8 +104,18 @@ class RetrievalService:
                 results=[],
             )
 
-        return self.retriever.retrieve(
+        retrieval = self.retriever.retrieve(
             query,
             query_vector,
             store,
         )
+
+        graph = (
+            project.knowledge_state.graph
+            if project.knowledge_state is not None
+            else None
+        )
+        if graph is None:
+            return retrieval
+
+        return self.intelligent_engine.enrich(retrieval, graph)

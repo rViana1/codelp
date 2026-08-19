@@ -1896,3 +1896,80 @@ incremental planning or persistence behaviour.
 
 Milestone 10.4 provides the stable evolution foundation required for
 Milestone 10.5.
+
+---
+
+# Milestone 10.5 — Knowledge Graph & Intelligent Project Understanding
+
+## Lesson Learned — A Graph Should Project Identity, Not Reinvent It
+
+Graph-local identities would create a second continuity system and eventually
+diverge from persistent files, symbols and chunks. Deriving graph entity and
+relationship IDs from the stable identities established in Milestone 10.4
+keeps restoration, updates and historical reappearance deterministic.
+
+The graph remains a Knowledge representation. It does not become another
+Aggregate Root and it does not require a graph database.
+
+## Lesson Learned — History Needs Inactive Facts, Not Destructive Replacement
+
+Replacing the previous graph with only current nodes loses evidence about
+moves, renames, prior content and temporarily removed entities. Retaining
+inactive entities and relationships preserves traceability, while the
+`is_current` marker keeps current-state queries explicit.
+
+Reappearance must reactivate the same identity rather than create a new
+historical branch.
+
+## Lesson Learned — Similarity Must Be Auditable
+
+Code similarity is useful only when its normalization and score can be
+explained. Normalized token shingles remove superficial identifier and literal
+differences; deterministic Jaccard scoring exposes why a relationship crossed
+the threshold.
+
+Ambiguous imports and duplicate evidence still require conservative handling.
+A graph must not turn uncertain candidates into confident relationships.
+
+## Lesson Learned — Understanding Is a Derived Projection
+
+Architectural areas, component importance, dependency cycles and refactoring
+opportunities are interpretations of graph facts. Persisting them as if they
+were canonical knowledge would introduce stale caches and duplicated truth.
+
+Derived understanding therefore remains reproducible runtime state on the
+Project Aggregate Root. The persistent graph remains authoritative.
+
+## Lesson Learned — Retrieval Evidence Should Not Disappear Into One Score
+
+Semantic relevance, structural proximity and historical evidence mean
+different things. Keeping their scores, reasons, relationship identifiers and
+entity provenance separate makes context selection inspectable and allows the
+combination policy to evolve safely.
+
+The Context Builder should propagate evidence, not traverse the graph or
+reinterpret retrieval policy.
+
+## Lesson Learned — External Adapters Need an Application Boundary
+
+An MCP tool that queries persistent graph models directly becomes an
+alternative application layer and couples consumers to storage-oriented
+contracts. A dedicated Project Knowledge service centralizes exploration
+policy and returns external-safe serialized values.
+
+This boundary also prepares future API, CLI and IDE integrations to reuse the
+same project knowledge capabilities.
+
+## Milestone Result
+
+- Persistent historical knowledge graph implemented.
+- Entity and relationship identities preserved deterministically.
+- Imports, dependencies, duplicates, similarity and evolution represented.
+- Higher-level project understanding implemented.
+- Explainable graph-aware retrieval and context provenance implemented.
+- MCP project knowledge exploration implemented through application services.
+- Behavioural, end-to-end and architecture acceptance matrices completed.
+- 417 automated backend tests and 45 architecture tests passing.
+
+Milestone 10.5 provides the intelligent project representation required for
+future API, CLI, IDE and advanced analysis capabilities.

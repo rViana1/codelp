@@ -10,6 +10,7 @@ from app.retrieval.models import (
     RetrievalQuery,
 )
 from app.retrieval.service import RetrievalService
+from app.understanding.service import ProjectKnowledgeService
 
 
 class MCPToolRegistry:
@@ -136,3 +137,40 @@ class ContextRetrievalTool:
         return self._service.get_context(
             project,
         )
+
+
+class ProjectExplorationTool:
+    """Explore project knowledge exclusively through an application service."""
+
+    name = "project_exploration"
+    description = (
+        "Explores project graph, symbols, dependencies, history, related "
+        "code and contextual knowledge."
+    )
+
+    def __init__(self, service: ProjectKnowledgeService | None = None) -> None:
+        self._service = service or ProjectKnowledgeService()
+
+    def execute(
+        self,
+        project: Project,
+        view: str = "project",
+        entity_id: str | None = None,
+    ) -> object:
+        if view == "project":
+            return self._service.explore_project(project)
+        if view == "symbol":
+            return self._service.explore_symbol(project, entity_id or "")
+        if view == "dependencies":
+            return self._service.explore_dependencies(project, entity_id)
+        if view == "history":
+            return self._service.explore_history(project, entity_id)
+        if view == "duplicates":
+            return self._service.explore_duplicates(project, entity_id)
+        if view == "similarity":
+            return self._service.explore_similarity(project, entity_id)
+        if view == "related_code":
+            return self._service.explore_related_code(project, entity_id)
+        if view == "context":
+            return self._service.contextual_knowledge(project)
+        raise ValueError(f"Unsupported project exploration view: {view}")

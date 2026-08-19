@@ -19,11 +19,13 @@ Embedding Engine
     ↓
 Vector Store
     ↓
-Retriever
+Semantic Retriever
+    ↓
+Knowledge Graph Enrichment
     ↓
 Context Builder
     ↓
-Project Knowledge
+Project Understanding
     ↓
 MCP Server
     ↓
@@ -36,7 +38,7 @@ The project is designed around **determinism, modularity and testability**, prov
 
 ## Current Status
 
-**Version:** `v0.10.4`
+**Version:** `v0.10.5`
 
 Implemented:
 
@@ -62,20 +64,27 @@ Implemented:
 - File change detection and knowledge invalidation
 - Selective incremental parser, indexer, chunker and embedding execution
 - Deterministic knowledge merging and rollback protection
+- Persistent project knowledge graph with stable relationship identities
+- Import, dependency, duplicate, similarity and historical evolution links
+- Deterministic project understanding and structural summaries
+- Explainable graph-aware retrieval with context provenance
+- MCP project graph and history exploration through application services
 - Full pipeline integration
 - Architecture documentation
 - ADRs (Architecture Decision Records)
 
 Validation:
 
-- **361 automated tests passing**
-- **30 architecture boundary tests passing**
+- **417 automated tests passing**
+- **45 architecture boundary tests passing**
 - Deterministic outputs across executions
 - Stable symbol, chunk, embedding, retrieval and context identities
 - Stable persistent identities after file updates, moves and renames
 - Persistent knowledge round-trip validation
 - Deterministic project restoration across executions
 - Full and incremental analysis consistency validation
+- Knowledge graph persistence and restoration validation
+- Deterministic understanding, retrieval and context provenance validation
 
 ---
 
@@ -243,6 +252,38 @@ Indexer, Chunker or Embedding Engine aware of persistence.
 
 ---
 
+### Knowledge Graph and Project Understanding
+
+- Deterministic graph entities for projects, files, modules, locations,
+  content states, symbols, chunks, embeddings and retrieval metadata
+- Stable directed relationship identities derived from persistent endpoints
+- Imports and conservatively resolved internal dependencies
+- Exact file, symbol and chunk duplicate relationships
+- Normalized structural fingerprints and auditable chunk similarity scores
+- Historical move, rename and content-evolution relationships
+- Architectural areas, important components and dependency-cycle analysis
+- Related-code, refactoring, evolution and project-level insights
+
+The graph is a persistent Knowledge projection and never replaces `Project`.
+Removed observations remain inactive history and recover the same identities
+when they reappear.
+
+---
+
+### Intelligent Retrieval
+
+- Semantic results enriched with current structural relationships
+- Historical evidence evaluated independently
+- Deterministic semantic, structural and historical score fusion
+- Selection reasons and relationship/entity provenance on every result
+- Provenance propagated unchanged into final context
+- Deterministic context identity for the same query and evidence
+
+Retrieval consumes the restored, storage-independent runtime graph rather than
+the persistent graph implementation.
+
+---
+
 ### MCP Integration
 
 - Model Context Protocol server
@@ -250,6 +291,9 @@ Indexer, Chunker or Embedding Engine aware of persistence.
 - Structured context access
 - External tool integration boundary
 - IDE integration foundation
+- Project graph, symbol, dependency, history, duplicate and similarity
+  exploration
+- Mandatory application-service mediation for external knowledge access
 
 The MCP layer exposes Codelp project knowledge without coupling the core pipeline to specific clients, IDEs or LLM providers.
 
@@ -308,6 +352,7 @@ backend/
 │   ├── chunking/
 │   ├── embeddings/
 │   ├── knowledge/
+│   ├── understanding/
 │   ├── pipeline/
 │   ├── vectorstore/
 │   ├── retrieval/
@@ -346,7 +391,7 @@ pip install -r requirements.txt
 pytest backend/tests -v
 ```
 
-Expected result: **361 passed**.
+Expected result: **417 passed**.
 
 ---
 
@@ -367,6 +412,7 @@ Project
 ├── retrieval_result
 ├── context_result
 ├── knowledge_state
+├── understanding_result
 ├── knowledge_analysis_plan
 ├── knowledge_change_result
 ├── incremental_analysis_result
@@ -418,11 +464,15 @@ Embedding Engine
     ↓
 Project
     ↓
-Retriever
+Semantic Retriever
+    ↓
+Knowledge Graph Enrichment
+    ↓
+Context Builder
     ↓
 Project
     ↓
-Context Builder
+Project Understanding
     ↓
 Project
     ↓
@@ -450,6 +500,7 @@ External Tools / IDE Integrations / LLM Consumers
 | Pipeline Knowledge Integration | Completed |
 | Knowledge Persistence Foundation | Completed |
 | Persistent Identity & Incremental Knowledge | Completed |
+| Knowledge Graph & Intelligent Project Understanding | Completed |
 | API / CLI | Planned |
 
 ---
@@ -463,16 +514,12 @@ analysis while preserving existing pipeline boundaries.
 Persistent knowledge can be restored, compared, selectively updated,
 validated and persisted deterministically across executions.
 
-### Next — Milestone 10.5
+### Completed — Milestone 10.5
 
-Milestone 10.5 can build higher-level project intelligence on the stable
-identity and incremental knowledge foundation completed in Milestone 10.4.
-
-- Knowledge graph relationships
-- Dependency-aware cross-file invalidation
-- Structural matching for files moved and modified simultaneously
-- Higher-level project evolution insights
-- Improved retrieval using persistent relationships
+Milestone 10.5 connects stable persistent entities into a historical knowledge
+graph, derives higher-level project understanding, enriches semantic retrieval
+with explainable graph evidence and exposes safe project exploration through
+application-service-backed MCP adapters.
 
 ### Future
 
@@ -496,6 +543,7 @@ identity and incremental knowledge foundation completed in Milestone 10.4.
 ### Architecture
 
 - `docs/architecture/ARCHITECTURE.md`
+- `docs/architecture/KNOWLEDGE_GRAPH.md`
 - `docs/architecture/adr/`
 
 Architecture Decision Records:
@@ -515,6 +563,8 @@ Architecture Decision Records:
 - `ADR-013` — Pipeline Knowledge Integration
 - `ADR-014` — Persistent Entity Identity and Historical File Tracking
 - `ADR-015` — Deterministic Knowledge Updates and Rollback
+- `ADR-016` — Persistent Knowledge Graph Projection
+- `ADR-017` — Explainable Graph-Aware Retrieval and External Knowledge Access
 
 ---
 
@@ -546,6 +596,8 @@ Architecture Decision Records:
 - **Identity Preservation** — knowledge entities maintain deterministic identities across executions
 - **Conservative Resolution** — ambiguous entities are never merged arbitrarily
 - **Incremental Equivalence** — selective analysis must match a complete analysis of the same state
+- **Explainable Selection** — context preserves the evidence that caused its selection
+- **Consumer Mediation** — external adapters access knowledge through application services
 
 ---
 

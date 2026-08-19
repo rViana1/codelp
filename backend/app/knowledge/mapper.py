@@ -196,6 +196,18 @@ class KnowledgeMapper:
             source_chunk_identity_map,
         )
 
+        file_identity_by_path = {
+            location.path: file.file_id
+            for file in files
+            for location in file.locations
+            if location.is_current
+        }
+        imports = IndexKnowledgeMapper.imports_from_index(
+            project.index_result,
+            file_identity_by_path,
+            project_id,
+        )
+
         return PersistentProjectKnowledge(
             metadata=metadata,
             configuration=configuration,
@@ -204,6 +216,7 @@ class KnowledgeMapper:
             chunks=chunks,
             embeddings=embeddings,
             retrieval=retrieval,
+            imports=imports,
         )
 
     @staticmethod

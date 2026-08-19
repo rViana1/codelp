@@ -1,8 +1,8 @@
 # Codelp Architecture
 
-> **Version:** 2.1
+> **Version:** 3.0
 > **Status:** In Development  
-> **Last Updated:** Milestone 10.4 — Persistent Identity & Incremental Knowledge
+> **Last Updated:** Milestone 10.5 — Knowledge Graph & Intelligent Project Understanding
 
 ---
 
@@ -991,6 +991,8 @@ Current ADRs
 - ADR-013 — Pipeline Knowledge Integration
 - ADR-014 — Persistent Entity Identity & Evolution Tracking
 - ADR-015 — Deterministic Knowledge Updates & Rollback
+- ADR-016 — Persistent Knowledge Graph Projection
+- ADR-017 — Explainable Graph-Aware Retrieval and External Knowledge Access
 
 Future ADRs
 
@@ -1387,6 +1389,87 @@ remaining unaware of Knowledge and persistence.
 AST-based architecture tests enforce these dependency directions and public
 responsibility contracts. The Phase 7 test matrix validates behaviour; the
 Phase 8 architecture matrix validates ownership and boundaries.
+
+---
+
+# 17.6 Persistent Knowledge Graph Foundation
+
+Milestone 10.5 introduces a persistent knowledge graph as a deterministic
+projection of authoritative project knowledge. The graph belongs to the
+Knowledge representation layer and does not replace Project as Aggregate
+Root.
+
+Foundational graph entities represent projects, files, historical locations,
+historical content states, symbols, chunks, embedding metadata and retrieval
+metadata. Their source identities are the persistent identities established
+in Milestone 10.4. Graph entity identity is a deterministic projection of
+project, kind and source identity rather than a second identity system.
+
+Directed relationships connect the foundational ownership chain from project
+to file, file history and derived semantic knowledge. Relationship identities
+are deterministic functions of relationship kind and stable endpoints.
+
+Entities and relationships include first/last observation timestamps and a
+current marker. Missing items are retained as inactive history; reappearing
+items recover the same identity. This provides temporal traceability before
+the richer evolution and similarity relationships of later phases.
+
+The graph is embedded in `PersistentProjectKnowledge`, normalized, validated
+and serialized independently from storage technology. Schema `3.0` introduces
+this projection while retaining read compatibility with schema `2.0`.
+Restoration places a storage-independent graph representation inside
+`ProjectKnowledgeState`.
+
+ADR-016 defines the complete ownership, identity, temporal and persistence
+decision.
+
+## 17.7 Project Understanding Projection
+
+The Project Understanding layer consumes the storage-independent graph
+restored into `ProjectKnowledgeState`. It never reads persistence adapters or
+the persistent Knowledge implementation directly. This preserves the graph as
+a knowledge representation boundary while allowing higher-level consumers to
+remain independent from storage technology.
+
+The deterministic understanding engine derives architectural areas,
+component importance, dependency flows and cycles, related code regions,
+refactoring opportunities, evolution patterns, insights and structural
+summaries. These results are reproducible projections: graph facts remain the
+authoritative persisted knowledge and derived understanding remains opaque
+runtime state on the Project Aggregate Root.
+
+## 17.8 Intelligent Retrieval and Context Provenance
+
+Intelligent retrieval is a deterministic enrichment stage after semantic
+vector retrieval. It consumes the runtime graph contract, discovers related
+current chunks through structural relationships and evaluates historical
+observations separately. Semantic, structural and historical contributions
+remain visible instead of being collapsed into an unexplained score.
+
+Each result records why it was selected, the relationship identifiers that
+support the decision and the graph entities from which that evidence came.
+The Context Builder only resolves chunk content and propagates this evidence;
+it performs no graph traversal. This keeps semantic retrieval, graph
+representation and final context construction replaceable independently.
+
+## 17.9 External Project Knowledge Boundary
+
+External consumers access graph-derived knowledge through the Project
+Knowledge application service. The service accepts the Project Aggregate Root
+and returns serialized, external-safe views for project exploration, symbols,
+dependencies, history, duplicate and similarity evidence, and contextual
+knowledge.
+
+MCP resources and tools are adapters over this service. They do not import the
+Knowledge persistence implementation or storage adapters, and they cannot
+construct queries against the persistent representation directly. This keeps
+MCP transport concerns replaceable and prevents external consumers from
+bypassing application policy.
+
+The complete entity, relationship, persistence, historical, similarity,
+understanding and retrieval model is documented in
+`docs/architecture/KNOWLEDGE_GRAPH.md`. ADR-017 records the explainable
+retrieval fusion policy and mandatory external application-service boundary.
 
 ---
 

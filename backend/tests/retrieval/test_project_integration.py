@@ -1,6 +1,13 @@
 from pathlib import Path
 
-from core.project import Project, ProjectMetadata
+from core.project import (
+    Project,
+    ProjectKnowledgeGraph,
+    ProjectKnowledgeGraphEntity,
+    ProjectKnowledgeGraphRelationship,
+    ProjectKnowledgeState,
+    ProjectMetadata,
+)
 
 from app.embeddings.models import (
     Embedding,
@@ -121,3 +128,48 @@ def test_project_without_embeddings_adds_diagnostic() -> None:
     assert project.diagnostics == [
         "Project has no embedding_result"
     ]
+
+
+def test_project_retrieval_automatically_uses_restored_graph() -> None:
+    project = create_project()
+    project.knowledge_state = ProjectKnowledgeState(
+        graph=ProjectKnowledgeGraph(
+            graph_id="graph",
+            project_id="test-project",
+            entities=[
+                ProjectKnowledgeGraphEntity(
+                    entity_id="auth-entity",
+                    kind="chunk",
+                    source_identity="chunk_auth",
+                ),
+                ProjectKnowledgeGraphEntity(
+                    entity_id="database-entity",
+                    kind="chunk",
+                    source_identity="chunk_database",
+                ),
+            ],
+            relationships=[
+                ProjectKnowledgeGraphRelationship(
+                    relationship_id="related",
+                    kind="chunk_similar_to_chunk",
+                    source_entity_id="auth-entity",
+                    target_entity_id="database-entity",
+                    properties={"score": "0.8"},
+                )
+            ],
+        )
+    )
+    service = RetrievalService(Retriever(), VectorStoreManager())
+
+    result = service.retrieve_project(
+        project,
+        RetrievalQuery(text="authentication"),
+        [1.0, 0.0, 0.0],
+    )
+
+    database = next(
+        item for item in result.results if item.chunk_id == "chunk_database"
+    )
+    assert database.semantic_score is not None
+    assert database.structural_score > 0
+    assert database.relationship_ids == ("related",)

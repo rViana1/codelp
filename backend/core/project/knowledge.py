@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from datetime import datetime
+
 from pydantic import BaseModel, Field
 
 
@@ -75,6 +77,42 @@ class ProjectRetrievalKnowledge(BaseModel):
     score: float
 
 
+class ProjectKnowledgeGraphEntity(BaseModel):
+    """Storage-independent graph entity available at runtime."""
+
+    entity_id: str
+    kind: str
+    source_identity: str
+    first_observed_at: datetime | None = None
+    last_observed_at: datetime | None = None
+    is_current: bool = True
+    properties: dict[str, str] = Field(default_factory=dict)
+
+
+class ProjectKnowledgeGraphRelationship(BaseModel):
+    """Storage-independent directed graph relationship."""
+
+    relationship_id: str
+    kind: str
+    source_entity_id: str
+    target_entity_id: str
+    first_observed_at: datetime | None = None
+    last_observed_at: datetime | None = None
+    is_current: bool = True
+    properties: dict[str, str] = Field(default_factory=dict)
+
+
+class ProjectKnowledgeGraph(BaseModel):
+    """Runtime graph representation restored into the Project aggregate."""
+
+    graph_id: str
+    project_id: str
+    entities: list[ProjectKnowledgeGraphEntity] = Field(default_factory=list)
+    relationships: list[ProjectKnowledgeGraphRelationship] = Field(
+        default_factory=list
+    )
+
+
 class ProjectKnowledgeState(BaseModel):
     """
     Represents the knowledge state restored into a Project.
@@ -102,3 +140,5 @@ class ProjectKnowledgeState(BaseModel):
     retrieval: list[ProjectRetrievalKnowledge] = Field(
         default_factory=list
     )
+
+    graph: ProjectKnowledgeGraph | None = None

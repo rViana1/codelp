@@ -4,6 +4,7 @@ from app.mcp.resources import (
     ContextResource,
     ProjectInformationResource,
     ProjectStructureResource,
+    ProjectKnowledgeResource,
     SymbolResource,
 )
 
@@ -14,6 +15,7 @@ from app.mcp.tools import (
     MCPToolRegistry,
     SemanticSearchTool,
     SymbolLookupTool,
+    ProjectExplorationTool,
 )
 
 from app.mcp.models import MCPResourceDefinition, MCPToolDefinition
@@ -40,6 +42,7 @@ def create_mcp_server() -> MCPServer:
     tools = [
         SymbolLookupTool(),
         ContextRetrievalTool(),
+        ProjectExplorationTool(),
     ]
 
     for tool in tools:
@@ -56,11 +59,13 @@ def create_mcp_server() -> MCPServer:
                 description=tool.description,
             )
         )
+        server.register_tool_implementation(tool)
 
     resources = [
         ProjectInformationResource(),
         ProjectStructureResource(),
         ContextResource(),
+        ProjectKnowledgeResource(),
     ]
 
     for resource in resources:

@@ -259,3 +259,34 @@ These rules are enforced by
 `backend/tests/architecture/test_phase8_architecture_validation.py` and mapped
 to Milestone 10.4 acceptance requirements in
 `docs/development/milestones/10.4/PHASE_8_ARCHITECTURE_MATRIX.md`.
+
+## Persistent Knowledge Graph Projection
+
+Knowledge schema `3.0` adds a storage-independent graph projection to the
+authoritative snapshot. Schema `2.0` remains readable and is projected into a
+graph on the next successful update.
+
+The graph reuses existing persistent identities as source identities. Stable
+graph entity IDs are derived from project scope, entity kind and persistent
+identity; relationship IDs are derived from relationship kind and their stable
+endpoints. The graph never replaces or competes with file, symbol, chunk or
+embedding identity.
+
+Historical file locations and content fingerprints are graph entities with
+observation windows. Entities and relationships absent from a later current
+projection remain stored as inactive history and recover the same identity if
+they reappear.
+
+`KnowledgeGraphBuilder` owns projection only. It does not access storage or
+pipeline orchestration. `KnowledgeUpdateEngine` rebuilds the graph after the
+authoritative merge, and the normalizer, validator, storage and restorer apply
+their existing boundaries to it. Project remains the Aggregate Root and
+receives only a storage-independent runtime graph inside
+`ProjectKnowledgeState`.
+
+ADR-016 records the graph projection decision. The completed graph also
+projects imports, internal dependencies, exact duplicates, structural chunk
+similarity and explicit location/content evolution relationships. Derived
+Understanding and Intelligent Retrieval consume the restored Core graph
+contract and never import persistence implementations. ADR-017 records the
+explainable retrieval and external application-service boundary.

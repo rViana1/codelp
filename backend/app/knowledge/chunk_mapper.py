@@ -1,6 +1,10 @@
 from __future__ import annotations
 
 import hashlib
+import io
+import keyword
+import re
+import tokenize
 
 from app.chunking.models import ChunkCollection
 
@@ -74,6 +78,11 @@ class ChunkKnowledgeMapper:
                     content_hash=ChunkKnowledgeMapper._hash_content(
                         chunk.content
                     ),
+                    structural_fingerprint=(
+                        ChunkKnowledgeMapper._structural_fingerprint(
+                            chunk.content
+                        )
+                    ),
                 )
             )
 
@@ -88,3 +97,46 @@ class ChunkKnowledgeMapper:
         return hashlib.sha256(
             content.encode("utf-8")
         ).hexdigest()
+
+    @staticmethod
+    def _structural_fingerprint(
+        content: str,
+    ) -> tuple[str, ...]:
+        """Return deterministic normalized token shingles for similarity."""
+        normalized = []
+        try:
+            tokens = tokenize.generate_tokens(io.StringIO(content).readline)
+            for token in tokens:
+                if token.type in {
+                    tokenize.ENCODING,
+                    tokenize.ENDMARKER,
+                    tokenize.INDENT,
+                    tokenize.DEDENT,
+                    tokenize.NEWLINE,
+                    tokenize.NL,
+                    tokenize.COMMENT,
+                }:
+                    continue
+                if token.type == tokenize.NAME:
+                    normalized.append(
+                        token.string if keyword.iskeyword(token.string) else "NAME"
+                    )
+                elif token.type == tokenize.NUMBER:
+                    normalized.append("NUMBER")
+                elif token.type == tokenize.STRING:
+                    normalized.append("STRING")
+                else:
+                    normalized.append(token.string)
+        except (IndentationError, SyntaxError, tokenize.TokenError):
+            normalized = re.findall(r"\w+|[^\w\s]", content)
+
+        if not normalized:
+            return ()
+        width = min(3, len(normalized))
+        fingerprints = {
+            hashlib.sha256(
+                "\0".join(normalized[index:index + width]).encode("utf-8")
+            ).hexdigest()
+            for index in range(len(normalized) - width + 1)
+        }
+        return tuple(sorted(fingerprints))

@@ -1250,11 +1250,11 @@ cross-version cache migration and dependency-aware cross-file invalidation.
 
 ---
 
-## Milestone 10.5 — Knowledge Graph & Project Intelligence
+## Milestone 10.5 — Knowledge Graph & Intelligent Project Understanding
 
 Status
 
-Planned
+Completed — Phases 1 through 8
 
 Goals
 
@@ -1265,7 +1265,137 @@ Goals
 - Produce higher-level project evolution and architecture insights.
 - Define dependency-aware invalidation where relationships require it.
 
-The detailed phase checklist will be finalized before implementation.
+Phase 1 — Knowledge Graph Foundation
+
+- Project knowledge graph model defined inside the Knowledge layer.
+- Typed graph entities defined for projects, files, historical locations,
+  historical content states, symbols, chunks, embeddings and retrieval.
+- Typed directed foundational relationships defined.
+- Graph embedded in the storage-independent persistent knowledge contract.
+- Existing persistent identities retained as graph source identities.
+- Graph, entity and relationship identifiers derived deterministically.
+- Historical entities and relationships retained as inactive observations.
+- Removed and reappearing entities preserve graph identity and observation
+  history.
+- Storage-independent runtime graph restored through
+  `ProjectKnowledgeState` without replacing Project.
+- Knowledge schema `3.0` introduced with read compatibility for `2.0`.
+- Graph projection integrated with authoritative knowledge build and merge.
+- Deterministic normalization, validation and JSON round-trip implemented.
+- ADR-016 records graph ownership, identity, temporal and persistence
+  boundaries.
+
+Phase 2 — Entity Relationships
+
+- Persistent import references associated with stable source file identities.
+- Internal module targets resolved conservatively only when unique.
+- External modules represented as graph entities without synthetic files.
+- File import and internal dependency relationships projected.
+- File, symbol and chunk duplicate relationships projected deterministically.
+- Structural chunk fingerprints added using normalized token shingles.
+- Deterministic chunk similarity relationships include an auditable score.
+- Historical locations connected through moved, renamed and combined
+  move/rename relationships.
+- Historical content states connected through evolution relationships,
+  including later state reversions.
+- Existing ownership relationships retained for files, symbols, chunks,
+  embeddings and retrieval metadata.
+- Relationship identity derived from kind and stable graph endpoints.
+- Removed relationships retained as inactive history and reactivated with the
+  same identity when they reappear.
+
+Phase 3 — Project Understanding Layer
+
+- Storage-independent understanding engine derives higher-level knowledge
+  exclusively from the restored runtime graph.
+- Architectural areas grouped deterministically from current file locations.
+- Important files and symbols ranked from dependency, ownership and
+  connectivity evidence.
+- Directed dependency flows and circular dependency components identified.
+- Duplicate and structurally similar code regions exposed with graph
+  provenance.
+- Duplicate-code, similarity and dependency-cycle refactoring opportunities
+  generated deterministically.
+- Moved, renamed and content evolution transitions summarized from historical
+  graph relationships.
+- Project-level insights and a structural summary generated without changing
+  authoritative persistent knowledge.
+- Understanding remains opaque runtime state on the Project Aggregate Root.
+- Architecture tests enforce the Knowledge-to-Understanding dependency
+  direction and storage independence.
+
+Phase 4 — Intelligent Retrieval Foundation
+
+- Semantic retrieval results enriched with current structural graph evidence.
+- Related chunks discovered through duplicate and similarity relationships.
+- Historical graph observations contribute separately auditable evidence.
+- Semantic, structural and historical scores retained independently and
+  combined with a deterministic weighting policy.
+- Every selected chunk preserves reasons, relationship identifiers and graph
+  entity provenance.
+- Context generation propagates selection explanations and provenance.
+- Context identifiers derive deterministically from query and selected
+  evidence.
+- Retrieval consumes only the storage-independent runtime graph contract and
+  remains independent from graph projection and storage implementations.
+
+Phase 5 — MCP / External Consumer Integration
+
+- Storage-independent Project Knowledge application service added as the
+  mandatory external-consumer boundary.
+- Project graph overview exposed through `project://knowledge`.
+- Project, symbol, dependency, history, duplicate, similarity and contextual
+  knowledge exploration exposed through one validated MCP tool contract.
+- MCP composition root registers both the external definitions and executable
+  implementations.
+- External responses contain serialized values and persistent identities,
+  never internal storage objects.
+- MCP adapters do not import Knowledge persistence or storage modules.
+- Architecture tests enforce that consumers cannot bypass the application
+  service.
+
+Phase 6 — Testing
+
+- Graph creation covers all entity and relationship categories.
+- Entity and relationship identities validated across updates, disappearance,
+  reappearance and JSON round-trips.
+- Persistence and restoration validated through the storage abstraction.
+- File dependencies, history, symbols, duplicates and code similarity covered.
+- Project Understanding analysis validated from restored graph state.
+- Intelligent retrieval and final context generation validated with persistent
+  structural and historical provenance.
+- End-to-end acceptance test covers graph projection, persistence, load,
+  restoration, understanding, retrieval, external exploration and context.
+- Complete backend regression suite remains green.
+
+Phase 7 — Architecture Validation
+
+- Project remains the Aggregate Root; the graph is nested runtime knowledge
+  state and never replaces the aggregate.
+- Graph remains a Knowledge representation and persistence projection.
+- Core domain remains free from application and storage dependencies.
+- Knowledge persistence remains behind the `KnowledgeStorage` abstraction.
+- Intelligent Retrieval depends on the runtime graph contract rather than its
+  projection or storage implementation.
+- MCP adapters depend on application services and cannot bypass them.
+- Graph entity and relationship identity remains deterministic.
+- Validator enforces unique entities, relationships and valid endpoints.
+- Historical locations and evolution relationships remain traceable.
+- Consolidated executable architecture acceptance matrix added.
+
+Phase 8 — Documentation
+
+- README updated with graph, understanding, intelligent retrieval and MCP
+  exploration capabilities.
+- Main and Knowledge architecture references updated.
+- Dedicated knowledge graph architecture reference documents entities,
+  relationships, persistence, history, structural similarity, understanding
+  and retrieval provenance.
+- Roadmap and changelog updated across all Milestone 10.5 phases.
+- Milestone lessons learned recorded.
+- ADR-016 retained for persistent graph projection.
+- ADR-017 added because explainable score fusion and mandatory external
+  application-service mediation are new architectural decisions.
 
 ---
 
@@ -1323,6 +1453,8 @@ Current ADRs
 - ADR-013 — Knowledge Lifecycle Integration Boundary
 - ADR-014 — Persistent Identity & Incremental Knowledge Strategy
 - ADR-015 — Deterministic Knowledge Updates & Rollback
+- ADR-016 — Persistent Knowledge Graph Projection
+- ADR-017 — Explainable Graph-Aware Retrieval and External Knowledge Access
 
 Planned ADRs
 

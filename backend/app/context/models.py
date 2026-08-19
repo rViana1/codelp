@@ -20,6 +20,18 @@ class ContextChunk(BaseModel):
 
     score: float
 
+    semantic_score: float | None = None
+
+    structural_score: float = 0.0
+
+    historical_score: float = 0.0
+
+    selection_reasons: tuple[str, ...] = ()
+
+    relationship_ids: tuple[str, ...] = ()
+
+    provenance_entity_ids: tuple[str, ...] = ()
+
 
 class PromptContext(BaseModel):
     """

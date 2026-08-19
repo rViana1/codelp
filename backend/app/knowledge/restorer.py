@@ -6,6 +6,9 @@ from core.project import (
     ProjectEmbeddingKnowledge,
     ProjectFileKnowledge,
     ProjectKnowledgeState,
+    ProjectKnowledgeGraph,
+    ProjectKnowledgeGraphEntity,
+    ProjectKnowledgeGraphRelationship,
     ProjectRetrievalKnowledge,
     ProjectSymbolKnowledge,
 )
@@ -110,6 +113,41 @@ class KnowledgeRestorer:
                 )
                 for item in knowledge.retrieval
             ],
+            graph=(
+                ProjectKnowledgeGraph(
+                    graph_id=knowledge.graph.graph_id,
+                    project_id=knowledge.graph.project_id,
+                    entities=[
+                        ProjectKnowledgeGraphEntity(
+                            entity_id=entity.entity_id,
+                            kind=entity.kind.value,
+                            source_identity=entity.source_identity,
+                            first_observed_at=entity.first_observed_at,
+                            last_observed_at=entity.last_observed_at,
+                            is_current=entity.is_current,
+                            properties=dict(entity.properties),
+                        )
+                        for entity in knowledge.graph.entities
+                    ],
+                    relationships=[
+                        ProjectKnowledgeGraphRelationship(
+                            relationship_id=relationship.relationship_id,
+                            kind=relationship.kind.value,
+                            source_entity_id=relationship.source_entity_id,
+                            target_entity_id=relationship.target_entity_id,
+                            first_observed_at=(
+                                relationship.first_observed_at
+                            ),
+                            last_observed_at=relationship.last_observed_at,
+                            is_current=relationship.is_current,
+                            properties=dict(relationship.properties),
+                        )
+                        for relationship in knowledge.graph.relationships
+                    ],
+                )
+                if knowledge.graph is not None
+                else None
+            ),
         )
 
         project.diagnostics.append(

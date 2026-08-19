@@ -12,6 +12,7 @@ from app.knowledge.models import (
     PersistentKnowledgeMetadata,
     PersistentProjectKnowledge,
 )
+from app.knowledge.graph import KnowledgeGraphBuilder
 
 
 T = TypeVar("T")
@@ -26,13 +27,21 @@ class KnowledgeUpdateEngine:
     fingerprint histories are durable and are never discarded.
     """
 
+    def __init__(
+        self,
+        graph_builder: KnowledgeGraphBuilder | None = None,
+    ) -> None:
+        self.graph_builder = graph_builder or KnowledgeGraphBuilder()
+
     def merge(
         self,
         previous: PersistentProjectKnowledge | None,
         current: PersistentProjectKnowledge,
     ) -> PersistentProjectKnowledge:
         if previous is None:
-            return self._ordered_copy(current)
+            merged = self._ordered_copy(current)
+            merged.graph = self.graph_builder.build(merged, current.graph)
+            return merged
         if previous.metadata.project_id != current.metadata.project_id:
             raise ValueError("Cannot merge knowledge from different projects")
 
@@ -54,7 +63,7 @@ class KnowledgeUpdateEngine:
             for file_id in sorted(set(previous_files) | set(current_files))
         ]
 
-        return PersistentProjectKnowledge(
+        merged = PersistentProjectKnowledge(
             metadata=PersistentKnowledgeMetadata(
                 project_id=current.metadata.project_id,
                 version=current.metadata.version,
@@ -83,7 +92,19 @@ class KnowledgeUpdateEngine:
                 current.retrieval,
                 key=lambda item: (item.chunk_id, item.query_hash),
             ),
+            imports=self._merge_authoritative(
+                previous.imports,
+                current.imports,
+                key=lambda item: item.import_id,
+            ),
         )
+        previous_graph = (
+            previous.graph
+            if previous.graph is not None
+            else self.graph_builder.build(previous)
+        )
+        merged.graph = self.graph_builder.build(merged, previous_graph)
+        return merged
 
     def _merge_file(
         self,
@@ -248,5 +269,15 @@ class KnowledgeUpdateEngine:
                 [],
                 knowledge.retrieval,
                 key=lambda item: (item.chunk_id, item.query_hash),
+            ),
+            imports=self._merge_authoritative(
+                [],
+                knowledge.imports,
+                key=lambda item: item.import_id,
+            ),
+            graph=(
+                knowledge.graph.model_copy(deep=True)
+                if knowledge.graph
+                else None
             ),
         )

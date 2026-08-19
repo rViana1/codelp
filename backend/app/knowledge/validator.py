@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import PurePosixPath
 
 from app.knowledge.models import PersistentProjectKnowledge
+from app.knowledge.identity import deterministic_identity
 from app.knowledge.schema import is_supported_version
 
 from backend.app.knowledge.errors import KnowledgeValidationError
@@ -39,6 +40,10 @@ class KnowledgeValidator:
         )
 
         self._validate_required_fields(
+            knowledge
+        )
+
+        self._validate_graph(
             knowledge
         )
 
@@ -313,6 +318,34 @@ class KnowledgeValidator:
                     "Retrieval score cannot be negative"
                 )
 
+        import_ids = set()
+        for reference in knowledge.imports:
+            if not reference.import_id:
+                raise ValueError("Import reference requires identity")
+            if reference.import_id in import_ids:
+                raise ValueError("Duplicate import identities detected")
+            if reference.source_file_id not in {
+                file.file_id for file in knowledge.files
+            }:
+                raise ValueError("Import references unknown source file")
+            if (
+                reference.target_file_id is not None
+                and reference.target_file_id
+                not in {file.file_id for file in knowledge.files}
+            ):
+                raise ValueError("Import references unknown target file")
+            if not reference.imported_module:
+                raise ValueError("Import reference requires module")
+            expected_import_id = deterministic_identity(
+                knowledge.metadata.project_id,
+                "import",
+                reference.source_file_id,
+                reference.imported_module,
+            )
+            if reference.import_id != expected_import_id:
+                raise ValueError("Import identity is not deterministic")
+            import_ids.add(reference.import_id)
+
 
     def validate_project_identity(
         self,
@@ -324,3 +357,111 @@ class KnowledgeValidator:
             raise ValueError(
                 "Knowledge belongs to a different project"
             )
+
+    def _validate_graph(
+        self,
+        knowledge: PersistentProjectKnowledge,
+    ) -> None:
+        graph = knowledge.graph
+        if graph is None:
+            return
+        if not graph.graph_id:
+            raise ValueError("Knowledge graph requires identity")
+        if graph.project_id != knowledge.metadata.project_id:
+            raise ValueError("Knowledge graph belongs to a different project")
+        expected_graph_id = deterministic_identity(
+            graph.project_id,
+            "knowledge_graph",
+        )
+        if graph.graph_id != expected_graph_id:
+            raise ValueError("Knowledge graph identity is not deterministic")
+
+        entity_ids = [entity.entity_id for entity in graph.entities]
+        if len(entity_ids) != len(set(entity_ids)):
+            raise ValueError("Duplicate graph entity identities detected")
+        entity_keys = [
+            (entity.kind, entity.source_identity)
+            for entity in graph.entities
+        ]
+        if len(entity_keys) != len(set(entity_keys)):
+            raise ValueError("Duplicate graph source entities detected")
+
+        entities_by_id = {
+            entity.entity_id: entity
+            for entity in graph.entities
+        }
+        for entity in graph.entities:
+            if not entity.entity_id or not entity.source_identity:
+                raise ValueError("Graph entity requires identity")
+            expected_entity_id = deterministic_identity(
+                graph.project_id,
+                "graph_entity",
+                entity.kind.value,
+                entity.source_identity,
+            )
+            if entity.entity_id != expected_entity_id:
+                raise ValueError("Graph entity identity is not deterministic")
+            if (
+                entity.first_observed_at is not None
+                and entity.last_observed_at is not None
+                and entity.last_observed_at < entity.first_observed_at
+            ):
+                raise ValueError("Graph entity has invalid observation window")
+
+        relationship_ids = [
+            relationship.relationship_id
+            for relationship in graph.relationships
+        ]
+        if len(relationship_ids) != len(set(relationship_ids)):
+            raise ValueError(
+                "Duplicate graph relationship identities detected"
+            )
+        relationship_keys = [
+            (
+                relationship.kind,
+                relationship.source_entity_id,
+                relationship.target_entity_id,
+            )
+            for relationship in graph.relationships
+        ]
+        if len(relationship_keys) != len(set(relationship_keys)):
+            raise ValueError("Duplicate graph relationships detected")
+
+        for relationship in graph.relationships:
+            if not relationship.relationship_id:
+                raise ValueError("Graph relationship requires identity")
+            expected_relationship_id = deterministic_identity(
+                graph.project_id,
+                "graph_relationship",
+                relationship.kind.value,
+                relationship.source_entity_id,
+                relationship.target_entity_id,
+            )
+            if relationship.relationship_id != expected_relationship_id:
+                raise ValueError(
+                    "Graph relationship identity is not deterministic"
+                )
+            if relationship.source_entity_id not in entities_by_id:
+                raise ValueError("Graph relationship has unknown source")
+            if relationship.target_entity_id not in entities_by_id:
+                raise ValueError("Graph relationship has unknown target")
+            if relationship.source_entity_id == relationship.target_entity_id:
+                raise ValueError("Graph relationship cannot reference itself")
+            if (
+                relationship.first_observed_at is not None
+                and relationship.last_observed_at is not None
+                and relationship.last_observed_at
+                < relationship.first_observed_at
+            ):
+                raise ValueError(
+                    "Graph relationship has invalid observation window"
+                )
+            if relationship.is_current:
+                if not entities_by_id[relationship.source_entity_id].is_current:
+                    raise ValueError(
+                        "Current graph relationship has historical source"
+                    )
+                if not entities_by_id[relationship.target_entity_id].is_current:
+                    raise ValueError(
+                        "Current graph relationship has historical target"
+                    )

@@ -10,6 +10,175 @@ Future changes will be documented here.
 
 ---
 
+## [Milestone 10.5 — Phase 8] — Documentation
+
+### Updated
+
+- Updated README, roadmap, changelog, lessons learned and architecture
+  references for the completed milestone.
+- Documented graph entities, relationships, persistence boundaries, historical
+  evolution, duplicate and structural similarity models.
+- Documented project understanding, explainable retrieval, context provenance
+  and external consumer access.
+
+### Architecture Decisions
+
+- Retained ADR-016 for deterministic persistent graph projection.
+- Added ADR-017 because graph-aware score fusion and mandatory external
+  application-service access are new architectural policies.
+
+### Validation
+
+- Validated 417 backend tests under two deterministic hash seeds.
+- Validated 45 architecture boundary tests, Python compilation and diff
+  formatting.
+
+---
+
+## [Milestone 10.5 — Phase 7] — Architecture Validation
+
+### Validated
+
+- Validated Project Aggregate Root ownership and graph representation scope.
+- Validated domain, Knowledge, Understanding, Retrieval, Context and MCP
+  dependency directions.
+- Validated storage abstraction independence and prevention of persistence
+  leakage.
+- Validated deterministic graph identities, relationship endpoint consistency
+  and historical traceability.
+
+### Added
+
+- Added a consolidated Milestone 10.5 architecture acceptance matrix.
+- Expanded focused architecture tests for understanding, retrieval and MCP
+  consumer boundaries.
+
+---
+
+## [Milestone 10.5 — Phase 6] — Testing
+
+### Added
+
+- Added end-to-end graph persistence, restoration, understanding, intelligent
+  retrieval, external exploration and context acceptance tests.
+- Added explicit entity and relationship identity round-trip validation.
+
+### Validation
+
+- Covered graph creation, identity preservation, relationship preservation,
+  persistence, restoration, file and symbol relationships, history,
+  duplicates, structural similarity, graph-aware retrieval and provenance-rich
+  context generation.
+- Validated the complete backend regression suite.
+
+---
+
+## [Milestone 10.5 — Phase 5] — MCP / External Consumer Integration
+
+### Added
+
+- Added a storage-independent Project Knowledge exploration service.
+- Added project, symbol, dependency, history, duplicate, similarity and
+  contextual knowledge views.
+- Added the `project://knowledge` MCP resource.
+- Added the `project_exploration` MCP tool and executable composition-root
+  registration.
+
+### Validation
+
+- Added service, resource, tool and server execution tests.
+- Added architecture tests preventing MCP consumers from importing Knowledge
+  persistence or storage internals.
+- Validated the complete MCP test suite.
+
+---
+
+## [Milestone 10.5 — Phase 4] — Intelligent Retrieval Foundation
+
+### Added
+
+- Added graph-aware enrichment of semantic retrieval results.
+- Added deterministic semantic, structural and historical score fusion.
+- Added explainable reasons, graph relationship evidence and entity
+  provenance to retrieval results.
+- Propagated retrieval evidence into context chunks.
+- Made generated context identity deterministic for the same query and
+  evidence.
+
+### Validation
+
+- Added graph expansion, historical evidence, ordering, explanation,
+  provenance and deterministic context tests.
+- Added architecture tests keeping retrieval independent from graph storage
+  and context generation independent from graph traversal.
+
+---
+
+## [Milestone 10.5 — Phase 3] — Project Understanding Layer
+
+### Added
+
+- Added a deterministic, storage-independent project understanding engine.
+- Added architectural-area, important-component and dependency-flow models.
+- Added circular dependency, related-code, refactoring and evolution analysis.
+- Added project insights and structural summaries derived from graph facts.
+- Added Project runtime enrichment without persisting derived understanding.
+
+### Validation
+
+- Added behavioural tests for architecture areas, component importance,
+  dependency cycles, related code, evolution and deterministic output.
+- Added architecture tests for storage independence, aggregate ownership and
+  the Knowledge-to-Understanding dependency direction.
+
+---
+
+## [Milestone 10.5 — Phase 2] — Entity Relationships
+
+### Added
+
+- Added persistent import references and conservative internal target
+  resolution.
+- Added module, import and file dependency graph relationships.
+- Added deterministic duplicate relationships for files, symbols and chunks.
+- Added normalized structural chunk fingerprints and similarity scores.
+- Added moved, renamed, moved-and-renamed and content-evolution historical
+  relationships.
+- Preserved removed and reappearing relationship identities over time.
+
+### Validation
+
+- Added relationship, ambiguity, similarity, history and ordering tests.
+- Validated the complete backend regression suite.
+
+---
+
+## [Milestone 10.5 — Phase 1] — Knowledge Graph Foundation
+
+### Added
+
+- Added persistent project knowledge graph models and deterministic graph
+  projection.
+- Added typed project, file, historical location, historical content,
+  symbol, chunk, embedding and retrieval graph entities.
+- Added foundational directed relationship types.
+- Added temporal observation windows and inactive historical preservation.
+- Added deterministic graph, entity and relationship identities derived from
+  existing persistent identities.
+- Added graph normalization, validation, JSON persistence and Project
+  restoration.
+- Added knowledge graph foundation and architecture boundary tests.
+- Added ADR-016 — Persistent Knowledge Graph Projection.
+
+### Changed
+
+- Evolved the current persistent knowledge schema to `3.0` while preserving
+  read compatibility with schema `2.0` snapshots.
+- Integrated graph projection into candidate knowledge building and the
+  authoritative update merge.
+
+---
+
 ## [Milestone 10.4 — Phase 9] — Documentation
 
 ### Updated
