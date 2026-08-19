@@ -6,6 +6,8 @@ from app.knowledge.models import (
     PersistentSymbolIdentity,
     PersistentChunkIdentity,
 )
+from app.knowledge.cache import IncrementalAnalysisCache
+from app.embeddings.models import EmbeddingProviderInfo
 
 
 def create_knowledge(project_id: str = "test-project"):
@@ -218,3 +220,27 @@ def test_atomic_write_does_not_leave_temporary_files(
     assert not (
         tmp_path / "test-project.json.tmp"
     ).exists()
+
+
+def test_incremental_cache_roundtrip_is_separate_from_knowledge(tmp_path):
+    storage = FileKnowledgeStorage(str(tmp_path))
+    cache = IncrementalAnalysisCache(
+        project_id="test-project",
+        provider=EmbeddingProviderInfo(
+            name="fake",
+            model="fake-5",
+            dimensions=5,
+        ),
+    )
+
+    storage.save(create_knowledge())
+    storage.save_analysis_cache(cache)
+
+    assert storage.load_analysis_cache("test-project") == cache
+    assert (tmp_path / "test-project.json").exists()
+    assert (tmp_path / "test-project.analysis-cache.json").exists()
+
+    storage.delete("test-project")
+
+    assert storage.load("test-project") is None
+    assert storage.load_analysis_cache("test-project") is None

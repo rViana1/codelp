@@ -15,8 +15,8 @@ def test_loader_accepts_current_version(tmp_path):
     storage.save(
         PersistentProjectKnowledge(
             metadata=PersistentKnowledgeMetadata(
-                project_id="project-a",
-                version="1.0",
+                    project_id="project-a",
+                    version="2.0",
             )
         )
     )
@@ -42,8 +42,8 @@ def test_loader_rejects_incompatible_version(tmp_path):
     storage.save(
         PersistentProjectKnowledge(
             metadata=PersistentKnowledgeMetadata(
-                project_id="project-a",
-                version="2.0",
+                    project_id="project-a",
+                    version="1.0",
             )
         )
     )

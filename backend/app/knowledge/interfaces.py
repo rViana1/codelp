@@ -1,6 +1,10 @@
 from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING
 
 from .models import PersistentProjectKnowledge
+
+if TYPE_CHECKING:
+    from .cache import IncrementalAnalysisCache
 
 
 class KnowledgeStorage(ABC):
@@ -47,3 +51,16 @@ class KnowledgeStorage(ABC):
         Remove persisted project knowledge.
         """
         raise NotImplementedError
+
+    def load_analysis_cache(
+        self,
+        project_id: str,
+    ) -> "IncrementalAnalysisCache | None":
+        """Load optional disposable incremental artifacts."""
+        return None
+
+    def save_analysis_cache(
+        self,
+        cache: "IncrementalAnalysisCache",
+    ) -> None:
+        """Persist optional disposable incremental artifacts."""

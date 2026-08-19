@@ -22,10 +22,15 @@ class RetrievalKnowledgeMapper:
     @staticmethod
     def from_retrieval(
         retrieval: RetrievalCollection | None,
+        chunk_identity_by_source: dict[str, str] | None = None,
     ) -> list[PersistentRetrievalMetadata]:
 
         if retrieval is None:
             return []
+
+        chunk_identity_by_source = (
+            chunk_identity_by_source or {}
+        )
 
         query_hash = (
             RetrievalKnowledgeMapper._hash_query(
@@ -42,7 +47,10 @@ class RetrievalKnowledgeMapper:
 
             result.append(
                 PersistentRetrievalMetadata(
-                    chunk_id=item.chunk_id,
+                    chunk_id=chunk_identity_by_source.get(
+                        item.chunk_id,
+                        item.chunk_id,
+                    ),
                     query_hash=query_hash,
                     score=item.score,
                 )

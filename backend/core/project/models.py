@@ -195,6 +195,12 @@ class Project(BaseModel):
     
     knowledge_state: ProjectKnowledgeState | None = None
 
+    knowledge_change_result: object | None = None
+
+    incremental_analysis_result: object | None = None
+
+    knowledge_analysis_plan: object | None = None
+
     diagnostics: list[str] = Field(default_factory=list)
     
     def export_persistent_state(

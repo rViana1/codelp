@@ -1,6 +1,9 @@
 from __future__ import annotations
 
-from app.knowledge.models import PersistentProjectKnowledge
+from app.knowledge.models import (
+    PersistentFileIdentity,
+    PersistentProjectKnowledge,
+)
 
 
 class KnowledgeNormalizer:
@@ -22,8 +25,28 @@ class KnowledgeNormalizer:
 
         return PersistentProjectKnowledge(
             metadata=knowledge.metadata,
+            configuration=knowledge.configuration,
             files=sorted(
-                knowledge.files,
+                (
+                    PersistentFileIdentity(
+                        file_id=file.file_id,
+                        locations=sorted(
+                            file.locations,
+                            key=lambda location: (
+                                location.first_seen,
+                                location.path,
+                            ),
+                        ),
+                        fingerprints=sorted(
+                            file.fingerprints,
+                            key=lambda fingerprint: (
+                                fingerprint.generated_at,
+                                fingerprint.content_hash,
+                            ),
+                        ),
+                    )
+                    for file in knowledge.files
+                ),
                 key=lambda item: item.file_id,
             ),
             symbols=sorted(
@@ -36,10 +59,16 @@ class KnowledgeNormalizer:
             ),
             embeddings=sorted(
                 knowledge.embeddings,
-                key=lambda item: item.chunk_id,
+                key=lambda item: (
+                    item.chunk_id,
+                    item.provider,
+                ),
             ),
             retrieval=sorted(
                 knowledge.retrieval,
-                key=lambda item: item.chunk_id,
+                key=lambda item: (
+                    item.chunk_id,
+                    item.query_hash,
+                ),
             ),
         )

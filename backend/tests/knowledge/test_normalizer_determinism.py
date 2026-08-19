@@ -2,6 +2,8 @@ from app.knowledge.models import (
     PersistentKnowledgeMetadata,
     PersistentProjectKnowledge,
     PersistentFileIdentity,
+    PersistentFileFingerprint,
+    PersistentFileLocation,
 )
 
 from app.knowledge.normalizer import KnowledgeNormalizer
@@ -16,13 +18,39 @@ def test_normalizer_produces_deterministic_file_order():
         files=[
             PersistentFileIdentity(
                 file_id="b",
-                path="b.py",
-                content_hash="hash-b",
+                locations=[
+                    PersistentFileLocation(
+                        path="b.py",
+                        first_seen="2026-01-01T00:00:00Z",
+                        last_seen="2026-01-01T00:00:00Z",
+                    )
+                ],
+                fingerprints=[
+                    PersistentFileFingerprint(
+                        content_hash="hash-b",
+                        size_bytes=1,
+                        generated_at="2026-01-01T00:00:00Z",
+                        last_seen="2026-01-01T00:00:00Z",
+                    )
+                ],
             ),
             PersistentFileIdentity(
                 file_id="a",
-                path="a.py",
-                content_hash="hash-a",
+                locations=[
+                    PersistentFileLocation(
+                        path="a.py",
+                        first_seen="2026-01-01T00:00:00Z",
+                        last_seen="2026-01-01T00:00:00Z",
+                    )
+                ],
+                fingerprints=[
+                    PersistentFileFingerprint(
+                        content_hash="hash-a",
+                        size_bytes=1,
+                        generated_at="2026-01-01T00:00:00Z",
+                        last_seen="2026-01-01T00:00:00Z",
+                    )
+                ],
             ),
         ],
     )
@@ -44,13 +72,39 @@ def test_normalizer_does_not_mutate_original():
         files=[
             PersistentFileIdentity(
                 file_id="b",
-                path="b.py",
-                content_hash="hash-b",
+                locations=[
+                    PersistentFileLocation(
+                        path="b.py",
+                        first_seen="2026-01-01T00:00:00Z",
+                        last_seen="2026-01-01T00:00:00Z",
+                    )
+                ],
+                fingerprints=[
+                    PersistentFileFingerprint(
+                        content_hash="hash-b",
+                        size_bytes=1,
+                        generated_at="2026-01-01T00:00:00Z",
+                        last_seen="2026-01-01T00:00:00Z",
+                    )
+                ],
             ),
             PersistentFileIdentity(
                 file_id="a",
-                path="a.py",
-                content_hash="hash-a",
+                locations=[
+                    PersistentFileLocation(
+                        path="a.py",
+                        first_seen="2026-01-01T00:00:00Z",
+                        last_seen="2026-01-01T00:00:00Z",
+                    )
+                ],
+                fingerprints=[
+                    PersistentFileFingerprint(
+                        content_hash="hash-a",
+                        size_bytes=1,
+                        generated_at="2026-01-01T00:00:00Z",
+                        last_seen="2026-01-01T00:00:00Z",
+                    )
+                ],
             ),
         ],
     )

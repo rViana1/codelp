@@ -9,6 +9,7 @@ from .exceptions import (
     KnowledgeWriteError,
 )
 from .interfaces import KnowledgeStorage
+from .cache import IncrementalAnalysisCache
 from .models import PersistentProjectKnowledge
 from .normalizer import KnowledgeNormalizer
 
@@ -45,6 +46,12 @@ class FileKnowledgeStorage(KnowledgeStorage):
     ) -> Path:
 
         return self.base_path / f"{project_id}.json"
+
+    def _analysis_cache_path(
+        self,
+        project_id: str,
+    ) -> Path:
+        return self.base_path / f"{project_id}.analysis-cache.json"
 
 
     def save(
@@ -154,6 +161,43 @@ class FileKnowledgeStorage(KnowledgeStorage):
 
         if path.exists():
             path.unlink()
+
+        cache_path = self._analysis_cache_path(project_id)
+        if cache_path.exists():
+            cache_path.unlink()
+
+    def load_analysis_cache(
+        self,
+        project_id: str,
+    ) -> IncrementalAnalysisCache | None:
+        path = self._analysis_cache_path(project_id)
+        if not path.exists():
+            return None
+        try:
+            return IncrementalAnalysisCache.model_validate_json(
+                path.read_text(encoding="utf-8")
+            )
+        except (OSError, ValidationError, ValueError):
+            return None
+
+    def save_analysis_cache(
+        self,
+        cache: IncrementalAnalysisCache,
+    ) -> None:
+        path = self._analysis_cache_path(cache.project_id)
+        temporary_path = path.with_suffix(".json.tmp")
+        try:
+            with temporary_path.open("w", encoding="utf-8") as file:
+                file.write(cache.model_dump_json(indent=4))
+                file.flush()
+                os.fsync(file.fileno())
+            temporary_path.replace(path)
+        except OSError as exc:
+            if temporary_path.exists():
+                temporary_path.unlink()
+            raise KnowledgeWriteError(
+                "Failed to persist incremental analysis cache safely"
+            ) from exc
 
 
     def contains(

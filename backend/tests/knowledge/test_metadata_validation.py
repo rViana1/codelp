@@ -7,4 +7,4 @@ def test_default_knowledge_version():
         project_id="project-a"
     )
 
-    assert metadata.version == "1.0"
+    assert metadata.version == "2.0"

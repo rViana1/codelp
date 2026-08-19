@@ -8,6 +8,8 @@ from app.knowledge.models import (
     PersistentChunkIdentity,
     PersistentEmbeddingMetadata,
     PersistentFileIdentity,
+    PersistentFileFingerprint,
+    PersistentFileLocation,
     PersistentKnowledgeMetadata,
     PersistentProjectConfiguration,
     PersistentProjectKnowledge,
@@ -141,8 +143,21 @@ def test_restorer_restores_knowledge_identities(tmp_path):
         files=[
             PersistentFileIdentity(
                 file_id="file-1",
-                path="src/main.py",
-                content_hash="hash-1",
+                locations=[
+                    PersistentFileLocation(
+                        path="src/main.py",
+                        first_seen="2026-01-01T00:00:00Z",
+                        last_seen="2026-01-01T00:00:00Z",
+                    )
+                ],
+                fingerprints=[
+                    PersistentFileFingerprint(
+                        content_hash="hash-1",
+                        size_bytes=1,
+                        generated_at="2026-01-01T00:00:00Z",
+                        last_seen="2026-01-01T00:00:00Z",
+                    )
+                ],
             )
         ],
         symbols=[

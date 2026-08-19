@@ -1778,20 +1778,21 @@ This decision changes the evolution path of persistent knowledge.
 
 Milestone 10.3 established persistence capabilities.
 
-Milestone 10.4 will extend this foundation by introducing:
+Milestone 10.4 extended this foundation with:
 
 - persistent entity tracking;
 - file history;
 - identity resolution;
-- change detection foundations;
-- incremental knowledge preparation.
+- deterministic change detection;
+- explicit knowledge invalidation and reuse;
+- selective parser, indexer, chunker and embedding execution;
+- deterministic knowledge updates and rollback.
 
 The following capabilities remain future work:
 
-- intelligent move detection;
-- intelligent rename detection;
-- knowledge invalidation;
-- selective analysis execution.
+- structural matching for a file moved and modified simultaneously;
+- dependency-aware cross-file invalidation;
+- cross-version incremental cache migration.
 
 ---
 
@@ -1800,3 +1801,98 @@ The following capabilities remain future work:
 Persistent knowledge should represent how a project evolves, not only the state of the project at a single execution.
 
 The objective is not only to restore previous knowledge, but to understand continuity between different project states.
+
+---
+
+# Milestone 10.4 — Persistent Identity & Incremental Knowledge
+
+## Lesson Learned — Identity Is Continuity, Not Location
+
+A path is an observation about where an entity currently exists. It cannot be
+the permanent identity of that entity. Stable file identity therefore needs a
+project-scoped deterministic identifier plus explicit location and fingerprint
+history.
+
+Current-path matches are the strongest available evidence. A unique content
+fingerprint can preserve identity for an unchanged move or rename. Ambiguous
+fingerprints must never be resolved by input order: creating a new identity
+and reporting a conflict is safer than silently merging unrelated files.
+
+## Lesson Learned — Discovery Must Precede Identity Resolution
+
+Identity resolution cannot happen before Scanner discovery because current
+paths and file contents do not yet exist as observations. The correct
+lifecycle is:
+
+```text
+restore → scan → resolve identity → detect changes → plan → analyse → commit
+```
+
+This ordering keeps Scanner responsible only for discovery while allowing all
+persistence-aware decisions to happen before expensive semantic stages.
+
+## Lesson Learned — Persistent Knowledge and Incremental Cache Are Different
+
+The authoritative knowledge snapshot represents durable project continuity.
+The incremental cache contains reconstructable parser, index, chunk and
+embedding artifacts. Combining them would make a performance optimization part
+of the persistence contract and complicate schema evolution.
+
+A missing, corrupt, stale or unwritable cache must reduce performance only. It
+must never invalidate authoritative project knowledge.
+
+## Lesson Learned — Invalidation Must Follow Dependencies
+
+Change detection is more useful when it describes consequences rather than
+only changed files. A modified chunk invalidates its embedding and retrieval
+metadata even if those dependent values happen to look unchanged. A pure file
+move or rename, by contrast, changes location without invalidating stable
+derived knowledge.
+
+Explicit changed, unchanged, invalidated and reusable sets make these rules
+auditable and keep incremental execution deterministic.
+
+## Lesson Learned — Incremental Correctness Requires Full Equivalence
+
+Skipping work is not sufficient evidence that an incremental pipeline is
+correct. The merged parser, index, chunk, embedding and persisted knowledge
+outputs must match a complete analysis of the same current repository state.
+
+Call-count tests prove that work was avoided. Full-versus-incremental tests
+prove that avoiding it did not change the result.
+
+## Lesson Learned — Updates Need a Commit Boundary
+
+Reused and regenerated knowledge must pass through one deterministic merge
+policy. Validation must finish before storage is touched, runtime change state
+must be published only after commit, and failed writes must preserve or restore
+the previous authoritative snapshot.
+
+Atomic file replacement is the primary guarantee. Best-effort rollback is a
+secondary safeguard for less capable storage implementations.
+
+## Lesson Learned — Architecture Rules Need Executable Protection
+
+Documentation alone cannot prevent persistence intelligence from drifting
+into Scanner, Parser, Indexer, Chunker, Embedding Engine or Core. AST-based
+tests now enforce dependency direction, facade responsibilities, Aggregate
+Root contracts and deterministic identity primitives.
+
+The Project may carry storage-independent knowledge and opaque runtime result
+slots. It must not construct, interpret or execute identity tracking,
+incremental planning or persistence behaviour.
+
+## Milestone Result
+
+- Persistent identity and history implemented.
+- Deterministic identity tracking and conflict resolution implemented.
+- Change detection and invalidation implemented.
+- Selective incremental analysis implemented.
+- Deterministic merge and rollback implemented.
+- Lifecycle and architecture boundaries validated.
+- Phase 7 behavioural test matrix completed.
+- Phase 8 architecture matrix completed.
+- 361 automated backend tests passing.
+
+Milestone 10.4 provides the stable evolution foundation required for
+Milestone 10.5.

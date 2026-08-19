@@ -1,7 +1,10 @@
 from app.knowledge.models import (
     PersistentKnowledgeMetadata,
+    PersistentProjectConfiguration,
     PersistentProjectKnowledge,
     PersistentFileIdentity,
+    PersistentFileFingerprint,
+    PersistentFileLocation,
     PersistentSymbolIdentity,
     PersistentChunkIdentity,
 )
@@ -17,13 +20,39 @@ def create_knowledge():
         files=[
             PersistentFileIdentity(
                 file_id="b.py",
-                path="b.py",
-                content_hash="b",
+                locations=[
+                    PersistentFileLocation(
+                        path="b.py",
+                        first_seen="2026-01-01T00:00:00Z",
+                        last_seen="2026-01-01T00:00:00Z",
+                    )
+                ],
+                fingerprints=[
+                    PersistentFileFingerprint(
+                        content_hash="b",
+                        size_bytes=1,
+                        generated_at="2026-01-01T00:00:00Z",
+                        last_seen="2026-01-01T00:00:00Z",
+                    )
+                ],
             ),
             PersistentFileIdentity(
                 file_id="a.py",
-                path="a.py",
-                content_hash="a",
+                locations=[
+                    PersistentFileLocation(
+                        path="a.py",
+                        first_seen="2026-01-01T00:00:00Z",
+                        last_seen="2026-01-01T00:00:00Z",
+                    )
+                ],
+                fingerprints=[
+                    PersistentFileFingerprint(
+                        content_hash="a",
+                        size_bytes=1,
+                        generated_at="2026-01-01T00:00:00Z",
+                        last_seen="2026-01-01T00:00:00Z",
+                    )
+                ],
             ),
         ],
         symbols=[
@@ -105,3 +134,18 @@ def test_normalizer_does_not_modify_original():
         "b.py",
         "a.py",
     ]
+
+
+def test_normalizer_preserves_configuration():
+    knowledge = create_knowledge()
+    knowledge.configuration = PersistentProjectConfiguration(
+        follow_symlinks=True,
+        ignore_hidden=False,
+        max_file_size_bytes=123,
+        ignored_directories={"build"},
+        ignored_extensions={".tmp"},
+    )
+
+    normalized = KnowledgeNormalizer().normalize(knowledge)
+
+    assert normalized.configuration == knowledge.configuration

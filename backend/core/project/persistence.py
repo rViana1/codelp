@@ -30,6 +30,9 @@ NON_PERSISTABLE_PROJECT_FIELDS = {
     "retrieval_result",
     "context_result",
     "knowledge_state",
+    "knowledge_change_result",
+    "incremental_analysis_result",
+    "knowledge_analysis_plan",
     "diagnostics",
 }
 

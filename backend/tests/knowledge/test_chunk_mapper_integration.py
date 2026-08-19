@@ -45,7 +45,7 @@ def test_builder_persists_chunks():
 
     assert (
         knowledge.chunks[0].chunk_id
-        == "chunk-1"
+        != "chunk-1"
     )
 
     assert (

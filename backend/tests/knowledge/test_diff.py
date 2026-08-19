@@ -1,7 +1,9 @@
-from pathlib import Path
-
 from app.knowledge.diff import KnowledgeDiff
-from app.knowledge.models import PersistentFileIdentity
+from app.knowledge.models import (
+    PersistentFileFingerprint,
+    PersistentFileIdentity,
+    PersistentFileLocation,
+)
 
 
 def create_file(
@@ -11,8 +13,43 @@ def create_file(
 
     return PersistentFileIdentity(
         file_id=path,
-        path=path,
-        content_hash=file_hash,
+        locations=[
+            PersistentFileLocation(
+                path=path,
+                first_seen="2026-01-01T00:00:00Z",
+                last_seen="2026-01-01T00:00:00Z",
+                is_current=True,
+            )
+        ],
+        fingerprints=[
+            PersistentFileFingerprint(
+                content_hash=file_hash,
+                size_bytes=len(file_hash),
+                generated_at="2026-01-01T00:00:00Z",
+                last_seen="2026-01-01T00:00:00Z",
+                is_current=True,
+            )
+        ],
+    )
+
+
+def current_path(
+    file: PersistentFileIdentity,
+) -> str:
+    return next(
+        location.path
+        for location in file.locations
+        if location.is_current
+    )
+
+
+def current_content_hash(
+    file: PersistentFileIdentity,
+) -> str:
+    return next(
+        fingerprint.content_hash
+        for fingerprint in file.fingerprints
+        if fingerprint.is_current
     )
 
 
@@ -31,7 +68,7 @@ def test_detects_added_files():
     )
 
     assert len(result.added_files) == 1
-    assert result.added_files[0].path == "main.py"
+    assert current_path(result.added_files[0]) == "main.py"
 
 
 def test_detects_modified_files():
@@ -93,6 +130,7 @@ def test_detects_removed_files():
     )
 
     assert len(result.removed_files) == 1
+
 
 def test_detects_multiple_changes():
 
@@ -180,5 +218,5 @@ def test_modified_file_keeps_current_identity():
 
     modified = result.modified_files[0]
 
-    assert modified.path == "main.py"
-    assert modified.content_hash == "new"
+    assert current_path(modified) == "main.py"
+    assert current_content_hash(modified) == "new"

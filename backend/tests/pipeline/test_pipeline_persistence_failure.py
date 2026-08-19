@@ -128,3 +128,5 @@ def test_persistence_failure_does_not_corrupt_project_state(
     assert project.chunk_result is not None
 
     assert project.embedding_result is not None
+
+    assert project.knowledge_change_result is None

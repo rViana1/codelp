@@ -19,6 +19,14 @@ from app.knowledge.persistence import KnowledgePersistenceService
 from app.knowledge.restorer import KnowledgeRestorer
 
 
+def current_hash(knowledge_file):
+    return next(
+        fingerprint.content_hash
+        for fingerprint in knowledge_file.fingerprints
+        if fingerprint.is_current
+    )
+
+
 def create_project(
     path: Path,
 ) -> Project:
@@ -106,7 +114,7 @@ def test_pipeline_updates_existing_knowledge(
     )
 
     first_hash = (
-        first_knowledge.files[0].content_hash
+        current_hash(first_knowledge.files[0])
     )
 
 
@@ -136,7 +144,7 @@ def test_pipeline_updates_existing_knowledge(
     )
 
     second_hash = (
-        second_knowledge.files[0].content_hash
+        current_hash(second_knowledge.files[0])
     )
 
 

@@ -190,6 +190,73 @@ Milestone 10.5 will build on this foundation to provide:
 - improved retrieval;
 - higher-level code intelligence.
 
+## Implementation Status — Milestone 10.4 Phase 1
+
+Implemented with the following concrete policy:
+
+- new file identifiers are deterministic and scoped to a project;
+- persisted file identifiers are independent from subsequent locations;
+- paths are canonical project-relative POSIX locations;
+- a current-path match preserves identity across content changes;
+- a unique fingerprint match for an unobserved previous file detects an
+  unchanged move or rename;
+- ambiguous fingerprint matches never merge identities;
+- removed identities and their histories remain persisted;
+- reappearing files preserve identity when resolution is unambiguous;
+- symbol identities are based on persistent file identity, name and kind;
+- chunk identities are based on persistent symbol identity and chunk kind;
+- embedding identity is the composite of persistent chunk identity and
+  provider.
+
+Move or rename combined with simultaneous content modification remains
+conservatively unresolved in this phase and creates a new identity. Structural
+similarity, Git-aware matching and selective incremental execution remain
+future work.
+
+### Phase 2 — Identity Tracking Engine
+
+The identity policies are executed through a dedicated tracking layer. Each
+execution produces deterministic decisions describing new, existing,
+modified, moved, renamed, reappeared, removed and conflict-created files.
+
+The engine also reports:
+
+- known persistent entities;
+- duplicate current content fingerprints;
+- duplicate symbol names and types across distinct files;
+- ambiguous current-path or fingerprint candidates;
+- the conservative resolution applied to each conflict.
+
+Exact current-path matches take precedence over fingerprint resolution.
+Unique unobserved fingerprint matches are probable moves or renames.
+Ambiguous candidates always result in a new identity and an explicit conflict
+record.
+
+### Phase 3 — Change Detection Engine
+
+Resolved snapshots are compared by persistent entity identity. Physical paths
+participate only in the classification of moves and renames. The resulting
+immutable report deterministically identifies file changes and partitions
+project elements into changed, unchanged, invalidated and reusable sets.
+
+Chunk content changes invalidate dependent embedding and retrieval metadata.
+Location-only file changes preserve identity and keep unchanged derived
+knowledge reusable. The report is runtime Project state and is deliberately
+excluded from the persistent schema.
+
+### Phase 4 — Incremental Analysis Pipeline
+
+Persistent identities and the change model now drive selective pipeline
+execution. A separate disposable cache stores reconstructable runtime
+artifacts by stable file identity. It does not alter the authoritative
+knowledge schema and may be discarded at any time.
+
+Unchanged files skip parser, indexer, chunker and embedding generation. New
+or modified files are analyzed selectively, while embeddings are regenerated
+only for changed chunks or a changed provider. Cached artifacts for unchanged
+moves and renames are deterministically relocated. The merged runtime result
+is required to match a complete analysis of the same current project state.
+
 ## Related Decisions
 
 - ADR-001 — Persistent Project Knowledge

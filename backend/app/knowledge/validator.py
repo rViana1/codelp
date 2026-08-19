@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import PurePosixPath
+
 from app.knowledge.models import PersistentProjectKnowledge
 from app.knowledge.schema import is_supported_version
 
@@ -127,6 +129,24 @@ class KnowledgeValidator:
                     "Embedding references unknown chunk identity"
                 )
 
+        embedding_keys = {
+            (embedding.chunk_id, embedding.provider)
+            for embedding in knowledge.embeddings
+        }
+        if len(embedding_keys) != len(knowledge.embeddings):
+            raise ValueError(
+                "Duplicate embedding identities detected"
+            )
+
+        retrieval_keys = {
+            (item.chunk_id, item.query_hash)
+            for item in knowledge.retrieval
+        }
+        if len(retrieval_keys) != len(knowledge.retrieval):
+            raise ValueError(
+                "Duplicate retrieval identities detected"
+            )
+
 
         for retrieval in knowledge.retrieval:
             if retrieval.chunk_id not in chunk_ids:
@@ -148,15 +168,88 @@ class KnowledgeValidator:
                     "File requires identity"
                 )
 
-            if not file.path:
+            if not file.locations:
                 raise ValueError(
-                    "File requires path"
+                    "File requires location history"
                 )
 
-            if not file.content_hash:
+            if not file.fingerprints:
                 raise ValueError(
-                    "File requires content hash"
+                    "File requires fingerprint history"
                 )
+
+            current_locations = [
+                location
+                for location in file.locations
+                if location.is_current
+            ]
+            current_fingerprints = [
+                fingerprint
+                for fingerprint in file.fingerprints
+                if fingerprint.is_current
+            ]
+
+            if len(current_locations) > 1:
+                raise ValueError(
+                    "File has multiple current locations"
+                )
+
+            if len(current_fingerprints) > 1:
+                raise ValueError(
+                    "File has multiple current fingerprints"
+                )
+
+            if bool(current_locations) != bool(
+                current_fingerprints
+            ):
+                raise ValueError(
+                    "Current file state is inconsistent"
+                )
+
+            paths = set()
+            for location in file.locations:
+                if not location.path:
+                    raise ValueError(
+                        "File location requires path"
+                    )
+                canonical_path = PurePosixPath(location.path)
+                if (
+                    canonical_path.is_absolute()
+                    or "\\" in location.path
+                    or ".." in canonical_path.parts
+                ):
+                    raise ValueError(
+                        "File location must be project-relative POSIX path"
+                    )
+                if location.path in paths:
+                    raise ValueError(
+                        "Duplicate file location detected"
+                    )
+                if location.last_seen < location.first_seen:
+                    raise ValueError(
+                        "File location has invalid timestamps"
+                    )
+                paths.add(location.path)
+
+            fingerprints = set()
+            for fingerprint in file.fingerprints:
+                if not fingerprint.content_hash:
+                    raise ValueError(
+                        "File fingerprint requires content hash"
+                    )
+                if fingerprint.size_bytes < 0:
+                    raise ValueError(
+                        "File fingerprint size cannot be negative"
+                    )
+                if fingerprint.content_hash in fingerprints:
+                    raise ValueError(
+                        "Duplicate file fingerprint detected"
+                    )
+                if fingerprint.last_seen < fingerprint.generated_at:
+                    raise ValueError(
+                        "File fingerprint has invalid timestamps"
+                    )
+                fingerprints.add(fingerprint.content_hash)
 
 
         for symbol in knowledge.symbols:

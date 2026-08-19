@@ -50,10 +50,32 @@ class KnowledgeRestorer:
             files=[
                 ProjectFileKnowledge(
                     file_id=file.file_id,
-                    path=file.path,
-                    content_hash=file.content_hash,
+                    path=(
+                        next(
+                            (
+                                location.path
+                                for location in file.locations
+                                if location.is_current
+                            ),
+                            "",
+                        )
+                    ),
+                    content_hash=(
+                        next(
+                            (
+                                fingerprint.content_hash
+                                for fingerprint in file.fingerprints
+                                if fingerprint.is_current
+                            ),
+                            "",
+                        )
+                    ),
                 )
                 for file in knowledge.files
+                if any(
+                    location.is_current
+                    for location in file.locations
+                )
             ],
             symbols=[
                 ProjectSymbolKnowledge(

@@ -36,7 +36,7 @@ The project is designed around **determinism, modularity and testability**, prov
 
 ## Current Status
 
-**Version:** `v0.10.3`
+**Version:** `v0.10.4`
 
 Implemented:
 
@@ -56,17 +56,26 @@ Implemented:
 - Deterministic knowledge persistence
 - Atomic knowledge storage workflow
 - Pipeline knowledge lifecycle integration
+- Persistent identity independent from current file location
+- Historical file locations and content fingerprints
+- Deterministic identity tracking and conflict resolution
+- File change detection and knowledge invalidation
+- Selective incremental parser, indexer, chunker and embedding execution
+- Deterministic knowledge merging and rollback protection
 - Full pipeline integration
 - Architecture documentation
 - ADRs (Architecture Decision Records)
 
 Validation:
 
-- **300+ automated tests passing**
+- **361 automated tests passing**
+- **30 architecture boundary tests passing**
 - Deterministic outputs across executions
 - Stable symbol, chunk, embedding, retrieval and context identities
+- Stable persistent identities after file updates, moves and renames
 - Persistent knowledge round-trip validation
 - Deterministic project restoration across executions
+- Full and incremental analysis consistency validation
 
 ---
 
@@ -175,7 +184,10 @@ The Context Builder prepares structured project knowledge for future LLM consume
 - Knowledge loading and restoration boundaries
 - Separation between runtime project state and persisted knowledge
 - Pipeline integration with persistent knowledge workflows
-- Foundation for future incremental analysis
+- Stable persistent file, symbol, chunk and embedding identities
+- Historical location and content fingerprint tracking
+- Deterministic change reports and selective knowledge invalidation
+- Incremental analysis artifact reuse
 
 The persistence architecture preserves the Project aggregate as the runtime source of truth while allowing project knowledge to evolve across executions.
 
@@ -210,6 +222,27 @@ Persistent knowledge now supports:
 
 ---
 
+### Persistent Identity and Incremental Analysis
+
+- Project-scoped deterministic file identities
+- File identity separated from current physical location
+- Historical locations and fingerprints retained across executions
+- Existing, modified, moved, renamed, removed and reappeared file tracking
+- Conservative duplicate-content and ambiguity handling
+- Stable symbol and chunk identities derived from persistent ownership
+- Embedding identity defined by persistent chunk and provider
+- Deterministic changed, unchanged, invalidated and reusable element sets
+- Selective execution for parser, indexer, chunker and embedding stages
+- Disposable runtime cache separated from authoritative knowledge
+- Deterministic knowledge updates with validation and rollback protection
+
+Every execution still scans the current repository. After discovery, the
+Knowledge lifecycle resolves identities and changes before semantic analysis.
+Unchanged artifacts can then be reused without making Scanner, Parser,
+Indexer, Chunker or Embedding Engine aware of persistence.
+
+---
+
 ### MCP Integration
 
 - Model Context Protocol server
@@ -224,7 +257,9 @@ The MCP layer exposes Codelp project knowledge without coupling the core pipelin
 
 ## Knowledge Identity Flow
 
-Codelp uses deterministic identifiers throughout the pipeline.
+Codelp distinguishes execution-local navigation identifiers from persistent
+entity identities. Navigation IDs may contain paths, while persistent IDs are
+resolved by the Knowledge layer and survive later location changes.
 
 Example:
 
@@ -234,22 +269,22 @@ src/models/user.py::User
 src/models/user.py::User.login
 ```
 
-The identity chain is:
+The persistent identity chain is:
 
 ```text
-Source File
+Current file observation
     ↓
-Parser Symbol
+Persistent file identity + location history
     ↓
-Symbol ID
+Persistent symbol identity
     ↓
-Chunk ID
+Persistent chunk identity
     ↓
-Embedding Identity
+Embedding identity (chunk ID + provider)
     ↓
-RetrievalResult.chunk_id
+Retrieval metadata
     ↓
-ContextChunk.chunk_id
+Future executions reuse the same identities
 ```
 
 This strategy simplifies:
@@ -272,6 +307,8 @@ backend/
 │   ├── indexing/
 │   ├── chunking/
 │   ├── embeddings/
+│   ├── knowledge/
+│   ├── pipeline/
 │   ├── vectorstore/
 │   ├── retrieval/
 │   ├── context/
@@ -283,7 +320,8 @@ backend/
 docs/
 ├── architecture/
 │   └── adr/
-└── lessons/
+├── development/
+└── user/
 ```
 
 ---
@@ -308,9 +346,7 @@ pip install -r requirements.txt
 pytest backend/tests -v
 ```
 
-Expected result:
-
-300+ passed
+Expected result: **361 passed**.
 
 ---
 
@@ -330,6 +366,10 @@ Project
 ├── embedding_result
 ├── retrieval_result
 ├── context_result
+├── knowledge_state
+├── knowledge_analysis_plan
+├── knowledge_change_result
+├── incremental_analysis_result
 └── diagnostics
 ```
 
@@ -409,37 +449,35 @@ External Tools / IDE Integrations / LLM Consumers
 | Persistent Project Knowledge Boundary | Completed |
 | Pipeline Knowledge Integration | Completed |
 | Knowledge Persistence Foundation | Completed |
-| Incremental Knowledge Analysis | Planned |
+| Persistent Identity & Incremental Knowledge | Completed |
 | API / CLI | Planned |
 
 ---
 
 ## Roadmap
 
-The architecture now exposes project knowledge through MCP and provides a complete persistent knowledge foundation while preserving existing pipeline boundaries.
+The architecture now exposes project knowledge through MCP and provides
+persistent identity, project evolution tracking and selective incremental
+analysis while preserving existing pipeline boundaries.
 
-Persistent knowledge can now be restored, validated and persisted deterministically across executions.
+Persistent knowledge can be restored, compared, selectively updated,
+validated and persisted deterministically across executions.
 
-### Next — Incremental Knowledge Analysis
+### Next — Milestone 10.5
 
-Building on the persistent knowledge foundation, the next milestone introduces change detection and selective knowledge updates.
+Milestone 10.5 can build higher-level project intelligence on the stable
+identity and incremental knowledge foundation completed in Milestone 10.4.
 
-- File identity persistence
-- Symbol identity persistence
-- Chunk identity persistence
-- Change detection strategy
-- Knowledge invalidation rules
-- Incremental scanner support
-- Incremental parser updates
-- Incremental indexing
-- Incremental chunk regeneration
-- Incremental embedding updates
+- Knowledge graph relationships
+- Dependency-aware cross-file invalidation
+- Structural matching for files moved and modified simultaneously
+- Higher-level project evolution insights
+- Improved retrieval using persistent relationships
 
 ### Future
 
 - Persistent vector database implementations
 - Multi-language parsing
-- Incremental scanning
 - Retrieval-optimized chunking
 - Cross-file context
 - Distributed indexing
@@ -475,6 +513,8 @@ Architecture Decision Records:
 - `ADR-011` — MCP Integration Boundary
 - `ADR-012` — Persistent Project Knowledge Boundary
 - `ADR-013` — Pipeline Knowledge Integration
+- `ADR-014` — Persistent Entity Identity and Historical File Tracking
+- `ADR-015` — Deterministic Knowledge Updates and Rollback
 
 ---
 
@@ -504,6 +544,8 @@ Architecture Decision Records:
 - **Extensibility** — future languages and providers
 - **Persistence Independence** — persistent knowledge evolves independently from storage technology
 - **Identity Preservation** — knowledge entities maintain deterministic identities across executions
+- **Conservative Resolution** — ambiguous entities are never merged arbitrarily
+- **Incremental Equivalence** — selective analysis must match a complete analysis of the same state
 
 ---
 

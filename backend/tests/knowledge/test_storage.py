@@ -17,7 +17,6 @@ def create_knowledge(project_id: str = "test-project"):
             "created_at": now,
             "updated_at": now,
         },
-        knowledge={}
     )
 
 

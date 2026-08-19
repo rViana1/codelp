@@ -9,11 +9,11 @@ from the Codelp application version.
 from __future__ import annotations
 
 
-KNOWLEDGE_SCHEMA_VERSION = "1.0"
+KNOWLEDGE_SCHEMA_VERSION = "2.0"
 
 
 COMPATIBLE_KNOWLEDGE_VERSIONS = {
-    "1.0",
+    "2.0",
 }
 
 

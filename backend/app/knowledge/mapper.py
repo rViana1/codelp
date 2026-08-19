@@ -1,8 +1,10 @@
+from datetime import datetime, timezone
+from pathlib import Path
+
 from core.project.models import Project
 from core.project.persistence import ProjectPersistentState
 
 from app.knowledge.models import (
-    PersistentFileIdentity,
     PersistentKnowledgeMetadata,
     PersistentProjectConfiguration,
     PersistentProjectKnowledge,
@@ -14,6 +16,9 @@ from app.knowledge.chunk_mapper import ChunkKnowledgeMapper
 from app.knowledge.embedding_mapper import EmbeddingKnowledgeMapper
 from app.knowledge.retrieval_mapper import RetrievalKnowledgeMapper
 from app.knowledge.hash import FileContentHasher
+from app.knowledge.identity import FileObservation
+from app.knowledge.tracking import IdentityTrackingEngine
+from app.knowledge.planning import KnowledgeAnalysisPlan
 
 
 class KnowledgeMapper:
@@ -54,7 +59,6 @@ class KnowledgeMapper:
 
             metadata = PersistentKnowledgeMetadata(
                 project_id=project_id,
-                version=previous.metadata.version,
                 created_at=previous.metadata.created_at,
                 updated_at=PersistentKnowledgeMetadata.model_fields[
                     "updated_at"
@@ -79,96 +83,117 @@ class KnowledgeMapper:
             ),
         )
 
-        previous_files = {}
-
-        if previous is not None:
-
-            previous_files = {
-                file.path: file
-                for file in previous.files
-            }
-
-        files = []
-
-        file_identity_map = {}
-
-        for path in project.statistics.scanned_files:
-
-            path_str = str(path)
-
-            existing = previous_files.get(
-                path_str
-            )
-
-            if existing:
-
-                file_id = existing.file_id
-
-            else:
-
-                file_id = path_str
-
-
-            content_hash = (
-                FileContentHasher.hash_file(path)
-                if path.exists()
-                else ""
-            )
-
-            file_identity_map[path_str] = file_id
-
-            files.append(
-                PersistentFileIdentity(
-                    file_id=file_id,
-                    path=path_str,
-                    content_hash=content_hash,
-                )
-            )
-
         if project.index_result is not None:
 
-            symbols = IndexKnowledgeMapper.from_index(
+            source_symbols = IndexKnowledgeMapper.from_index(
                 project.index_result
             )
 
-            for symbol in symbols:
-
-                matching_file_id = None
-
-                for file_path, file_id in file_identity_map.items():
-
-                    if file_path.endswith(
-                        symbol.file_id
-                    ):
-                        matching_file_id = file_id
-                        break
-
-                if matching_file_id is not None:
-                    symbol.file_id = matching_file_id
-
         else:
-
-            symbols = ParserKnowledgeMapper.from_parser(
+            source_symbols = ParserKnowledgeMapper.from_parser(
                 project.parser_result
             )
 
-            for symbol in symbols:
+        for symbol in source_symbols:
+            symbol.file_id = KnowledgeMapper._relative_path(
+                project.metadata.root_path,
+                Path(symbol.file_id),
+            )
 
-                symbol.file_id = file_identity_map.get(
-                    symbol.file_id,
-                    symbol.file_id,
+        identity_tracker = IdentityTrackingEngine()
+        analysis_plan = project.knowledge_analysis_plan
+        if (
+            isinstance(analysis_plan, KnowledgeAnalysisPlan)
+            and analysis_plan.project_id == project_id
+        ):
+            files = list(analysis_plan.resolved_files)
+            symbols, source_symbol_identity_map = (
+                identity_tracker.track_symbols(
+                    resolved_files=files,
+                    source_symbols=source_symbols,
+                    previous_symbols=(
+                        previous.symbols if previous is not None else []
+                    ),
+                    project_id=project_id,
                 )
+            )
+            symbols = sorted(
+                symbols,
+                key=lambda symbol: symbol.symbol_id,
+            )
+        else:
+            now = datetime.now(timezone.utc)
+            observations = [
+                FileObservation(
+                    path=KnowledgeMapper._relative_path(
+                        project.metadata.root_path,
+                        path,
+                    ),
+                    content_hash=(
+                        FileContentHasher.hash_file(path)
+                        if path.exists()
+                        else ""
+                    ),
+                    size_bytes=(
+                        path.stat().st_size
+                        if path.exists()
+                        else 0
+                    ),
+                )
+                for path in project.statistics.scanned_files
+            ]
+            tracking = identity_tracker.track(
+                project_id=project_id,
+                observations=observations,
+                source_symbols=source_symbols,
+                previous_files=(
+                    previous.files if previous is not None else []
+                ),
+                previous_symbols=(
+                    previous.symbols if previous is not None else []
+                ),
+                previous_chunks=(
+                    previous.chunks if previous is not None else []
+                ),
+                previous_embeddings=(
+                    previous.embeddings if previous is not None else []
+                ),
+                now=now,
+            )
+            files = list(tracking.files)
+            symbols = list(tracking.symbols)
+            source_symbol_identity_map = (
+                tracking.source_symbol_identity_map
+            )
 
         chunks = ChunkKnowledgeMapper.from_chunks(
-            project.chunk_result
+            project.chunk_result,
+            source_symbol_identity_map,
+            previous.chunks if previous is not None else [],
+            project_id,
         )
 
+        source_chunk_identity_map = {
+            source.id: persistent.chunk_id
+            for source, persistent in zip(
+                sorted(
+                    project.chunk_result.chunks
+                    if project.chunk_result is not None
+                    else [],
+                    key=lambda item: item.id,
+                ),
+                chunks,
+            )
+        }
+
         embeddings = EmbeddingKnowledgeMapper.from_embeddings(
-            project.embedding_result
+            project.embedding_result,
+            source_chunk_identity_map,
         )
 
         retrieval = RetrievalKnowledgeMapper.from_retrieval(
-            project.retrieval_result
+            project.retrieval_result,
+            source_chunk_identity_map,
         )
 
         return PersistentProjectKnowledge(
@@ -180,3 +205,17 @@ class KnowledgeMapper:
             embeddings=embeddings,
             retrieval=retrieval,
         )
+
+    @staticmethod
+    def _relative_path(
+        project_root: Path,
+        path: Path,
+    ) -> str:
+        """Return the canonical project-relative persistence path."""
+
+        try:
+            return path.resolve().relative_to(
+                project_root.resolve()
+            ).as_posix()
+        except ValueError:
+            return path.as_posix()

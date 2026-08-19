@@ -1,11 +1,22 @@
 from datetime import datetime, timezone
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from app.knowledge.constants import CURRENT_KNOWLEDGE_VERSION
 
 
-class PersistentKnowledgeMetadata(BaseModel):
+class PersistentKnowledgeModel(BaseModel):
+    """Base model for versioned knowledge snapshots.
+
+    Persisted knowledge is an explicit schema.  Silently ignoring an
+    unknown field can turn an old or corrupted snapshot into apparently
+    valid, but incomplete, knowledge.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+
+class PersistentKnowledgeMetadata(PersistentKnowledgeModel):
     project_id: str
 
     version: str = CURRENT_KNOWLEDGE_VERSION
@@ -19,7 +30,7 @@ class PersistentKnowledgeMetadata(BaseModel):
     )
 
 
-class PersistentProjectConfiguration(BaseModel):
+class PersistentProjectConfiguration(PersistentKnowledgeModel):
     """
     Represents the persisted configuration of a project.
 
@@ -41,48 +52,88 @@ class PersistentProjectConfiguration(BaseModel):
         default_factory=set
     )
 
+class PersistentFileLocation(PersistentKnowledgeModel):
+    """
+    Represents a historical filesystem location of a file entity.
 
-class PersistentSymbol(BaseModel):
+    A location is not the identity of the file.
+    It is only a representation of where the entity existed.
+    """
+
+    path: str
+
+    first_seen: datetime
+
+    last_seen: datetime
+
+    is_current: bool = True
+
+
+class PersistentFileFingerprint(PersistentKnowledgeModel):
+    """
+    Represents a historical content state of a file entity.
+
+    Content changes do not create a new identity.
+    They create a new fingerprint state.
+    """
+
+    content_hash: str
+
+    size_bytes: int
+
+    generated_at: datetime
+
+    last_seen: datetime
+
+    is_current: bool = True
+
+
+class PersistentSymbol(PersistentKnowledgeModel):
     symbol_id: str
     file_path: str
     name: str
     symbol_type: str
 
 
-class PersistentChunk(BaseModel):
+class PersistentChunk(PersistentKnowledgeModel):
     chunk_id: str
     symbol_id: str
     file_path: str
     content_hash: str
 
 
-class PersistentEmbeddingMetadata(BaseModel):
+class PersistentEmbeddingMetadata(PersistentKnowledgeModel):
     chunk_id: str
     provider: str
     embedding_hash: str
 
 
-class PersistentRetrievalMetadata(BaseModel):
+class PersistentRetrievalMetadata(PersistentKnowledgeModel):
     chunk_id: str
     query_hash: str
     score: float
 
 
-class PersistentFileIdentity(BaseModel):
+class PersistentFileIdentity(PersistentKnowledgeModel):
     """
-    Represents the persistent identity of an analyzed file.
+    Represents the stable identity of an analyzed file.
 
-    A file identity allows Codelp to detect changes between executions.
+    File identity is independent from filesystem location.
+    Locations and content states are tracked historically.
     """
 
     file_id: str
 
-    path: str
+    locations: list[PersistentFileLocation] = Field(
+        default_factory=list
+    )
 
-    content_hash: str
+    fingerprints: list[PersistentFileFingerprint] = Field(
+        default_factory=list
+    )
 
 
-class PersistentSymbolIdentity(BaseModel):
+class PersistentSymbolIdentity(PersistentKnowledgeModel):
     """
     Represents the persistent identity of a parsed symbol.
     """
@@ -96,7 +147,7 @@ class PersistentSymbolIdentity(BaseModel):
     symbol_type: str
 
 
-class PersistentChunkIdentity(BaseModel):
+class PersistentChunkIdentity(PersistentKnowledgeModel):
     """
     Represents the persistent identity of a semantic chunk.
     """
@@ -108,7 +159,7 @@ class PersistentChunkIdentity(BaseModel):
     content_hash: str
 
 
-class PersistentProjectKnowledge(BaseModel):
+class PersistentProjectKnowledge(PersistentKnowledgeModel):
 
     metadata: PersistentKnowledgeMetadata
 

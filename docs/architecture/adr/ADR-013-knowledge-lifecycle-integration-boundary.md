@@ -46,14 +46,20 @@ The `KnowledgeLifecycleService` becomes responsible for:
 
 - loading existing project knowledge;
 - restoring compatible project state;
+- resolving file identities after scanner discovery;
+- detecting file changes before semantic analysis;
+- producing analyze/reuse instructions for the pipeline;
 - coordinating knowledge persistence after analysis;
+- constructing and storing disposable incremental artifacts after commit;
 - maintaining separation between persistence lifecycle and storage implementation.
 
 The `PipelineAnalyzer` coordinates lifecycle execution by:
 
 1. Preparing project knowledge before analysis.
-2. Executing the existing analysis pipeline unchanged.
-3. Persisting updated knowledge after analysis.
+2. Running scanner discovery.
+3. Requesting a pre-analysis plan from the lifecycle.
+4. Executing full or selective analysis from abstract plan instructions.
+5. Finalizing authoritative knowledge and disposable cache state.
 
 Existing pipeline modules remain unaware that persistence exists.
 
@@ -72,6 +78,7 @@ KnowledgeLifecycleService
 PipelineAnalyzer
             │
             ├── Scanner
+            ├── KnowledgeAnalysisPlan
             ├── Parser
             ├── Indexer
             ├── Chunker
@@ -81,6 +88,17 @@ PipelineAnalyzer
 
 
 The lifecycle layer acts as an application boundary between persistence and analysis execution.
+
+## Milestone 10.4 Phase 6 clarification
+
+Scanner discovery necessarily precedes identity resolution because current
+paths and content fingerprints must first be observed. All persistence-aware
+decisions then execute before parser, indexer, chunker and embedding stages.
+
+The plan is runtime Project state. Analysis modules receive only their normal
+domain inputs and remain unaware that data may have been restored or reused.
+The pipeline execution helper consumes plan instructions but owns no storage,
+fingerprinting, identity resolution or change-detection policy.
 
 ---
 
@@ -119,4 +137,4 @@ Validation results:
 - Pipeline integration validated.
 - Storage independence validated.
 - Existing module boundaries preserved.
-- 225 automated tests passing.
+- 345 automated tests passing at Phase 6 validation.

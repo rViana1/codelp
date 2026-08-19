@@ -5,11 +5,38 @@ from app.knowledge.models import (
     PersistentKnowledgeMetadata,
     PersistentProjectKnowledge,
     PersistentFileIdentity,
+    PersistentFileFingerprint,
+    PersistentFileLocation,
     PersistentRetrievalMetadata,
 )
 
 from app.knowledge.validator import KnowledgeValidator
 
+
+def create_file(
+    *,
+    file_id: str = "file-1",
+    path: str = "main.py",
+    content_hash: str = "hash",
+) -> PersistentFileIdentity:
+    return PersistentFileIdentity(
+        file_id=file_id,
+        locations=[
+            PersistentFileLocation(
+                path=path,
+                first_seen="2026-01-01T00:00:00Z",
+                last_seen="2026-01-01T00:00:00Z",
+            )
+        ],
+        fingerprints=[
+            PersistentFileFingerprint(
+                content_hash=content_hash,
+                size_bytes=1,
+                generated_at="2026-01-01T00:00:00Z",
+                last_seen="2026-01-01T00:00:00Z",
+            )
+        ],
+    )
 
 def test_validator_accepts_valid_knowledge():
 
@@ -18,11 +45,7 @@ def test_validator_accepts_valid_knowledge():
             project_id="demo"
         ),
         files=[
-            PersistentFileIdentity(
-                file_id="file-1",
-                path="main.py",
-                content_hash="hash",
-            )
+            create_file()
         ],
     )
 
@@ -38,16 +61,8 @@ def test_validator_rejects_duplicate_file_identity():
             project_id="demo"
         ),
         files=[
-            PersistentFileIdentity(
-                file_id="file-1",
-                path="a.py",
-                content_hash="hash",
-            ),
-            PersistentFileIdentity(
-                file_id="file-1",
-                path="b.py",
-                content_hash="hash",
-            ),
+            create_file(path="a.py"),
+            create_file(path="b.py"),
         ],
     )
 
@@ -131,11 +146,7 @@ def test_validator_rejects_file_without_path():
             project_id="demo"
         ),
         files=[
-            PersistentFileIdentity(
-                file_id="file-1",
-                path="",
-                content_hash="hash",
-            )
+            create_file(path="")
         ],
     )
 
@@ -143,6 +154,20 @@ def test_validator_rejects_file_without_path():
         KnowledgeValidator().validate(
             knowledge
         )
+
+
+def test_validator_rejects_noncanonical_file_path():
+    knowledge = PersistentProjectKnowledge(
+        metadata=PersistentKnowledgeMetadata(
+            project_id="demo"
+        ),
+        files=[
+            create_file(path="/absolute/main.py")
+        ],
+    )
+
+    with pytest.raises(ValueError):
+        KnowledgeValidator().validate(knowledge)
 
 
 def test_validator_rejects_symbol_without_identity():
@@ -175,11 +200,7 @@ def test_validator_rejects_file_without_hash():
             project_id="demo"
         ),
         files=[
-            PersistentFileIdentity(
-                file_id="file-1",
-                path="main.py",
-                content_hash="",
-            )
+            create_file(content_hash="")
         ],
     )
 

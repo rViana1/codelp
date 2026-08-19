@@ -92,6 +92,22 @@ These entities represent durable knowledge created by Codelp analysis.
 
 ---
 
+# Disposable Incremental Cache
+
+Parser, index, chunk and embedding runtime artifacts may be stored in a
+separate incremental cache to avoid unnecessary recomputation. This cache is
+not authoritative project knowledge and is never part of
+`ProjectPersistentState` or `PersistentProjectKnowledge`.
+
+The cache may be deleted, rejected as incompatible or rebuilt without losing
+entity identity or history. `knowledge_change_result` and
+`incremental_analysis_result` are runtime reports and are also explicitly
+non-persistable Project fields. `knowledge_analysis_plan` is likewise a
+runtime-only coordination result produced after scanning and before semantic
+analysis.
+
+---
+
 # Runtime State
 
 The following `Project` fields must never be persisted directly.
@@ -242,4 +258,3 @@ Any extension must preserve the separation between:
 - runtime state
 - persistent state
 - durable knowledgey
-

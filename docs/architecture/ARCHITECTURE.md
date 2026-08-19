@@ -1,6 +1,6 @@
 # Codelp Architecture
 
-> **Version:** 2.0
+> **Version:** 2.1
 > **Status:** In Development  
 > **Last Updated:** Milestone 10.4 — Persistent Identity & Incremental Knowledge
 
@@ -566,31 +566,19 @@ Storage Implementation
 
 Persistent knowledge lifecycle:
 
-Existing Knowledge
-
-↓
-
-Load
-
-↓
-
-Validate
-
-↓
-
-Restore
-
-↓
-
-Analyse
-
-↓
-
-Update
-
-↓
-
-Persist
+Load and validate previous knowledge
+                ↓
+Restore storage-independent Project state
+                ↓
+Scan current repository
+                ↓
+Resolve identity and detect changes
+                ↓
+Execute full or selective analysis
+                ↓
+Merge and validate authoritative knowledge
+                ↓
+Commit snapshot, then disposable cache
 
 Current capabilities:
 
@@ -599,24 +587,21 @@ Current capabilities:
 - schema compatibility validation;
 - deterministic normalization;
 - identity preservation;
+- historical file locations and fingerprints;
+- deterministic move and rename resolution;
+- deterministic change detection and invalidation;
+- selective parser, indexer, chunker and embedding execution;
+- deterministic knowledge merge and obsolete-entry removal;
+- incremental cache fallback and full-analysis equivalence;
 - atomic persistence operations.
 
 Future improvements:
 
-- incremental knowledge updates;
 - selective restoration;
 - knowledge migrations;
-- project evolution tracking.
-
-Future improvements:
-
-- incremental knowledge updates;
-- persisted identity reconstruction;
-- knowledge versioning;
-- selective restoration;
-- historical project evolution tracking;
-- identity tracking across file moves and renames;
-- intelligent change detection.
+- advanced project evolution analysis;
+- Git-aware and structural identity resolution;
+- dependency-aware cross-file invalidation.
 
 ---
 
@@ -1005,12 +990,11 @@ Current ADRs
 - ADR-012 — Persistent Project Knowledge Boundary
 - ADR-013 — Pipeline Knowledge Integration
 - ADR-014 — Persistent Entity Identity & Evolution Tracking
+- ADR-015 — Deterministic Knowledge Updates & Rollback
 
 Future ADRs
 
-- Incremental Scanner
 - Plugin System
-- Cache
 - Configuration
 - Multi-language Parsing
 - Reference Graph
@@ -1021,11 +1005,10 @@ Future ADRs
 
 Planned architectural improvements include
 
-- persistent project knowledge lifecycle
-- incremental knowledge loading
-- knowledge reconstruction
 - dedicated ProjectTree model
-- incremental scannings
+- structural matching for moved and modified files
+- dependency-aware cross-file invalidation
+- cross-version incremental cache migration
 - remote repository support
 - distributed indexing
 - streaming parser
@@ -1034,18 +1017,11 @@ Planned architectural improvements include
 - richer symbol metadata
 - cross-file symbol resolution
 - multi-chunk symbols
-- embedding caching
 - persistent vector database implementations
-- similarity retrieval
 - MCP transport implementation
 - IDE integrations
 - external AI client support
-- persistent entity identity tracking
-- file evolution history
-- move and rename detection
-- duplicate entity detection
-- intelligent change detection
-- incremental analysis pipeline
+- higher-level project evolution insights
 
 ## Persistent Knowledge Evolution
 
@@ -1066,14 +1042,12 @@ Milestone 10.3 established the persistence foundation:
 - storage hardening;
 - identity preservation across executions.
 
-The persistence lifecycle is now capable of representing, validating and restoring project knowledge independently from storage technology.
+Milestone 10.4 completed the next evolution of this lifecycle with persistent
+entity identity, historical file tracking, deterministic change detection,
+selective pipeline execution and transactional knowledge updates.
 
-Future milestones will extend this foundation with:
-
-- incremental change detection;
-- selective knowledge updates;
-- knowledge invalidation strategies;
-- project evolution tracking.
+Future milestones may build higher-level project intelligence on this stable
+identity and incremental execution foundation.
 
 ---
 
@@ -1106,9 +1080,11 @@ The identifier is calculated by the Indexer and is not stored directly in parser
 
 This decision keeps the parser independent from indexing concerns while providing a stable foundation for future reference graphs, retrieval and navigation.
 
-Future identity evolution will separate symbol identity from file location identity.
+Persistent identity mapping now separates symbol identity from execution-local
+path-based navigation identifiers.
 
-Symbol identifiers must remain associated with persistent file identities rather than relying exclusively on physical paths.
+Persistent symbols are associated with persistent file identities rather than
+relying exclusively on physical paths.
 
 This allows symbol continuity across file moves, renames and incremental knowledge updates.
 
@@ -1135,7 +1111,8 @@ Serialization and restoration strategies are formalized through the PersistentPr
 
 Schema validation, compatibility checks and deterministic restoration are handled inside the persistence boundary.
 
-Incremental synchronisation is intentionally deferred to future milestones.
+Incremental synchronization is coordinated outside the domain through the
+Knowledge lifecycle described below.
 
 ---
 
@@ -1182,11 +1159,15 @@ File tracking uses multiple signals instead of relying on a single identifier.
 
 The identity resolution process considers:
 
-- previous known identity;
-- current location;
-- content fingerprint;
-- historical locations;
-- structural information.
+- previous known identities and their current locations;
+- the current canonical project-relative path;
+- the current SHA-256 content fingerprint;
+- historical locations and fingerprints;
+- whether a previous entity has already been claimed in the execution.
+
+Structural similarity and repository-history signals are deliberately
+deferred; the current resolver does not pretend to have evidence it cannot
+deterministically establish.
 
 The objective is to determine whether a current file represents:
 
@@ -1207,9 +1188,9 @@ Historical data may include:
 - identity transitions;
 - detected changes.
 
-Historical tracking exists only inside the Knowledge layer.
-
-The Project aggregate remains unaware of persistence history.
+Historical tracking policy and mutation exist only inside the Knowledge
+layer. The Project aggregate may carry a storage-independent restored
+`ProjectKnowledgeState`, but it does not interpret or update history.
 
 ## Identity Resolution Boundary
 
@@ -1228,28 +1209,95 @@ The following components must remain unaware of identity tracking:
 The execution flow remains:
 
 ```text
-Repository
-
-↓
-
-Analysis Pipeline
-
-↓
-
-Project Aggregate
-
-↓
-
-Knowledge Identity Resolution
-
-↓
-
-Persistent Knowledge Update
+Restore previous knowledge
+        ↓
+Scanner discovers current files
+        ↓
+Knowledge resolves identity and detects changes
+        ↓
+Knowledge emits analyze/reuse instructions
+        ↓
+Pipeline performs full or selective analysis
+        ↓
+Knowledge merges, validates and commits the next snapshot
 ```
+
+## Identity Tracking Engine
+
+The Knowledge layer executes identity resolution through a dedicated
+`IdentityTrackingEngine`. The engine inventories known persistent entities,
+associates current paths with file identities and returns deterministic,
+auditable tracking results.
+
+Tracking results include:
+
+- typed identity decisions and confidence;
+- probable moves and renames;
+- historical identity updates;
+- duplicate file-content groups;
+- duplicate symbol groups;
+- explicit ambiguity conflicts and their conservative resolution.
+
+Exact current-location matches take precedence. A unique fingerprint match
+for an unobserved previous file is considered a probable move or rename.
+Ambiguous candidates produce a new identity and a conflict record.
 
 ---
 
-# 17.3 Pipeline Knowledge Integration
+# 17.3 Change Detection Behaviour
+
+`ChangeDetectionEngine` compares the resolved current state with the previous
+authoritative snapshot by persistent identity. A path is evidence about
+location; it is never used as the primary persistent identity.
+
+File changes are classified as:
+
+- new;
+- removed;
+- moved;
+- renamed;
+- moved and renamed;
+- modified;
+- unchanged.
+
+The deterministic report also partitions files, symbols, chunks, embeddings
+and retrieval metadata into changed, unchanged, invalidated and reusable
+sets. A content change invalidates dependent chunks, embeddings and retrieval
+metadata. A location-only change preserves the persistent identity and keeps
+unchanged derived knowledge reusable.
+
+Duplicate fingerprints are reported diagnostically. Different files retain
+different identities, and an ambiguous historical match creates a new
+identity rather than selecting an arbitrary candidate.
+
+---
+
+# 17.4 Incremental Analysis Strategy
+
+Every execution performs Scanner discovery. Only semantic stages may be
+skipped.
+
+After scanning, `KnowledgeExecutionPlanner` fingerprints current files,
+resolves identity, computes changes and verifies disposable cached artifacts.
+It returns deterministic per-file `analyze` or `reuse` instructions.
+
+The pipeline then applies these rules:
+
+- new and modified files are parsed and indexed;
+- chunks are regenerated only for invalidated indexed symbols;
+- embeddings are regenerated only for changed chunks or a different provider;
+- unchanged files reuse cached parser, index, chunk and embedding artifacts;
+- unchanged moved or renamed artifacts are relocated deterministically;
+- removed-file artifacts are omitted without recomputing survivors;
+- a missing, stale or corrupt cache causes safe recomputation.
+
+The incremental cache is reconstructable runtime data, not authoritative
+persistent knowledge. The merged runtime outputs must equal a complete
+analysis of the same repository state.
+
+---
+
+# 17.5 Pipeline Knowledge Integration
 
 Persistent Project Knowledge is integrated into the execution lifecycle through a dedicated knowledge lifecycle service.
 
@@ -1301,9 +1349,44 @@ Milestone 10.4 extends this lifecycle with:
 - historical entity evolution;
 - file move and rename detection foundation;
 - deterministic identity resolution;
+- deterministic current-versus-persisted change reports;
+- changed, unchanged, invalidated and reusable knowledge classification;
+- selective parser, index, chunk and embedding execution;
+- disposable per-file runtime artifact caching;
+- deterministic merging of reused and regenerated analysis results;
+- deterministic authoritative knowledge merge and obsolete-entry removal;
+- validate-before-commit updates with atomic and best-effort rollback;
+- lifecycle-owned identity resolution and change detection before analysis;
+- plan-driven pipeline execution with persistence-unaware analysis modules;
 - incremental knowledge preparation.
 
-The lifecycle is now prepared for future incremental analysis capabilities.
+The lifecycle now supports incremental analysis and is prepared for more
+advanced structural and dependency-aware update capabilities.
+
+## Authoritative Knowledge Update
+
+After analysis, `KnowledgeUpdateEngine` merges the current candidate with the
+previous snapshot. Current derived entries are authoritative: new and
+modified entries replace by identity, obsolete entries are removed and equal
+entries preserve their prior value. File histories are merged cumulatively,
+including inactive records for removed files.
+
+The merged snapshot is normalized and validated before storage. File storage
+uses atomic replacement, while other storage implementations receive a
+best-effort rollback attempt after a partial failure. Runtime change state and
+the disposable cache are published only after the authoritative commit
+succeeds.
+
+## Architecture Boundary Validation
+
+The Project Aggregate Root carries analysis results and opaque runtime
+planning/change slots. It owns none of their application logic. Scanner,
+Parser, Indexer, Chunker and Embedding Engine receive and return Project while
+remaining unaware of Knowledge and persistence.
+
+AST-based architecture tests enforce these dependency directions and public
+responsibility contracts. The Phase 7 test matrix validates behaviour; the
+Phase 8 architecture matrix validates ownership and boundaries.
 
 ---
 

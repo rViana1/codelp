@@ -22,10 +22,15 @@ class EmbeddingKnowledgeMapper:
     @staticmethod
     def from_embeddings(
         embeddings: EmbeddingCollection | None,
+        chunk_identity_by_source: dict[str, str] | None = None,
     ) -> list[PersistentEmbeddingMetadata]:
 
         if embeddings is None:
             return []
+
+        chunk_identity_by_source = (
+            chunk_identity_by_source or {}
+        )
 
         provider = (
             embeddings.provider.name
@@ -40,7 +45,10 @@ class EmbeddingKnowledgeMapper:
 
             result.append(
                 PersistentEmbeddingMetadata(
-                    chunk_id=embedding.chunk_id,
+                    chunk_id=chunk_identity_by_source.get(
+                        embedding.chunk_id,
+                        embedding.chunk_id,
+                    ),
                     provider=provider,
                     embedding_hash=EmbeddingKnowledgeMapper._hash_vector(
                         embedding.vector

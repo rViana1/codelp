@@ -10,6 +10,241 @@ Future changes will be documented here.
 
 ---
 
+## [Milestone 10.4 — Phase 9] — Documentation
+
+### Updated
+
+- Consolidated persistent identity, identity tracking, change detection and
+  incremental analysis documentation across the README, roadmap and main
+  architecture reference.
+- Added the completed Milestone 10.4 lessons learned.
+- Corrected stale descriptions that still presented implemented incremental
+  capabilities as planned work.
+- Renamed the misspelled `CHANGELOOG.md` to the canonical `CHANGELOG.md`
+  already referenced by the project documentation.
+- Recorded the Phase 7 test matrix and Phase 8 architecture matrix as
+  executable acceptance references.
+
+### Architecture Decisions
+
+- Reviewed ADR-013, ADR-014 and ADR-015 against the completed implementation.
+- No additional ADR was created because Phase 9 introduced no new
+  architectural decision.
+
+### Validation
+
+- Completed all nine Milestone 10.4 phases.
+- Validated 361 automated backend tests and 30 architecture tests.
+- Validated Python module compilation and repository diff formatting.
+
+---
+
+## [Milestone 10.4 — Phase 8] — Architecture Validation
+
+### Added
+
+- Added executable AST-based boundary tests for Core, analysis facades,
+  pipeline and Knowledge.
+- Added explicit public responsibility contracts for Scanner, Parser,
+  Indexer, Chunker and Embedding Engine.
+- Added Aggregate Root contract validation across every analysis facade.
+- Added deterministic identity primitive validation.
+- Added a Phase 8 architecture acceptance matrix.
+
+### Architecture
+
+- Confirmed that Project carries opaque runtime state without owning identity
+  tracking or incremental execution logic.
+- Confirmed that identity tracking, change detection, planning, merging,
+  persistence and lifecycle intelligence remain inside Knowledge.
+- Prevented the pipeline from bypassing the lifecycle through direct imports
+  of persistence-intelligence internals.
+- Preserved analysis-module independence from Knowledge and persistence.
+
+### Validation
+
+- Added 13 dedicated Phase 8 architecture tests.
+- Validated the complete architecture test suite.
+
+---
+
+## [Milestone 10.4 — Phase 7] — Testing
+
+### Added
+
+- Added an executable acceptance matrix covering every Phase 7 requirement.
+- Added end-to-end pure rename detection and identity-preservation coverage.
+- Added duplicate-content reporting coverage through the lifecycle plan.
+- Added modified incremental snapshot persistence across fresh storage and
+  analyzer instances.
+- Strengthened modification coverage across file, symbol, chunk and
+  embedding identities.
+- Strengthened full/incremental consistency to include authoritative
+  persisted knowledge as well as runtime outputs.
+
+### Validation
+
+- Covered new, deleted, moved, renamed, modified, unchanged and duplicate
+  files.
+- Covered identity preservation after updates, moves and renames.
+- Covered selective incremental execution and durable cache reuse.
+- Covered deterministic reports, updates, conflicts and rollback as
+  supporting acceptance requirements.
+
+---
+
+## [Milestone 10.4 — Phase 6] — Pipeline Integration
+
+### Added
+
+- Added lifecycle-owned pre-analysis knowledge planning.
+- Added file identity resolution and file change detection between scanner
+  discovery and semantic analysis.
+- Added deterministic analyze/reuse instructions stored in Project runtime
+  state.
+- Integrated planned file identities into final knowledge mapping.
+- Moved incremental cache construction and persistence into lifecycle
+  finalization.
+
+### Architecture
+
+- Removed identity resolution, fingerprinting and persistent snapshot
+  handling from the pipeline incremental helper.
+- Preserved persistence independence in parser, indexer, chunker and
+  embedding modules.
+- Extended ADR-013 with the pre-analysis planning lifecycle.
+
+### Testing
+
+- Added execution-order coverage for scan, identity, changes and parser.
+- Added pre-analysis versus final identity consistency validation.
+- Added source-boundary tests preventing persistence intelligence from
+  returning to analysis modules or the pipeline helper.
+
+---
+
+## [Milestone 10.4 — Phase 5] — Knowledge Update Strategy
+
+### Added
+
+- Added a dedicated deterministic knowledge update engine.
+- Added explicit merge rules for new, modified, unchanged and obsolete
+  derived knowledge.
+- Added cumulative file location and fingerprint history merging.
+- Added inactive historical preservation for removed file identities.
+- Added validation-before-commit and publish-after-commit boundaries.
+- Added best-effort rollback for storage implementations that can partially
+  write before raising an error.
+- Added ADR-015 documenting update and rollback semantics.
+
+### Testing
+
+- Added merge tests for additions, modifications, removals and unchanged
+  entries.
+- Added historical timestamp and deterministic ordering tests.
+- Added validation of merged snapshot invariants.
+- Added partial-write rollback and validation-failure isolation tests.
+
+---
+
+## [Milestone 10.4 — Phase 4] — Incremental Analysis Pipeline
+
+### Added
+
+- Added a disposable per-file analysis cache, separate from authoritative
+  persistent knowledge.
+- Added selective parser, indexer and chunker execution for invalidated
+  files.
+- Added selective embedding generation for changed chunks or providers.
+- Added deterministic merging of cached and newly generated runtime results.
+- Added cached artifact relocation for unchanged file moves and renames.
+- Added runtime metrics describing analyzed, reused, removed and regenerated
+  components.
+- Added file and in-memory cache storage with safe fallback to full analysis.
+
+### Testing
+
+- Added call-count tests proving unchanged stages are skipped.
+- Added partial modification, removal, move, provider-change and identity
+  preservation coverage.
+- Added equivalence validation between incremental and complete analysis.
+- Added separate file-cache round-trip and deletion tests.
+
+---
+
+## [Milestone 10.4 — Phase 3] — Change Detection Engine
+
+### Added
+
+- Added a deterministic change engine that compares resolved current
+  knowledge with the previous persisted snapshot.
+- Added stable-identity classification for new, removed, moved, renamed,
+  moved-and-renamed, modified and unchanged files.
+- Added explicit changed, unchanged, invalidated and reusable element sets
+  for files, symbols, chunks, embeddings and retrieval metadata.
+- Added dependency invalidation from modified chunks to embedding and
+  retrieval knowledge.
+- Exposed the immutable change report as non-persistent Project runtime
+  state during knowledge persistence.
+- Preserved the former file-only diff interface through a compatibility
+  adapter.
+
+### Testing
+
+- Added tests for every file change type, deterministic ordering, first-run
+  behavior, element classification, dependency invalidation and persistence
+  lifecycle integration.
+
+---
+
+## [Milestone 10.4 — Phase 2] — Identity Tracking Engine
+
+### Added
+
+- Added a dedicated identity tracking engine to knowledge mapping.
+- Added deterministic resolution decisions with types and confidence.
+- Added known-entity inventories for files, symbols, chunks and embeddings.
+- Added probable move, rename and combined move/rename classification.
+- Added duplicate file-content and duplicate-symbol detection.
+- Added explicit conflicts for ambiguous path and fingerprint candidates.
+- Added deterministic conflict policy that creates a new identity instead of
+  choosing an arbitrary candidate.
+
+### Testing
+
+- Added tracking engine tests for existing entities, moves, renames,
+  duplicates, conflicts, histories and input-order independence.
+
+---
+
+## [Milestone 10.4 — Phase 1] — Persistent Identity Foundation
+
+### Added
+
+- Added deterministic persistent identities independent from current paths.
+- Added historical file locations and content fingerprint states.
+- Added conservative file identity resolution and move/rename detection.
+- Added removal, reappearance, duplicate-content ambiguity and content
+  reversion handling.
+- Added stable symbol and chunk identities across file moves and renames.
+- Defined embedding identity as `(chunk_id, provider)`.
+- Added strict schema `2.0` persistent models and identity invariants.
+
+### Improved
+
+- Canonicalized persistent paths as project-relative POSIX paths.
+- Preserved configuration during deterministic normalization.
+- Reused one prepared knowledge snapshot through lifecycle finalization.
+- Preserved current fingerprint semantics when content returns to a previous
+  state.
+
+### Testing
+
+- Added deterministic identity, move, rename, removal, reappearance,
+  ambiguity and multi-entity pipeline tests.
+
+---
+
 ## [Milestone 10.3] — Knowledge Persistence Foundation
 
 ### Added

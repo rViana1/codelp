@@ -6,6 +6,8 @@ from app.knowledge.models import (
     PersistentRetrievalMetadata,
     PersistentProjectKnowledge,
     PersistentFileIdentity,
+    PersistentFileLocation,
+    PersistentFileFingerprint,
 )
 
 
@@ -68,8 +70,23 @@ def test_project_knowledge_serialization():
         files=[
             PersistentFileIdentity(
                 file_id="src/main.py",
-                path="src/main.py",
-                content_hash="hash123",
+                locations=[
+                    PersistentFileLocation(
+                        path="src/main.py",
+                        first_seen="2026-01-01T00:00:00Z",
+                        last_seen="2026-01-01T00:00:00Z",
+                        is_current=True,
+                    )
+                ],
+                fingerprints=[
+                    PersistentFileFingerprint(
+                        content_hash="hash123",
+                        size_bytes=8,
+                        generated_at="2026-01-01T00:00:00Z",
+                        last_seen="2026-01-01T00:00:00Z",
+                        is_current=True,
+                    )
+                ],
             )
         ],
         symbols=[
@@ -101,10 +118,25 @@ def test_project_knowledge_serialization():
 def test_file_identity_preservation():
     file = PersistentFileIdentity(
         file_id="src/main.py",
-        path="src/main.py",
-        content_hash="hash123",
+        locations=[
+            PersistentFileLocation(
+                path="src/main.py",
+                first_seen="2026-01-01T00:00:00Z",
+                last_seen="2026-01-01T00:00:00Z",
+                is_current=True,
+            )
+        ],
+        fingerprints=[
+            PersistentFileFingerprint(
+                content_hash="hash123",
+                size_bytes=8,
+                generated_at="2026-01-01T00:00:00Z",
+                last_seen="2026-01-01T00:00:00Z",
+                is_current=True,
+            )
+        ],
     )
 
     assert file.file_id == "src/main.py"
-    assert file.path == "src/main.py"
-    assert file.content_hash == "hash123"
+    assert file.locations[0].path == "src/main.py"
+    assert file.fingerprints[0].content_hash == "hash123"

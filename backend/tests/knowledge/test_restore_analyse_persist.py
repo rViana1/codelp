@@ -97,7 +97,8 @@ def test_restore_analyse_persist_cycle(
 
 
     second_knowledge = builder.build(
-        restored_project
+        restored_project,
+        previous=loaded,
     )
 
 
@@ -120,8 +121,49 @@ def test_restore_analyse_persist_cycle(
         second_knowledge.metadata.project_id
     )
 
-    assert (
-        first_knowledge.files
-        ==
+    assert len(first_knowledge.files) == len(
         second_knowledge.files
+    )
+
+    first_file = first_knowledge.files[0]
+    second_file = second_knowledge.files[0]
+
+    assert first_file.file_id == second_file.file_id
+
+    assert (
+        first_file.locations[0].path
+        ==
+        second_file.locations[0].path
+    )
+
+    assert (
+        first_file.locations[0].first_seen
+        ==
+        second_file.locations[0].first_seen
+    )
+
+    assert len(first_file.fingerprints) == len(
+        second_file.fingerprints
+    )
+
+    first_fingerprint = first_file.fingerprints[0]
+    second_fingerprint = second_file.fingerprints[0]
+
+    assert (
+        first_fingerprint.content_hash
+        == second_fingerprint.content_hash
+    )
+    assert (
+        first_fingerprint.generated_at
+        == second_fingerprint.generated_at
+    )
+    assert (
+        second_fingerprint.last_seen
+        >= first_fingerprint.last_seen
+    )
+
+    assert (
+        second_file.locations[0].last_seen
+        >=
+        first_file.locations[0].last_seen
     )

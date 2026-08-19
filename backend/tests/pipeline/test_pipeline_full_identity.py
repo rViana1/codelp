@@ -67,7 +67,11 @@ def extract_identity_snapshot(
         "files": [
             (
                 item.file_id,
-                item.content_hash,
+                next(
+                    fingerprint.content_hash
+                    for fingerprint in item.fingerprints
+                    if fingerprint.is_current
+                ),
             )
             for item in knowledge.files
         ],

@@ -298,9 +298,9 @@ The following capabilities are introduced as architectural foundations:
 - persistent file identity;
 - file location history;
 - file content fingerprinting;
-- identity resolution strategy;
-- move detection preparation;
-- rename detection preparation;
+- deterministic identity resolution;
+- unchanged-file move detection;
+- unchanged-file rename detection;
 - deterministic entity tracking.
 
 The intelligent analysis of project evolution remains part of future milestones.
@@ -308,9 +308,6 @@ The intelligent analysis of project evolution remains part of future milestones.
 Deferred
 
 - Incremental project updates
-- File identity resolution
-- File history tracking
-- File move and rename detection
 - Symbol identity evolution
 - Chunk identity evolution
 - Embedding identity evolution
@@ -1036,7 +1033,7 @@ Validation
 
 Status
 
-Planned
+Completed — Phases 1 through 9 validated
 
 Goals
 
@@ -1051,24 +1048,184 @@ Goals
 
 Implemented
 
-- Architecture decision documented through ADR-014.
+- Lifecycle integration governed by ADR-013, with identity and update
+  decisions documented by ADR-014 and ADR-015.
 - Persistent identity strategy defined.
 - Historical file identity approach defined.
 - File tracking strategy defined.
 - Fingerprint-based identity resolution strategy defined.
 - Identity tracking responsibilities defined inside Knowledge layer.
+- Persistent identity model separated from physical locations.
+- Deterministic, project-scoped file identity generation.
+- Historical location and content fingerprint tracking.
+- Conservative identity resolution using current paths and unique
+  content fingerprints.
+- File move and rename detection with ambiguity protection.
+- File removal and reappearance tracking.
+- Stable symbol identities associated with persistent file identities.
+- Stable chunk identities associated with persistent symbol identities.
+- Stable embedding identity through `(chunk_id, provider)`.
+- Canonical project-relative POSIX paths in persistent knowledge.
+- Knowledge schema `2.0` for the persistent identity contract.
+
+Phase 2 — Identity Tracking Engine
+
+- Identity tracking engine integrated into persistent knowledge mapping.
+- Known file, symbol, chunk and embedding identities inventoried.
+- Existing files and symbols resolved during each new execution.
+- Current paths associated with persistent file identities.
+- Historical locations and fingerprints maintained through tracking.
+- Probable moves and renames classified with deterministic confidence.
+- Duplicate file-content groups detected without merging identities.
+- Duplicate symbols detected across distinct persistent files.
+- Ambiguous path or fingerprint candidates reported as conflicts.
+- Conflict policy creates a new identity rather than choosing arbitrarily.
+- Tracking decisions, duplicates and conflicts returned in stable order.
+
+Phase 3 — Change Detection Engine
+
+- Current resolved knowledge compared with the previous persisted snapshot.
+- New, removed, moved, renamed, moved-and-renamed, modified and unchanged
+  files classified by stable identity rather than by path.
+- Immutable project change report returned in deterministic order.
+- Changed and unchanged elements defined for files, symbols, chunks,
+  embeddings and retrieval metadata.
+- Invalidated and reusable knowledge references defined explicitly.
+- Dependency invalidation propagated from changed chunks to embeddings and
+  retrieval metadata.
+- Location-only changes preserve reusable file identity and derived
+  knowledge.
+- Change report exposed as runtime Project state and excluded from the
+  persistent snapshot.
+- Legacy file-diff API retained as a compatibility adapter.
+
+Phase 4 — Incremental Analysis Pipeline
+
+- Scanner retained as the discovery boundary for every execution.
+- Disposable analysis cache separated from authoritative persistent
+  knowledge.
+- Cached parser, index, chunk and embedding artifacts associated with stable
+  file identities.
+- Parser execution restricted to new or content-modified files.
+- Index and chunk generation restricted to invalidated files.
+- Embedding generation restricted to chunks whose content or provider
+  changed.
+- Unchanged files reconstructed from cached runtime artifacts.
+- Removed-file artifacts excluded without recomputing unaffected files.
+- Moved and renamed cached artifacts relocated without expensive analysis.
+- Unaffected persistent file, symbol, chunk and embedding identities
+  preserved.
+- Incremental execution metrics exposed as non-persistent Project runtime
+  state.
+- Incremental and complete runtime analysis results validated as equivalent.
+- Corrupted, missing or unwritable cache degrades safely to recomputation.
+
+Phase 5 — Knowledge Update Strategy
+
+- Dedicated knowledge update engine introduced before persistence.
+- Candidate snapshot defined as authoritative for current derived knowledge.
+- New and modified symbols, chunks, embeddings and retrieval entries merged
+  by persistent identity.
+- Obsolete derived entries removed when absent from current knowledge.
+- Unchanged entries preserve their previous persisted values.
+- File identity, location and fingerprint histories merged cumulatively.
+- Removed files retained as inactive historical identities.
+- Earliest observations and latest sightings preserved during history merge.
+- All updated collections returned in deterministic identity order.
+- Complete knowledge validation required before the storage commit.
+- Runtime change report published only after a successful commit.
+- Atomic file replacement retained as the primary rollback mechanism.
+- Best-effort previous-snapshot restoration added for stores that fail after
+  a partial write.
+- Failed validation and failed commits leave authoritative knowledge and
+  runtime update state unchanged.
+
+Phase 6 — Pipeline Integration
+
+- Knowledge lifecycle now owns a dedicated pre-analysis execution planner.
+- File identity tracking executed after discovery and before semantic
+  analysis.
+- File change detection executed from resolved identities before semantic
+  analysis.
+- Deterministic per-file `analyze` or `reuse` instructions exposed to the
+  pipeline.
+- Pre-analysis plan stored as non-persistent Project runtime state.
+- Pipeline execution selected exclusively from the lifecycle plan.
+- Final knowledge mapping consumes the file identities resolved by the plan
+  instead of resolving them a second time.
+- Symbol identity resolution remains in Knowledge and runs against planned
+  file identities after analysis.
+- Incremental cache construction and storage moved into lifecycle finalize.
+- Pipeline incremental helper no longer hashes files, loads snapshots,
+  resolves identities or performs change detection.
+- Scanner, parser, indexer, chunker and embedding engine remain unaware of
+  Knowledge and persistence.
+- Project remains the runtime source of the plan, analysis outputs, execution
+  metrics and final change report.
+
+Phase 7 — Testing
+
+- Acceptance matrix created for all Phase 7 requirements.
+- New, removed, moved, renamed, modified and unchanged file detection covered
+  through pipeline executions.
+- Duplicate file fingerprints validated through the pre-analysis lifecycle
+  plan without merging distinct identities.
+- Identity preservation validated after modifications, moves and pure
+  renames for files, symbols, chunks and embeddings.
+- Incremental skip and selective regeneration paths verified with exact
+  parser, indexer, chunker and provider call counts.
+- Incremental snapshot and cache persistence validated across new storage and
+  analyzer instances.
+- Full and incremental execution compared from the same persisted baseline.
+- Runtime parser/index/chunk/embedding outputs validated as equivalent.
+- Authoritative persistent identities and content hashes validated as
+  equivalent.
+- Supporting determinism, conflict and rollback tests included in the
+  acceptance matrix.
+
+Phase 8 — Architecture Validation
+
+- Core dependency direction validated structurally through Python ASTs.
+- Identity tracking engines, decisions and resolution methods excluded from
+  domain models.
+- Incremental planning and execution logic excluded from domain models;
+  Project retains only opaque, non-persistent runtime result slots.
+- Scanner, Parser, Indexer, Chunker and Embedding Engine public facades
+  restricted to their declared responsibilities.
+- Analysis facades prevented from importing Knowledge, pipeline,
+  persistence or unrelated downstream stages.
+- Identity tracking, change detection, execution planning, deterministic
+  merging, persistence and lifecycle ownership confirmed inside Knowledge.
+- Pipeline prevented from importing persistence-intelligence internals or
+  concrete storage implementations.
+- Project validated as the shared Aggregate Root accepted and returned by
+  every analysis facade.
+- Persistent identity generation protected from random generators, `uuid4`
+  and process-randomized `hash()`.
+- Dedicated executable architecture acceptance matrix and boundary tests
+  added for every Phase 8 requirement.
+
+Phase 9 — Documentation
+
+- README updated to version `v0.10.4` with the completed identity and
+  incremental analysis capabilities.
+- Canonical changelog filename corrected to `CHANGELOG.md` and the complete
+  milestone history recorded.
+- Lessons learned updated with the identity, change-detection, incremental
+  execution, update and architecture-boundary findings.
+- Main architecture reference aligned with the implemented pre-analysis
+  lifecycle and authoritative update flow.
+- Persistent identity architecture, tracking resolution order, change
+  classifications and incremental reuse rules documented explicitly.
+- Phase 7 test matrix and Phase 8 architecture matrix retained as executable
+  acceptance references.
+- ADR-013, ADR-014 and ADR-015 reviewed and confirmed sufficient; no new
+  architectural decision emerged during documentation.
 
 Deferred
 
-- Full identity tracking implementation
-- File move detection implementation
-- File rename detection implementation
-- Incremental analysis execution
-- Knowledge invalidation engine
-- Selective parser execution
-- Selective indexing execution
-- Selective chunk regeneration
-- Selective embedding regeneration
+- Structural matching for files moved and modified simultaneously
+- Cross-version incremental cache migration
 
 Architecture Validation
 
@@ -1082,21 +1239,33 @@ Architecture Validation
 - Knowledge layer owns persistence intelligence.
 - Entity history does not replace runtime project state.
 
-Expected Evolution
+Completion
 
 Milestone 10.4 extends the persistence foundation created in Milestone 10.3.
 
 The objective is not only to preserve the latest analysed state, but to understand how project knowledge evolves between executions.
 
-Future implementations will enable:
-
-- moved file recognition;
-- renamed file recognition;
-- modified knowledge detection;
-- unchanged knowledge reuse;
-- incremental project analysis.
+Future implementations may extend this foundation with structural matching,
+cross-version cache migration and dependency-aware cross-file invalidation.
 
 ---
+
+## Milestone 10.5 — Knowledge Graph & Project Intelligence
+
+Status
+
+Planned
+
+Goals
+
+- Build persistent relationships between project entities.
+- Introduce a project knowledge graph without replacing Project runtime state.
+- Use stable identities to connect files, symbols, chunks and dependencies.
+- Improve retrieval with cross-entity and cross-file context.
+- Produce higher-level project evolution and architecture insights.
+- Define dependency-aware invalidation where relationships require it.
+
+The detailed phase checklist will be finalized before implementation.
 
 ---
 
@@ -1153,13 +1322,10 @@ Current ADRs
 - ADR-012 — Persistent Project Knowledge Boundary
 - ADR-013 — Knowledge Lifecycle Integration Boundary
 - ADR-014 — Persistent Identity & Incremental Knowledge Strategy
+- ADR-015 — Deterministic Knowledge Updates & Rollback
 
 Planned ADRs
 
-Planned ADRs
-
-- ADR-015 — Knowledge Invalidation Model
-- ADR-016 — Incremental Pipeline Execution Strategy
 - Plugin System
 - Configuration System
 - Multi-language Support
