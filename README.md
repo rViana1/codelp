@@ -38,7 +38,7 @@ The project is designed around **determinism, modularity and testability**, prov
 
 ## Current Status
 
-**Version:** `v0.10.5`
+**Version:** `v0.11.0`
 
 Implemented:
 
@@ -69,14 +69,25 @@ Implemented:
 - Deterministic project understanding and structural summaries
 - Explainable graph-aware retrieval with context provenance
 - MCP project graph and history exploration through application services
+- Managed project workspace runtime
+- Strict layered configuration and model-free default operation
+- Production CLI for analysis, query, context and graph exploration
+- Stateless MCP `2026-07-28` transport with legacy compatibility
+- FastAPI REST interface and OpenAPI contract
+- Concurrent cross-project execution with per-workspace isolation
+- Workspace allowlists, resource limits and content-safe observability
 - Full pipeline integration
 - Architecture documentation
 - ADRs (Architecture Decision Records)
 
+Operational usage of the shared runtime, configuration and three public
+interfaces is documented in
+[`docs/user/RUNTIME_INTERFACES.md`](docs/user/RUNTIME_INTERFACES.md).
+
 Validation:
 
-- **417 automated tests passing**
-- **45 architecture boundary tests passing**
+- **471 automated tests passing**
+- **59 architecture boundary tests passing**
 - Deterministic outputs across executions
 - Stable symbol, chunk, embedding, retrieval and context identities
 - Stable persistent identities after file updates, moves and renames
@@ -299,6 +310,36 @@ The MCP layer exposes Codelp project knowledge without coupling the core pipelin
 
 ---
 
+### Application Runtime and Public Interfaces
+
+- One `CodelpApplication` facade for every external consumer
+- Deterministic workspace handles and explicit lifecycle
+- Full and incremental analysis execution
+- Optional asynchronous execution with status and safe queued cancellation
+- CLI, stateless MCP stdio and REST/OpenAPI interfaces
+- Consistent project status, exploration, query and context contracts
+- Canonical root allowlists and symlink escape protection
+- Structured metrics without source code, query text or secret values
+
+Codelp runs without an LLM. Embeddings are disabled by default; scanning,
+parsing, indexing, incremental persistence, the knowledge graph, project
+understanding, dependency/history exploration and duplicate/similarity
+analysis remain available. Optional local hash vectors require no model or
+network and provide a deterministic retrieval fallback.
+
+Example commands:
+
+```bash
+codelp init .
+codelp analyze . --json
+codelp explore project --path . --json
+codelp query "authentication" --path . --json
+codelp-mcp
+codelp-api
+```
+
+---
+
 ## Knowledge Identity Flow
 
 Codelp distinguishes execution-local navigation identifiers from persistent
@@ -381,6 +422,9 @@ python -m venv .venv
 source .venv/bin/activate
 
 pip install -r requirements.txt
+
+# Install the application entry points during development
+pip install -e .
 ```
 
 ---
@@ -391,7 +435,7 @@ pip install -r requirements.txt
 pytest backend/tests -v
 ```
 
-Expected result: **417 passed**.
+Expected result: **471 passed**.
 
 ---
 
@@ -501,7 +545,7 @@ External Tools / IDE Integrations / LLM Consumers
 | Knowledge Persistence Foundation | Completed |
 | Persistent Identity & Incremental Knowledge | Completed |
 | Knowledge Graph & Intelligent Project Understanding | Completed |
-| API / CLI | Planned |
+| Project Workspace Runtime & Public Interfaces | Completed |
 
 ---
 
@@ -521,6 +565,12 @@ graph, derives higher-level project understanding, enriches semantic retrieval
 with explainable graph evidence and exposes safe project exploration through
 application-service-backed MCP adapters.
 
+### Completed — Milestone 11
+
+Milestone 11 provides the shared workspace runtime, layered configuration,
+CLI, current MCP transport, REST API, execution management, workspace
+isolation and content-safe observability required for real external use.
+
 ### Future
 
 - Persistent vector database implementations
@@ -528,7 +578,6 @@ application-service-backed MCP adapters.
 - Retrieval-optimized chunking
 - Cross-file context
 - Distributed indexing
-- API and CLI interfaces
 - LLM provider integration
 - Prompt generation
 - Context optimisation
@@ -565,6 +614,8 @@ Architecture Decision Records:
 - `ADR-015` — Deterministic Knowledge Updates and Rollback
 - `ADR-016` — Persistent Knowledge Graph Projection
 - `ADR-017` — Explainable Graph-Aware Retrieval and External Knowledge Access
+- `ADR-018` — Application Runtime and Public Transport Boundary
+- `ADR-019` — Workspace Execution, Isolation and Operational Safety
 
 ---
 

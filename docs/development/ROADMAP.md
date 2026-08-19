@@ -1399,22 +1399,139 @@ Phase 8 — Documentation
 
 ---
 
-## Milestone 11 — External Integration & Production Ready
+## Milestone 11 — Project Workspace Runtime & Public Interfaces
 
 Status
 
-Planned
+Completed — Phases 1 through 11
 
 Goals
 
-- CLI
-- REST API
-- Real MCP transport
-- IDE integrations
-- Configuration
-- Plugin system
-- Documentation
-- Release pipeline
+- Provide one application runtime for all project operations.
+- Keep deterministic analysis fully useful without an LLM.
+- Expose consistent CLI, MCP and REST interfaces.
+- Add workspace configuration, execution safety and observability.
+- Prevent transports from assembling or bypassing application services.
+
+Phase 1 — Application Runtime Foundation
+
+- Top-level `CodelpApplication` facade introduced.
+- Deterministic workspace identity derived from canonical project root.
+- Idempotent project opening and explicit workspace closing implemented.
+- Full and incremental analysis coordinated through the existing pipeline.
+- Current persisted knowledge published back into Project after successful
+  finalization.
+- Project Understanding generated automatically after analysis.
+- Retrieval, context generation and project exploration coordinated through
+  one transport-neutral application service.
+- Workspace status exposes stable capability and diagnostic information.
+- Vector resources released when a workspace closes.
+- Default local composition root remains independent from any generative LLM.
+- Runtime behavioural and architecture boundary tests added.
+
+Phase 2 — Workspace & Configuration Management
+
+- Strict typed configuration model introduced with unknown-field rejection.
+- Deterministic precedence defined for defaults, user file, project file,
+  environment variables and explicit overrides.
+- Project-local `.codelp/config.json` supported.
+- Scanner ignore, hidden-file, extension and maximum-size policy configured.
+- Persistence paths resolve relative to the project workspace.
+- Embeddings are disabled by default and require no LLM or network.
+- Explicit disabled provider keeps analysis operational with no vectors.
+- Optional deterministic local hash vectors provide a model-free fallback.
+- Retrieval weights and structural similarity threshold are configurable and
+  validated.
+- Configuration contains no secret value fields and ignores unknown secret
+  environment variables.
+- Configuration dependency boundaries protected by architecture tests.
+
+Phase 3 — Command-Line Interface
+
+- Typer CLI added exclusively over `CodelpApplication`.
+- `init`, `analyze`, `status`, `query`, `context` and `explore` commands added.
+- Human-readable and canonical deterministic JSON output supported.
+- Stable command exit codes defined.
+- Project-local configuration initialization is secret-free and disables
+  models by default.
+- CLI architecture test prevents direct pipeline or storage assembly.
+
+Phase 4 — Real MCP Transport
+
+- Protocol-compatible JSON-RPC stdio transport implemented.
+- Current stateless MCP `2026-07-28` discovery supported.
+- Legacy `2025-11-25` initialize negotiation retained for clients in the
+  compatibility window.
+- Workspace open, analysis, exploration, query and close tools exposed with
+  JSON Schema contracts.
+- Dynamic status, knowledge and context resources exposed by workspace URI.
+- Tool and resource lists use deterministic ordering and cache metadata.
+- Parse, method, parameter, workspace and capability failures mapped to stable
+  JSON-RPC errors.
+- MCP handlers delegate exclusively to the application runtime.
+
+Phase 5 — REST API Foundation
+
+- FastAPI composition over `CodelpApplication` implemented.
+- Health, readiness, workspace, analysis, query, context, knowledge, symbol
+  and exploration endpoints added.
+- Strict request DTOs and generated OpenAPI contract added.
+- Workspace, validation and unavailable-capability errors mapped consistently.
+- REST models never expose persistent Knowledge representations.
+
+Phase 6 — Execution & Concurrency Management
+
+- Deterministic analysis execution identities introduced.
+- One active execution per workspace enforced.
+- Different projects may execute concurrently.
+- Queued cancellation, wait timeout and execution status supported.
+- Failed executions release locks and preserve committed knowledge.
+- REST execution submission, status and safe cancellation endpoints added.
+
+Phase 7 — Security & Operational Safety
+
+- Canonical workspace root allowlists enforced centrally.
+- Filesystem-root allowlists and symlink escapes rejected.
+- Maximum workspace and query limits enforced.
+- Scanner hidden, extension and file-size policies shared by all transports.
+- External consumers cannot invoke storage operations.
+- Secret values remain outside configuration and persistent knowledge.
+
+Phase 8 — Observability & Diagnostics
+
+- Structured runtime events and deterministic correlation IDs added.
+- Analysis duration, incremental reuse, graph size and retrieval provenance
+  metrics recorded.
+- Sanitized error categories replace raw exception details in event records.
+- Source content, query text and credentials are excluded from logs.
+- REST metrics endpoint exposes aggregate counters only.
+
+Phase 9 — Testing
+
+- Runtime, configuration, CLI, MCP, REST, execution, security and
+  observability test suites added.
+- Full and incremental execution validated through public runtime contracts.
+- CLI, MCP and REST output consistency validated for the same project.
+- MCP current and compatibility protocol contracts validated.
+- Model-free operation validated explicitly.
+
+Phase 10 — Architecture Validation
+
+- Project remains Aggregate Root and contains no workspace/execution logic.
+- Runtime remains an application component rather than a domain model.
+- CLI, MCP and REST depend on runtime instead of pipeline or persistence.
+- Configuration, execution, security and observability boundaries validated.
+- Knowledge storage remains replaceable.
+- Generative LLM dependencies remain entirely optional and absent.
+- Consolidated Milestone 11 architecture acceptance matrix added.
+
+Phase 11 — Documentation & Release Preparation
+
+- README, roadmap, changelog, lessons and architecture references updated.
+- CLI, MCP, REST, configuration, security and no-model operation documented.
+- ADR-018 records runtime and public transport ownership.
+- ADR-019 records execution, workspace security and observability policy.
+- Release prepared for `v0.11.0`; commit, tag and push remain user-controlled.
 ---
 
 # 7. Versioning
@@ -1455,6 +1572,8 @@ Current ADRs
 - ADR-015 — Deterministic Knowledge Updates & Rollback
 - ADR-016 — Persistent Knowledge Graph Projection
 - ADR-017 — Explainable Graph-Aware Retrieval and External Knowledge Access
+- ADR-018 — Application Runtime and Public Transport Boundary
+- ADR-019 — Workspace Execution, Isolation and Operational Safety
 
 Planned ADRs
 

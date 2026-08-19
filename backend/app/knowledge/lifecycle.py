@@ -94,6 +94,11 @@ class KnowledgeLifecycleService:
             project,
             previous=previous,
         )
+        self.restorer.restore(
+            project,
+            knowledge,
+            report_diagnostic=False,
+        )
         if provider is not None:
             cache = self.cache_builder.build(
                 project,

@@ -26,6 +26,11 @@ class KnowledgeGraphBuilder:
     are retained as inactive history when their source entities disappear.
     """
 
+    def __init__(self, similarity_threshold: float = 0.6) -> None:
+        if not 0.0 <= similarity_threshold <= 1.0:
+            raise ValueError("Similarity threshold must be between 0 and 1")
+        self.similarity_threshold = similarity_threshold
+
     def build(
         self,
         knowledge: PersistentProjectKnowledge,
@@ -481,7 +486,7 @@ class KnowledgeGraphBuilder:
                     left.structural_fingerprint,
                     right.structural_fingerprint,
                 )
-                if similarity < 0.6:
+                if similarity < self.similarity_threshold:
                     continue
                 source, target = sorted(
                     (chunk_nodes[left.chunk_id], chunk_nodes[right.chunk_id]),

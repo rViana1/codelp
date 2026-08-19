@@ -10,6 +10,110 @@ Future changes will be documented here.
 
 ---
 
+## [Milestone 11 — Phases 5–11] — Public Runtime Completion
+
+### Added
+
+- Added FastAPI workspace, analysis, execution, query, context, knowledge,
+  symbol and exploration contracts with generated OpenAPI.
+- Added asynchronous analysis identities, per-workspace exclusion,
+  cross-project concurrency, queued cancellation and wait timeouts.
+- Added canonical workspace allowlists, symlink escape protection and resource
+  limits shared by every public transport.
+- Added structured correlation, duration, incremental reuse, graph and
+  retrieval provenance metrics with content-safe diagnostics.
+- Added public-interface consistency and consolidated architecture tests.
+- Added ADR-018 and ADR-019.
+
+### Architecture
+
+- Project remains Aggregate Root.
+- CLI, MCP and REST use `CodelpApplication` and cannot assemble the pipeline or
+  access persistent Knowledge models.
+- Codelp remains useful without embeddings and has no generative LLM
+  dependency.
+
+### Validation
+
+- Validated 471 backend tests under two deterministic hash seeds and 59
+  architecture boundary tests.
+- Validated editable packaging and the `codelp`, `codelp-mcp` and `codelp-api`
+  entry points.
+- Validated Python compilation and diff formatting.
+
+---
+
+## [Milestone 11 — Phase 4] — Real MCP Transport
+
+### Added
+
+- Added stateless MCP `2026-07-28` JSON-RPC stdio transport.
+- Added compatibility negotiation for `2025-11-25` initialize clients.
+- Added workspace, analysis, exploration, graph-aware query and close tools.
+- Added dynamic workspace status, knowledge and context resources.
+- Added deterministic MCP schemas, cache metadata and protocol error mapping.
+
+### Validation
+
+- Validated the complete 76-test MCP suite and 444 backend tests.
+
+---
+
+## [Milestone 11 — Phase 3] — Command-Line Interface
+
+### Added
+
+- Added project initialization, analysis, status, query, context and
+  exploration CLI commands.
+- Added canonical JSON output and stable exit codes.
+- Added CLI contract and architecture boundary tests.
+
+---
+
+## [Milestone 11 — Phase 2] — Workspace & Configuration Management
+
+### Added
+
+- Added strict typed scanner, persistence, embedding, retrieval and interface
+  configuration.
+- Added deterministic configuration precedence across file, environment and
+  explicit override sources.
+- Added project-local configured application composition.
+- Added explicit disabled embeddings and deterministic local hash vectors.
+- Added configurable retrieval fusion weights and similarity threshold.
+
+### Validation
+
+- Added precedence, invalid-value, secret exclusion, scanner policy,
+  project-local persistence and no-model runtime tests.
+- Validated 433 backend tests.
+
+---
+
+## [Milestone 11 — Phase 1] — Application Runtime Foundation
+
+### Added
+
+- Added the transport-neutral `CodelpApplication` runtime facade.
+- Added managed project workspaces with deterministic identity and lifecycle.
+- Added coordinated analysis, understanding, retrieval, context and project
+  exploration operations.
+- Added stable workspace status and capability reporting.
+- Added a default local composition root with no generative LLM dependency.
+
+### Changed
+
+- Successful knowledge finalization now publishes the current restored
+  knowledge graph back into the active Project Aggregate Root.
+
+### Validation
+
+- Added runtime lifecycle, persistence reuse, retrieval, exploration and
+  architecture boundary tests.
+- Validated 425 backend tests.
+
+---
+
 ## [Milestone 10.5 — Phase 8] — Documentation
 
 ### Updated

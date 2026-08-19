@@ -6,8 +6,8 @@ from app.knowledge.models import PersistentProjectKnowledge
 from app.knowledge.identity import deterministic_identity
 from app.knowledge.schema import is_supported_version
 
-from backend.app.knowledge.errors import KnowledgeValidationError
-from backend.app.knowledge.validation_codes import (
+from app.knowledge.errors import KnowledgeValidationError
+from app.knowledge.validation_codes import (
     KNOWLEDGE_UNSUPPORTED_VERSION,
 )
 

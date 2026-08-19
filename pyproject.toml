@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68", "wheel>=0.45"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "codelp"
+version = "0.11.0"
+description = "Deterministic project knowledge and public workspace runtime"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.139,<1",
+    "pydantic>=2.13,<3",
+    "typer>=0.27,<1",
+    "uvicorn>=0.51,<1",
+]
+
+[project.scripts]
+codelp = "app.cli.main:main"
+codelp-mcp = "app.mcp.__main__:main"
+codelp-api = "app.api.__main__:main"
+
+[tool.setuptools]
+package-dir = {"" = "backend"}
+
+[tool.setuptools.packages.find]
+where = ["backend"]
+include = ["app*", "core*"]
+exclude = ["tests*"]

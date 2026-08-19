@@ -32,6 +32,8 @@ class KnowledgeRestorer:
         self,
         project: Project,
         knowledge: PersistentProjectKnowledge,
+        *,
+        report_diagnostic: bool = True,
     ) -> Project:
         """
         Restores compatible knowledge into the project.
@@ -150,9 +152,10 @@ class KnowledgeRestorer:
             ),
         )
 
-        project.diagnostics.append(
-            f"Restored knowledge for project "
-            f"{knowledge.metadata.project_id}"
-        )
+        if report_diagnostic:
+            project.diagnostics.append(
+                f"Restored knowledge for project "
+                f"{knowledge.metadata.project_id}"
+            )
 
         return project

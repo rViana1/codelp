@@ -1973,3 +1973,52 @@ same project knowledge capabilities.
 
 Milestone 10.5 provides the intelligent project representation required for
 future API, CLI, IDE and advanced analysis capabilities.
+
+---
+
+# Milestone 11 — Project Workspace Runtime & Public Interfaces
+
+## Lesson Learned — Transports Must Share One Application Runtime
+
+CLI, MCP and REST quickly diverge when each assembles its own pipeline and
+persistence dependencies. A single transport-neutral runtime makes workspace,
+analysis, retrieval, context, diagnostics and errors consistent while keeping
+Project as the Aggregate Root.
+
+## Lesson Learned — No-Model Operation Must Be a Tested Product Mode
+
+Optional LLM support is not enough if the default pipeline crashes without a
+model. Embeddings are now explicitly disabled by default, and tests prove that
+indexing, incremental knowledge, graph construction, understanding and
+structural exploration remain useful. Local hash vectors are described as a
+deterministic fallback, never as learned semantic understanding.
+
+## Lesson Learned — Public Execution Requires Explicit Safety Semantics
+
+Only one analysis may operate on a workspace, while independent projects may
+run concurrently. Cancellation is safe only before execution starts; a wait
+timeout must not pretend that the atomic analysis itself was cancelled.
+Failed work must release locks and preserve the prior committed snapshot.
+
+## Lesson Learned — Filesystem Authority Belongs to Runtime Policy
+
+CLI, MCP and REST must not make separate path decisions. Canonical allowlists,
+symlink escape checks and workspace/resource limits are applied before a
+Project is created, so adding a transport does not expand authority.
+
+## Lesson Learned — Observability Must Not Become Data Exfiltration
+
+Correlation IDs, durations and aggregate counts are operationally useful.
+Source code, query text, credentials and raw exception messages are not.
+Structured events deliberately retain categories and metrics while excluding
+content.
+
+## Milestone Result
+
+- Application runtime and deterministic workspace lifecycle implemented.
+- Layered secret-free configuration implemented.
+- CLI, MCP and REST public interfaces implemented.
+- Concurrent execution and workspace isolation implemented.
+- Security and content-safe observability implemented.
+- Model-free operation explicitly validated.
+- 471 backend tests and 59 architecture tests passing.

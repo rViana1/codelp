@@ -20,6 +20,22 @@ class IntelligentRetrievalEngine:
         "file_depends_on_file": 0.35,
     }
 
+    def __init__(
+        self,
+        *,
+        semantic_weight: float = 0.70,
+        structural_weight: float = 0.25,
+        historical_weight: float = 0.05,
+    ) -> None:
+        weights = (semantic_weight, structural_weight, historical_weight)
+        if any(weight < 0 or weight > 1 for weight in weights):
+            raise ValueError("Retrieval weights must be between 0 and 1")
+        if abs(sum(weights) - 1.0) > 1e-9:
+            raise ValueError("Retrieval weights must total 1.0")
+        self.semantic_weight = semantic_weight
+        self.structural_weight = structural_weight
+        self.historical_weight = historical_weight
+
     def enrich(
         self,
         retrieval: RetrievalCollection,
@@ -93,9 +109,9 @@ class IntelligentRetrievalEngine:
             structural_score = min(structural[chunk_id], 1.0)
             historical_score = min(historical[chunk_id], 1.0)
             final_score = (
-                semantic_score * 0.70
-                + structural_score * 0.25
-                + historical_score * 0.05
+                semantic_score * self.semantic_weight
+                + structural_score * self.structural_weight
+                + historical_score * self.historical_weight
             )
             facts = sorted(evidence[chunk_id])
             results.append(

@@ -993,6 +993,8 @@ Current ADRs
 - ADR-015 — Deterministic Knowledge Updates & Rollback
 - ADR-016 — Persistent Knowledge Graph Projection
 - ADR-017 — Explainable Graph-Aware Retrieval and External Knowledge Access
+- ADR-018 — Application Runtime and Public Transport Boundary
+- ADR-019 — Workspace Execution, Isolation and Operational Safety
 
 Future ADRs
 
@@ -1473,7 +1475,37 @@ retrieval fusion policy and mandatory external application-service boundary.
 
 ---
 
-# 18. Engineering Philosophy
+# 18. Application Runtime and Public Interfaces
+
+`CodelpApplication` is the transport-neutral application facade. It manages
+explicit workspace handles and coordinates the established pipeline,
+Knowledge lifecycle, Understanding, Retrieval and Context services. Project
+remains the only domain Aggregate Root; workspace and execution state are
+application concerns.
+
+Configuration precedence is defaults, user configuration, project-local
+configuration, environment and explicit overrides. Configuration contains no
+credential value fields. Model-free operation is the default: static
+analysis, persistent graph knowledge, deterministic understanding and
+structural exploration remain available without embeddings or an LLM.
+
+CLI, stateless MCP JSON-RPC and REST are adapters over the same runtime.
+Architecture tests forbid these transports from assembling the pipeline or
+accessing Knowledge persistence. MCP supports the current `2026-07-28`
+stateless protocol and a `2025-11-25` compatibility handshake.
+
+Analysis executions are isolated per workspace and may run concurrently only
+across distinct projects. Workspace allowlists, canonical path resolution,
+symlink escape prevention and resource limits apply before transport-specific
+logic. Structured events expose correlation, duration and aggregate metrics
+without source code, query text, credentials or raw error details.
+
+ADR-018 records runtime and public transport ownership. ADR-019 records
+execution, workspace security and observability policy.
+
+---
+
+# 19. Engineering Philosophy
 
 Codelp is designed as an engineering platform rather than a collection of utilities.
 
