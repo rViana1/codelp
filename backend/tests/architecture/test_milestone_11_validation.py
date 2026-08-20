@@ -56,3 +56,21 @@ def test_storage_remains_replaceable_and_llm_optional():
             or item.startswith("app.llm")
             for item in values
         )
+
+
+def test_public_diagnostics_are_transport_neutral():
+    values = imports(ROOT / "backend/app/runtime/diagnostics.py")
+    assert not any(
+        item.startswith("app.cli")
+        or item.startswith("app.api")
+        or item.startswith("app.mcp")
+        or item.startswith("app.knowledge")
+        for item in values
+    )
+
+
+def test_storage_namespacing_does_not_leak_into_project_domain():
+    assert "storage_key" not in Project.model_fields
+    assert "workspace_id" not in Project.model_fields
+    api_models = imports(ROOT / "backend/app/api/models.py")
+    assert not any(item.startswith("app.knowledge") for item in api_models)

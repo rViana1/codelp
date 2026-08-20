@@ -20,11 +20,17 @@ from app.understanding.service import ProjectKnowledgeService
 from app.vectorstore.manager import VectorStoreManager
 from app.configuration.models import CodelpSettings
 
-from .exceptions import WorkspaceClosedError, WorkspaceNotFoundError
+from .exceptions import (
+    CapabilityUnavailableError,
+    InvalidRequestError,
+    WorkspaceClosedError,
+    WorkspaceNotFoundError,
+)
 from .models import ProjectWorkspace, WorkspaceState, WorkspaceStatus
-from .execution import AnalysisExecutionManager
+from .execution import AnalysisExecutionManager, ExecutionConflictError
 from .security import WorkspaceSecurityPolicy
 from .observability import RuntimeObservability
+from .diagnostics import categorize_exception, safe_diagnostic_message
 
 
 class CodelpApplication:
@@ -57,10 +63,17 @@ class CodelpApplication:
             (Path.cwd(),),
             max_open_workspaces=self.settings.security.max_open_workspaces,
             max_query_characters=self.settings.security.max_query_characters,
+            max_project_files=self.settings.security.max_project_files,
+            max_project_bytes=self.settings.security.max_project_bytes,
         )
         self.observability = observability or RuntimeObservability()
         self._workspaces: dict[str, ProjectWorkspace] = {}
-        self.execution_manager = AnalysisExecutionManager(self.analyze)
+        self.execution_manager = AnalysisExecutionManager(
+            self.analyze,
+            max_workers=self.settings.execution.max_workers,
+            categorize_error=lambda exc: categorize_exception(exc).value,
+            safe_error_message=safe_diagnostic_message,
+        )
 
     def open_project(
         self,
@@ -73,6 +86,7 @@ class CodelpApplication:
             raise FileNotFoundError(root)
         if not root.is_dir():
             raise NotADirectoryError(root)
+        self.security_policy.validate_project_budget(root)
         workspace_id = self._workspace_id(root)
         existing = self._workspaces.get(workspace_id)
         if existing is not None and existing.state != WorkspaceState.CLOSED:
@@ -117,7 +131,7 @@ class CodelpApplication:
                 status="failed",
                 workspace_id=workspace_id,
                 duration_seconds=time.perf_counter() - started,
-                error_category=type(exc).__name__,
+                error_category=categorize_exception(exc).value,
             )
             raise
         workspace.state = WorkspaceState.ANALYZED
@@ -171,7 +185,9 @@ class CodelpApplication:
         try:
             provider = self.analyzer.embedding_engine.provider
             if provider.info.name == "disabled":
-                raise RuntimeError("Embedding retrieval is disabled")
+                raise CapabilityUnavailableError(
+                    "Embedding retrieval is disabled"
+                )
             query_embedding = provider.generate_embedding(
                 CodeChunk(
                     id="__query__",
@@ -197,7 +213,7 @@ class CodelpApplication:
                 status="failed",
                 workspace_id=workspace_id,
                 duration_seconds=time.perf_counter() - started,
-                error_category=type(exc).__name__,
+                error_category=categorize_exception(exc).value,
             )
             raise
         self.observability.record(
@@ -247,7 +263,7 @@ class CodelpApplication:
             return self.knowledge_service.explore_related_code(project, entity_id)
         if view == "context":
             return self.knowledge_service.contextual_knowledge(project)
-        raise ValueError(f"Unsupported exploration view: {view}")
+        raise InvalidRequestError(f"Unsupported exploration view: {view}")
 
     def status(self, workspace_id: str) -> WorkspaceStatus:
         workspace = self._workspace(workspace_id)
@@ -320,7 +336,9 @@ class CodelpApplication:
     def close_project(self, workspace_id: str) -> ProjectWorkspace:
         workspace = self._workspace(workspace_id)
         if self.execution_manager.is_workspace_active(workspace_id):
-            raise RuntimeError("Cannot close a workspace during analysis")
+            raise ExecutionConflictError(
+                "Cannot close a workspace during analysis"
+            )
         workspace.state = WorkspaceState.CLOSED
         self.vector_store_manager.remove_project(
             workspace.project.metadata.root_path
@@ -342,6 +360,12 @@ class CodelpApplication:
         self, execution_id: str, timeout: float | None = None
     ):
         return self.execution_manager.wait(execution_id, timeout)
+
+    def shutdown(self, *, wait: bool = True) -> None:
+        for workspace_id in tuple(sorted(self._workspaces)):
+            if not self.execution_manager.is_workspace_active(workspace_id):
+                self.close_project(workspace_id)
+        self.execution_manager.shutdown(wait=wait)
 
     def _workspace(self, workspace_id: str) -> ProjectWorkspace:
         workspace = self._workspaces.get(workspace_id)

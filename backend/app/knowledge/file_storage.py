@@ -58,13 +58,20 @@ class FileKnowledgeStorage(KnowledgeStorage):
         self,
         knowledge: PersistentProjectKnowledge,
     ) -> None:
+        self.save_as(knowledge.metadata.project_id, knowledge)
+
+    def save_as(
+        self,
+        storage_key: str,
+        knowledge: PersistentProjectKnowledge,
+    ) -> None:
 
         normalized = self.normalizer.normalize(
             knowledge
         )
 
         path = self._project_path(
-            normalized.metadata.project_id
+            storage_key
         )
 
         temporary_path = path.with_suffix(
@@ -184,7 +191,14 @@ class FileKnowledgeStorage(KnowledgeStorage):
         self,
         cache: IncrementalAnalysisCache,
     ) -> None:
-        path = self._analysis_cache_path(cache.project_id)
+        self.save_analysis_cache_as(cache.project_id, cache)
+
+    def save_analysis_cache_as(
+        self,
+        storage_key: str,
+        cache: IncrementalAnalysisCache,
+    ) -> None:
+        path = self._analysis_cache_path(storage_key)
         temporary_path = path.with_suffix(".json.tmp")
         try:
             with temporary_path.open("w", encoding="utf-8") as file:

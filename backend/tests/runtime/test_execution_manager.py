@@ -22,6 +22,10 @@ def test_execution_identity_state_and_workspace_conflict():
         manager.submit("workspace-a")
     with pytest.raises(ExecutionTimeoutError):
         manager.wait(first.execution_id, timeout=0.001)
+    running = manager.get(first.execution_id)
+    assert running.state == ExecutionState.RUNNING
+    assert running.phase == "analysis"
+    assert running.progress_percent == 10
     release.set()
     completed = manager.wait(first.execution_id, timeout=1)
 
@@ -80,7 +84,10 @@ def test_failed_execution_is_sanitized_and_releases_workspace():
     second = manager.submit("workspace")
 
     assert failed.state == ExecutionState.FAILED
-    assert failed.error == "ValueError"
+    assert failed.error == "Analysis failed"
+    assert failed.error_category == "ValueError"
+    assert failed.phase == "failed"
+    assert failed.progress_percent == 100
     assert second.execution_id != first.execution_id
     manager.wait(second.execution_id, 1)
     manager.shutdown()

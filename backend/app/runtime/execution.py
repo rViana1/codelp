@@ -27,6 +27,9 @@ class AnalysisExecution(BaseModel):
     submitted_at: datetime
     started_at: datetime | None = None
     finished_at: datetime | None = None
+    phase: str = "queued"
+    progress_percent: int = 0
+    error_category: str | None = None
     error: str | None = None
 
 
@@ -46,6 +49,8 @@ class AnalysisExecutionManager:
         analyze: Callable[[str], object],
         *,
         max_workers: int = 4,
+        categorize_error: Callable[[Exception], str] | None = None,
+        safe_error_message: Callable[[Exception], str] | None = None,
     ) -> None:
         self._analyze = analyze
         self._executor = ThreadPoolExecutor(
@@ -57,6 +62,12 @@ class AnalysisExecutionManager:
         self._futures: dict[str, Future] = {}
         self._active_by_workspace: dict[str, str] = {}
         self._sequence = 0
+        self._categorize_error = categorize_error or (
+            lambda exc: type(exc).__name__
+        )
+        self._safe_error_message = safe_error_message or (
+            lambda _exc: "Analysis failed"
+        )
 
     def submit(self, workspace_id: str) -> AnalysisExecution:
         with self._guard:
@@ -89,15 +100,22 @@ class AnalysisExecutionManager:
                 return
             record.state = ExecutionState.RUNNING
             record.started_at = datetime.now(timezone.utc)
+            record.phase = "analysis"
+            record.progress_percent = 10
         try:
             self._analyze(record.workspace_id)
         except Exception as exc:
             with self._guard:
                 record.state = ExecutionState.FAILED
-                record.error = type(exc).__name__
+                record.phase = "failed"
+                record.progress_percent = 100
+                record.error_category = self._categorize_error(exc)
+                record.error = self._safe_error_message(exc)
         else:
             with self._guard:
                 record.state = ExecutionState.COMPLETED
+                record.phase = "completed"
+                record.progress_percent = 100
         finally:
             with self._guard:
                 record.finished_at = datetime.now(timezone.utc)
@@ -128,6 +146,8 @@ class AnalysisExecutionManager:
             if not future.cancel():
                 return False
             record.state = ExecutionState.CANCELLED
+            record.phase = "cancelled"
+            record.progress_percent = 100
             record.finished_at = datetime.now(timezone.utc)
             self._active_by_workspace.pop(record.workspace_id, None)
             return True

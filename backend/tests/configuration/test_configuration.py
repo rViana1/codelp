@@ -9,6 +9,7 @@ from app.configuration import (
     ConfiguredScanFilter,
 )
 from app.runtime import create_configured_application
+from app.runtime.exceptions import InterfaceDisabledError
 
 
 def write_json(path, value):
@@ -34,6 +35,18 @@ def test_configuration_precedence_is_explicit_and_deterministic(tmp_path):
     )
 
     assert settings.retrieval.default_limit == 4
+
+
+def test_user_configuration_is_discovered_automatically(tmp_path):
+    home = tmp_path / "configuration-home"
+    write_json(
+        home / "codelp/config.json",
+        {"retrieval": {"default_limit": 17}},
+    )
+
+    settings = ConfigurationLoader(user_config_home=home).load(environment={})
+
+    assert settings.retrieval.default_limit == 17
 
 
 def test_environment_can_enable_embeddings_but_not_inject_unknown_secrets():
@@ -125,3 +138,15 @@ def test_configured_application_does_not_create_a_missing_project(tmp_path):
         create_configured_application(missing, environment={})
 
     assert not missing.exists()
+
+
+def test_disabled_external_interface_is_enforced(tmp_path):
+    root = tmp_path / "project"
+    root.mkdir()
+    write_json(
+        root / ".codelp/config.json",
+        {"interfaces": {"cli_enabled": False}},
+    )
+
+    with pytest.raises(InterfaceDisabledError, match="cli interface"):
+        create_configured_application(root, environment={}, interface="cli")

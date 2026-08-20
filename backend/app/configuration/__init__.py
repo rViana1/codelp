@@ -3,6 +3,7 @@ from .models import (
     CodelpSettings,
     EmbeddingSettings,
     InterfaceSettings,
+    ExecutionSettings,
     PersistenceSettings,
     RetrievalSettings,
     ScannerSettings,
@@ -18,6 +19,7 @@ __all__ = [
     "EmbeddingSettings",
     "RetrievalSettings",
     "InterfaceSettings",
+    "ExecutionSettings",
     "ConfiguredScanFilter",
     "SecuritySettings",
 ]

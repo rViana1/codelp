@@ -70,13 +70,21 @@ class RetrievalSettings(ConfigurationModel):
 class InterfaceSettings(ConfigurationModel):
     cli_enabled: bool = True
     mcp_enabled: bool = True
-    rest_enabled: bool = False
+    rest_enabled: bool = True
+
+
+class ExecutionSettings(ConfigurationModel):
+    max_workers: int = Field(default=4, gt=0, le=64)
+    default_wait_timeout_seconds: float = Field(default=30.0, gt=0, le=300)
 
 
 class SecuritySettings(ConfigurationModel):
     allowed_project_roots: tuple[Path, ...] = ()
     max_open_workspaces: int = Field(default=16, gt=0, le=1024)
     max_query_characters: int = Field(default=10000, gt=0)
+    max_request_bytes: int = Field(default=1024 * 1024, gt=0)
+    max_project_files: int = Field(default=100000, gt=0)
+    max_project_bytes: int = Field(default=2 * 1024 * 1024 * 1024, gt=0)
 
 
 class CodelpSettings(ConfigurationModel):
@@ -87,6 +95,7 @@ class CodelpSettings(ConfigurationModel):
     embeddings: EmbeddingSettings = Field(default_factory=EmbeddingSettings)
     retrieval: RetrievalSettings = Field(default_factory=RetrievalSettings)
     interfaces: InterfaceSettings = Field(default_factory=InterfaceSettings)
+    execution: ExecutionSettings = Field(default_factory=ExecutionSettings)
     security: SecuritySettings = Field(default_factory=SecuritySettings)
     llm_enabled: bool = False
 

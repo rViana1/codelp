@@ -1,9 +1,12 @@
 import io
 import json
 
+import pytest
+
 from app.configuration import CodelpSettings
 from app.mcp.transport import CodelpMCPTransport
 from app.runtime import create_codelp_application
+from app.runtime.exceptions import InterfaceDisabledError
 
 
 def transport(tmp_path):
@@ -55,11 +58,13 @@ def test_mcp_tools_open_analyze_explore_query_and_close_workspace(tmp_path):
     server = transport(tmp_path)
 
     tools = request(server, 1, "tools/list")["result"]["tools"]
+    assert all("inputSchema" in item and "outputSchema" in item for item in tools)
     assert [item["name"] for item in tools] == [
         "workspace_open",
         "workspace_analyze",
         "project_explore",
         "project_query",
+        "project_context",
         "workspace_close",
     ]
     opened = request(
@@ -99,14 +104,24 @@ def test_mcp_tools_open_analyze_explore_query_and_close_workspace(tmp_path):
             "arguments": {"workspace_id": workspace_id, "text": "hello"},
         },
     )
+    contextualized = request(
+        server,
+        6,
+        "tools/call",
+        {
+            "name": "project_context",
+            "arguments": {"workspace_id": workspace_id, "text": "hello"},
+        },
+    )
 
     assert analyzed["result"]["structuredContent"]["state"] == "analyzed"
-    assert explored["result"]["structuredContent"]["project_id"] == "demo"
+    assert explored["result"]["structuredContent"]["data"]["project_id"] == "demo"
     assert queried["result"]["structuredContent"]["results"]
+    assert contextualized["result"]["structuredContent"]["context"] is not None
 
     closed = request(
         server,
-        6,
+        7,
         "tools/call",
         {
             "name": "workspace_close",
@@ -187,3 +202,28 @@ def test_mcp_authorization_boundary_is_injected(tmp_path):
         "code": -32001,
         "message": "Request is not authorized",
     }
+
+
+def test_mcp_request_size_and_interface_configuration_are_enforced(tmp_path):
+    settings = CodelpSettings(security={"max_request_bytes": 4})
+    application = create_codelp_application(
+        tmp_path / "knowledge",
+        allowed_roots=(tmp_path,),
+        settings=settings,
+    )
+    output = io.StringIO()
+
+    CodelpMCPTransport(application).run_stdio(
+        io.StringIO('{"jsonrpc":"2.0"}\n'), output
+    )
+
+    error = json.loads(output.getvalue())["error"]
+    assert error["data"]["category"] == "security_error"
+
+    disabled = create_codelp_application(
+        tmp_path / "disabled-knowledge",
+        allowed_roots=(tmp_path,),
+        settings=CodelpSettings(interfaces={"mcp_enabled": False}),
+    )
+    with pytest.raises(InterfaceDisabledError):
+        CodelpMCPTransport(disabled)

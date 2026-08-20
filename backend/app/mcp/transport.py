@@ -10,7 +10,8 @@ from collections.abc import Callable
 from urllib.parse import urlparse
 
 from app.runtime import CodelpApplication
-from app.runtime.exceptions import WorkspaceNotFoundError
+from app.runtime import categorize_exception, safe_diagnostic_message
+from app.runtime.exceptions import InterfaceDisabledError
 
 
 class MCPProtocolError(Exception):
@@ -37,6 +38,12 @@ class CodelpMCPTransport:
                 "required": ["path"],
                 "additionalProperties": False,
             },
+            "outputSchema": {
+                "type": "object",
+                "properties": {"workspace_id": {"type": "string"}},
+                "required": ["workspace_id"],
+                "additionalProperties": False,
+            },
         },
         {
             "name": "workspace_analyze",
@@ -46,6 +53,11 @@ class CodelpMCPTransport:
                 "properties": {"workspace_id": {"type": "string"}},
                 "required": ["workspace_id"],
                 "additionalProperties": False,
+            },
+            "outputSchema": {
+                "type": "object",
+                "required": ["workspace_id", "state", "capabilities"],
+                "additionalProperties": True,
             },
         },
         {
@@ -59,6 +71,15 @@ class CodelpMCPTransport:
                     "entity_id": {"type": ["string", "null"]},
                 },
                 "required": ["workspace_id", "view"],
+                "additionalProperties": False,
+            },
+            "outputSchema": {
+                "type": "object",
+                "properties": {
+                    "view": {"type": "string"},
+                    "data": {},
+                },
+                "required": ["view", "data"],
                 "additionalProperties": False,
             },
         },
@@ -75,6 +96,30 @@ class CodelpMCPTransport:
                 "required": ["workspace_id", "text"],
                 "additionalProperties": False,
             },
+            "outputSchema": {
+                "type": "object",
+                "required": ["query", "results"],
+                "additionalProperties": True,
+            },
+        },
+        {
+            "name": "project_context",
+            "description": "Generate provenance-rich context for a query.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "workspace_id": {"type": "string"},
+                    "text": {"type": "string"},
+                    "limit": {"type": "integer", "minimum": 1},
+                },
+                "required": ["workspace_id", "text"],
+                "additionalProperties": False,
+            },
+            "outputSchema": {
+                "type": "object",
+                "required": ["project", "understanding", "context"],
+                "additionalProperties": False,
+            },
         },
         {
             "name": "workspace_close",
@@ -83,6 +128,15 @@ class CodelpMCPTransport:
                 "type": "object",
                 "properties": {"workspace_id": {"type": "string"}},
                 "required": ["workspace_id"],
+                "additionalProperties": False,
+            },
+            "outputSchema": {
+                "type": "object",
+                "properties": {
+                    "workspace_id": {"type": "string"},
+                    "state": {"const": "closed"},
+                },
+                "required": ["workspace_id", "state"],
                 "additionalProperties": False,
             },
         },
@@ -94,6 +148,8 @@ class CodelpMCPTransport:
         *,
         authorize: Callable[[dict[str, object]], bool] | None = None,
     ) -> None:
+        if not application.settings.interfaces.mcp_enabled:
+            raise InterfaceDisabledError("mcp")
         self.application = application
         self.authorize = authorize
 
@@ -119,14 +175,24 @@ class CodelpMCPTransport:
             if exc.data is not None:
                 error["data"] = exc.data
             return {"jsonrpc": "2.0", "id": request_id, "error": error}
-        except (ValueError, FileNotFoundError, NotADirectoryError) as exc:
-            return self._error(request_id, -32602, str(exc))
-        except WorkspaceNotFoundError as exc:
-            return self._error(request_id, -32004, f"Unknown workspace: {exc.args[0]}")
-        except RuntimeError as exc:
-            return self._error(request_id, -32003, str(exc))
-        except Exception:
-            return self._error(request_id, -32603, "Internal Codelp error")
+        except Exception as exc:
+            category = categorize_exception(exc)
+            error_code = {
+                "user_error": -32602,
+                "project_error": -32004,
+                "configuration_error": -32002,
+                "capability_unavailable": -32003,
+                "security_error": -32001,
+                "execution_conflict": -32009,
+                "execution_timeout": -32008,
+                "internal_error": -32603,
+            }[category.value]
+            return self._error(
+                request_id,
+                error_code,
+                safe_diagnostic_message(exc),
+                data={"category": category.value},
+            )
 
     def _dispatch(self, method: str, params: dict[str, object]):
         if method == "server/discover":
@@ -198,11 +264,15 @@ class CodelpMCPTransport:
             self.application.analyze(workspace_id)
             data = self.application.status(workspace_id).model_dump(mode="json")
         elif name == "project_explore":
-            data = self.application.explore(
-                str(arguments["workspace_id"]),
-                str(arguments["view"]),
-                arguments.get("entity_id"),
-            )
+            view = str(arguments["view"])
+            data = {
+                "view": view,
+                "data": self.application.explore(
+                    str(arguments["workspace_id"]),
+                    view,
+                    arguments.get("entity_id"),
+                ),
+            }
         elif name == "project_query":
             result = self.application.query(
                 str(arguments["workspace_id"]),
@@ -210,6 +280,14 @@ class CodelpMCPTransport:
                 limit=arguments.get("limit"),
             )
             data = result.model_dump(mode="json")
+        elif name == "project_context":
+            workspace_id = str(arguments["workspace_id"])
+            self.application.query(
+                workspace_id,
+                str(arguments["text"]),
+                limit=arguments.get("limit"),
+            )
+            data = self.application.explore(workspace_id, "context")
         elif name == "workspace_close":
             closed = self.application.close_project(
                 str(arguments["workspace_id"])
@@ -285,11 +363,14 @@ class CodelpMCPTransport:
         }
 
     @staticmethod
-    def _error(request_id, code, message):
+    def _error(request_id, code, message, data=None):
+        error = {"code": code, "message": message}
+        if data is not None:
+            error["data"] = data
         return {
             "jsonrpc": "2.0",
             "id": request_id,
-            "error": {"code": code, "message": message},
+            "error": error,
         }
 
     def run_stdio(
@@ -299,14 +380,29 @@ class CodelpMCPTransport:
     ) -> None:
         source = input_stream or sys.stdin
         target = output_stream or sys.stdout
-        for line in source:
-            if not line.strip():
-                continue
-            try:
-                request = json.loads(line)
-                response = self.handle(request)
-            except json.JSONDecodeError:
-                response = self._error(None, -32700, "Parse error")
-            if response is not None:
-                target.write(json.dumps(response, separators=(",", ":")) + "\n")
-                target.flush()
+        try:
+            for line in source:
+                if not line.strip():
+                    continue
+                if len(line.encode("utf-8")) > (
+                    self.application.settings.security.max_request_bytes
+                ):
+                    response = self._error(
+                        None,
+                        -32600,
+                        "Request exceeds configured size limit",
+                        data={"category": "security_error"},
+                    )
+                else:
+                    try:
+                        request = json.loads(line)
+                        response = self.handle(request)
+                    except json.JSONDecodeError:
+                        response = self._error(None, -32700, "Parse error")
+                if response is not None:
+                    target.write(
+                        json.dumps(response, separators=(",", ":")) + "\n"
+                    )
+                    target.flush()
+        finally:
+            self.application.shutdown()

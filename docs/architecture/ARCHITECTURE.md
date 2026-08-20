@@ -1483,22 +1483,29 @@ Knowledge lifecycle, Understanding, Retrieval and Context services. Project
 remains the only domain Aggregate Root; workspace and execution state are
 application concerns.
 
-Configuration precedence is defaults, user configuration, project-local
-configuration, environment and explicit overrides. Configuration contains no
-credential value fields. Model-free operation is the default: static
+Configuration precedence is defaults, automatically discovered or explicit
+user configuration, project-local configuration, environment and CLI or
+application overrides. Interface enablement is enforced by composition.
+Configuration contains no credential value fields. Model-free operation is the default: static
 analysis, persistent graph knowledge, deterministic understanding and
 structural exploration remain available without embeddings or an LLM.
 
 CLI, stateless MCP JSON-RPC and REST are adapters over the same runtime.
 Architecture tests forbid these transports from assembling the pipeline or
 accessing Knowledge persistence. MCP supports the current `2026-07-28`
-stateless protocol and a `2025-11-25` compatibility handshake.
+stateless protocol and a `2025-11-25` compatibility handshake. The official
+MCP SDK validates discovery, schemas and calls over a real stdio subprocess.
 
 Analysis executions are isolated per workspace and may run concurrently only
-across distinct projects. Workspace allowlists, canonical path resolution,
-symlink escape prevention and resource limits apply before transport-specific
-logic. Structured events expose correlation, duration and aggregate metrics
+across distinct projects. Canonical-root storage namespaces keep equal project
+directory names isolated without changing public project identity. Workspace
+allowlists, canonical path resolution, symlink escape prevention and aggregate
+request/project/execution limits apply before transport-specific logic.
+Execution phase, progress and wait timeouts are external contracts. Structured
+events expose correlation, duration and aggregate metrics
 without source code, query text, credentials or raw error details.
+CLI, MCP and REST share explicit user, project, configuration, capability,
+security, conflict, timeout and internal diagnostic categories.
 
 ADR-018 records runtime and public transport ownership. ADR-019 records
 execution, workspace security and observability policy.

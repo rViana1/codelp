@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import threading
 import time
 from pathlib import Path
 
@@ -21,8 +22,14 @@ class ProjectScanner:
         self._files: list[Path] = []
         self._directories: list[Path] = []
         self._errors: list[str] = []
+        self._scan_lock = threading.RLock()
 
     def scan(self, root: Path) -> ScanResult:
+        """Serialize discovery because Scanner owns reusable traversal buffers."""
+        with self._scan_lock:
+            return self._scan(root)
+
+    def _scan(self, root: Path) -> ScanResult:
         """
         Scans a project directory and returns its structure.
         """

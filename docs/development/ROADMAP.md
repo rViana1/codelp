@@ -1434,6 +1434,8 @@ Phase 2 — Workspace & Configuration Management
 - Strict typed configuration model introduced with unknown-field rejection.
 - Deterministic precedence defined for defaults, user file, project file,
   environment variables and explicit overrides.
+- User configuration discovered automatically through XDG/user configuration
+  paths or `CODELP_USER_CONFIG`.
 - Project-local `.codelp/config.json` supported.
 - Scanner ignore, hidden-file, extension and maximum-size policy configured.
 - Persistence paths resolve relative to the project workspace.
@@ -1444,14 +1446,19 @@ Phase 2 — Workspace & Configuration Management
   validated.
 - Configuration contains no secret value fields and ignores unknown secret
   environment variables.
+- CLI overrides and CLI/MCP/REST enablement settings enforced at composition.
 - Configuration dependency boundaries protected by architecture tests.
 
 Phase 3 — Command-Line Interface
 
 - Typer CLI added exclusively over `CodelpApplication`.
-- `init`, `analyze`, `status`, `query`, `context` and `explore` commands added.
+- `init`, `analyze`/`analyse`, `status`, `query` and `context` commands added.
+- Explicit project, symbol, dependency, history, duplicate, similarity and
+  related-code exploration subcommands added.
 - Human-readable and canonical deterministic JSON output supported.
 - Stable command exit codes defined.
+- Expected and internal failures mapped to sanitized categories without default
+  stack traces.
 - Project-local configuration initialization is secret-free and disables
   models by default.
 - CLI architecture test prevents direct pipeline or storage assembly.
@@ -1464,19 +1471,26 @@ Phase 4 — Real MCP Transport
   compatibility window.
 - Workspace open, analysis, exploration, query and close tools exposed with
   JSON Schema contracts.
+- Provenance-rich context generation exposed as an explicit tool.
+- Stable input and structured-output schemas published for every tool.
 - Dynamic status, knowledge and context resources exposed by workspace URI.
 - Tool and resource lists use deterministic ordering and cache metadata.
 - Parse, method, parameter, workspace and capability failures mapped to stable
   JSON-RPC errors.
 - MCP handlers delegate exclusively to the application runtime.
+- Stdio lifecycle and calls validated through the official MCP Python SDK.
 
 Phase 5 — REST API Foundation
 
 - FastAPI composition over `CodelpApplication` implemented.
 - Health, readiness, workspace, analysis, query, context, knowledge, symbol
   and exploration endpoints added.
+- Dedicated understanding, dependency, history, duplicate and similarity
+  endpoints added.
+- Execution wait timeout and progress contracts added.
 - Strict request DTOs and generated OpenAPI contract added.
 - Workspace, validation and unavailable-capability errors mapped consistently.
+- Every REST failure uses the same code, message and category envelope.
 - REST models never expose persistent Knowledge representations.
 
 Phase 6 — Execution & Concurrency Management
@@ -1486,13 +1500,17 @@ Phase 6 — Execution & Concurrency Management
 - Different projects may execute concurrently.
 - Queued cancellation, wait timeout and execution status supported.
 - Failed executions release locks and preserve committed knowledge.
+- Stable execution phase and progress percentage exposed.
 - REST execution submission, status and safe cancellation endpoints added.
+- Canonical-root storage namespaces prevent equal project names colliding
+  during concurrent multi-project execution.
 
 Phase 7 — Security & Operational Safety
 
 - Canonical workspace root allowlists enforced centrally.
 - Filesystem-root allowlists and symlink escapes rejected.
-- Maximum workspace and query limits enforced.
+- Maximum workspace, request, query, project file, project byte and execution
+  worker limits enforced.
 - Scanner hidden, extension and file-size policies shared by all transports.
 - External consumers cannot invoke storage operations.
 - Secret values remain outside configuration and persistent knowledge.
@@ -1505,6 +1523,8 @@ Phase 8 — Observability & Diagnostics
 - Sanitized error categories replace raw exception details in event records.
 - Source content, query text and credentials are excluded from logs.
 - REST metrics endpoint exposes aggregate counters only.
+- User, project, configuration, capability, security, conflict, timeout and
+  internal diagnostic categories shared by every transport.
 
 Phase 9 — Testing
 
@@ -1512,7 +1532,10 @@ Phase 9 — Testing
   observability test suites added.
 - Full and incremental execution validated through public runtime contracts.
 - CLI, MCP and REST output consistency validated for the same project.
+- Query, exploration and error-category consistency validated across all three
+  public interfaces.
 - MCP current and compatibility protocol contracts validated.
+- Official external MCP client negotiation and tool invocation validated.
 - Model-free operation validated explicitly.
 
 Phase 10 — Architecture Validation
@@ -1529,6 +1552,8 @@ Phase 11 — Documentation & Release Preparation
 
 - README, roadmap, changelog, lessons and architecture references updated.
 - CLI, MCP, REST, configuration, security and no-model operation documented.
+- Operational single-process deployment, lifecycle, reverse-proxy, filesystem,
+  backup and limit guidance documented.
 - ADR-018 records runtime and public transport ownership.
 - ADR-019 records execution, workspace security and observability policy.
 - Release prepared for `v0.11.0`; commit, tag and push remain user-controlled.

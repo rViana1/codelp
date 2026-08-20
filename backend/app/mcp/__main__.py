@@ -6,7 +6,7 @@ from .transport import CodelpMCPTransport
 
 
 def main() -> None:
-    application = create_configured_application(Path.cwd())
+    application = create_configured_application(Path.cwd(), interface="mcp")
     CodelpMCPTransport(application).run_stdio()
 
 

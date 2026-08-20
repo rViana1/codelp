@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
+import hashlib
+from collections.abc import Callable
 from pathlib import Path
+
+from core.project import Project
 
 from app.chunking.chunker import ProjectChunker
 from app.context.builder import ContextBuilder
@@ -35,6 +39,7 @@ from app.configuration import (
 )
 
 from .application import CodelpApplication
+from .exceptions import InterfaceDisabledError
 from .security import WorkspaceSecurityPolicy
 
 
@@ -44,6 +49,7 @@ def create_codelp_application(
     embedding_provider: EmbeddingProvider | None = None,
     settings: CodelpSettings | None = None,
     allowed_roots: tuple[str | Path, ...] | None = None,
+    storage_key_resolver: Callable[[Project], str] | None = None,
 ) -> CodelpApplication:
     """Build the default local, LLM-independent Codelp runtime."""
 
@@ -63,10 +69,13 @@ def create_codelp_application(
         configured_roots,
         max_open_workspaces=settings.security.max_open_workspaces,
         max_query_characters=settings.security.max_query_characters,
+        max_project_files=settings.security.max_project_files,
+        max_project_bytes=settings.security.max_project_bytes,
     )
     graph_builder = KnowledgeGraphBuilder(
         settings.retrieval.similarity_threshold
     )
+    resolve_storage_key = storage_key_resolver or _runtime_storage_key
     lifecycle = KnowledgeLifecycleService(
         loader=KnowledgeLoader(storage),
         restorer=KnowledgeRestorer(),
@@ -74,7 +83,9 @@ def create_codelp_application(
             KnowledgeBuilder(graph_builder),
             storage,
             update_engine=KnowledgeUpdateEngine(graph_builder),
+            storage_key_resolver=resolve_storage_key,
         ),
+        storage_key_resolver=resolve_storage_key,
     )
     provider = embedding_provider or (
         LocalHashEmbeddingProvider(settings.embeddings.dimensions)
@@ -118,6 +129,7 @@ def create_configured_application(
     environment: dict[str, str] | None = None,
     overrides: dict[str, object] | None = None,
     embedding_provider: EmbeddingProvider | None = None,
+    interface: str | None = None,
 ) -> CodelpApplication:
     """Resolve all configuration layers and build a project-local runtime."""
 
@@ -132,6 +144,12 @@ def create_configured_application(
         environment=environment,
         overrides=overrides,
     )
+    if interface is not None:
+        field = f"{interface}_enabled"
+        if not hasattr(settings.interfaces, field):
+            raise ValueError(f"Unknown external interface: {interface}")
+        if not getattr(settings.interfaces, field):
+            raise InterfaceDisabledError(interface)
     knowledge_path = settings.persistence.path
     if not knowledge_path.is_absolute():
         knowledge_path = root / knowledge_path
@@ -140,4 +158,14 @@ def create_configured_application(
         embedding_provider=embedding_provider,
         settings=settings,
         allowed_roots=(root,),
+        storage_key_resolver=(
+            _runtime_storage_key
+            if interface in {"mcp", "rest"}
+            else lambda project: project.metadata.root_path.name
+        ),
     )
+
+
+def _runtime_storage_key(project: Project) -> str:
+    root = project.metadata.root_path.expanduser().resolve().as_posix()
+    return hashlib.sha256(root.encode("utf-8")).hexdigest()

@@ -138,3 +138,61 @@ def test_runtime_remains_useful_when_all_models_are_disabled(tmp_path):
     assert project.understanding_result is not None
     assert status.capabilities["retrieval"] is False
     assert status.capabilities["llm"] is False
+
+
+def test_failed_public_execution_preserves_previous_committed_knowledge(
+    tmp_path,
+):
+    root = project_root(tmp_path)
+    runtime = application(tmp_path)
+    workspace = runtime.open_project(root)
+    runtime.analyze(workspace.workspace_id)
+    snapshot = next(
+        path
+        for path in (tmp_path / "knowledge").glob("*.json")
+        if not path.name.endswith(".analysis-cache.json")
+    )
+    previous = snapshot.read_bytes()
+
+    runtime.analyzer.analyze = lambda _project: (_ for _ in ()).throw(
+        OSError("simulated internal failure")
+    )
+    execution = runtime.submit_analysis(workspace.workspace_id)
+    failed = runtime.wait_for_execution(execution.execution_id, 1)
+
+    assert failed.state.value == "failed"
+    assert failed.error_category == "internal_error"
+    assert "simulated internal failure" not in (failed.error or "")
+    assert snapshot.read_bytes() == previous
+    assert runtime.status(workspace.workspace_id).state.value == "analyzed"
+
+
+def test_multi_project_runtime_isolates_equal_directory_names(tmp_path):
+    first_root = tmp_path / "first/demo"
+    second_root = tmp_path / "second/demo"
+    first_root.mkdir(parents=True)
+    second_root.mkdir(parents=True)
+    (first_root / "main.py").write_text("def first(): pass\n")
+    (second_root / "main.py").write_text("def second(): pass\n")
+    runtime = application(tmp_path)
+    first = runtime.open_project(first_root)
+    second = runtime.open_project(second_root)
+
+    first_execution = runtime.submit_analysis(first.workspace_id)
+    second_execution = runtime.submit_analysis(second.workspace_id)
+    assert runtime.wait_for_execution(first_execution.execution_id, 2).state.value == (
+        "completed"
+    )
+    assert runtime.wait_for_execution(second_execution.execution_id, 2).state.value == (
+        "completed"
+    )
+
+    snapshots = [
+        path
+        for path in (tmp_path / "knowledge").glob("*.json")
+        if not path.name.endswith(".analysis-cache.json")
+    ]
+    assert len(snapshots) == 2
+    assert runtime.status(first.workspace_id).symbols == 1
+    assert runtime.status(second.workspace_id).symbols == 1
+    assert first.workspace_id != second.workspace_id

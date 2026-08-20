@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Callable
+
 from core.project import Project
 
 from app.knowledge.builder import KnowledgeBuilder
@@ -32,6 +34,7 @@ class KnowledgePersistenceService:
         normalizer=None,
         change_detector=None,
         update_engine=None,
+        storage_key_resolver: Callable[[Project], str] | None = None,
     ):
         self.builder = builder
         self.storage = storage
@@ -59,6 +62,9 @@ class KnowledgePersistenceService:
             if update_engine is not None
             else KnowledgeUpdateEngine()
         )
+        self.storage_key_resolver = storage_key_resolver or (
+            lambda project: project.metadata.root_path.name
+        )
 
 
     def persist(
@@ -72,11 +78,11 @@ class KnowledgePersistenceService:
         Creates, normalizes and persists project knowledge.
         """
 
-        project_id = project.metadata.root_path.name
+        storage_key = self.storage_key_resolver(project)
 
         if previous is _PREVIOUS_NOT_PROVIDED:
             previous = self.storage.load(
-                project_id
+                storage_key
             )
 
         candidate = self.builder.build(
@@ -103,9 +109,13 @@ class KnowledgePersistenceService:
         )
 
         try:
-            self.storage.save(knowledge)
+            save_as = getattr(self.storage, "save_as", None)
+            if save_as is not None:
+                save_as(storage_key, knowledge)
+            else:
+                self.storage.save(knowledge)
         except Exception:
-            self._rollback(previous, project_id)
+            self._rollback(previous, storage_key)
             raise
 
         project.knowledge_change_result = change_report
@@ -125,7 +135,11 @@ class KnowledgePersistenceService:
         """
         try:
             if previous is not None:
-                self.storage.save(previous)
+                save_as = getattr(self.storage, "save_as", None)
+                if save_as is not None:
+                    save_as(project_id, previous)
+                else:
+                    self.storage.save(previous)
             elif self.storage.exists(project_id):
                 self.storage.delete(project_id)
         except Exception:

@@ -63,3 +63,19 @@ def test_symlink_escape_resolves_outside_allowlist(tmp_path):
 
     with pytest.raises(WorkspaceSecurityError):
         policy.validate_project_root(link)
+
+
+def test_aggregate_project_file_and_size_limits_are_enforced(tmp_path):
+    root = tmp_path / "project"
+    root.mkdir()
+    (root / "one.py").write_text("1234")
+    (root / "two.py").write_text("5678")
+
+    with pytest.raises(WorkspaceSecurityError, match="file-count"):
+        WorkspaceSecurityPolicy(
+            (tmp_path,), max_project_files=1
+        ).validate_project_budget(root)
+    with pytest.raises(WorkspaceSecurityError, match="total-size"):
+        WorkspaceSecurityPolicy(
+            (tmp_path,), max_project_bytes=7
+        ).validate_project_budget(root)

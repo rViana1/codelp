@@ -2013,6 +2013,25 @@ Source code, query text, credentials and raw exception messages are not.
 Structured events deliberately retain categories and metrics while excluding
 content.
 
+## Lesson Learned — Public Contracts Must Be Tested by Real Consumers
+
+Direct handler tests did not enforce every MCP structured-output constraint.
+The official SDK immediately detected that a tool output schema needed an
+object root. A real subprocess client is now part of release validation in
+addition to fast unit-level protocol tests.
+
+## Lesson Learned — Workspace Identity Is Not a Storage Namespace
+
+Two unrelated projects may have the same directory name. Public project
+identity remains readable, while a canonical-root storage key isolates their
+snapshots and caches. This runtime concern stays outside the Project aggregate.
+
+## Lesson Learned — A Toggle Is Not Configuration Until It Is Enforced
+
+Declaring CLI, MCP and REST enablement fields was insufficient. Composition
+roots now reject disabled interfaces before opening workspaces, and CLI
+overrides participate in the documented precedence chain.
+
 ## Milestone Result
 
 - Application runtime and deterministic workspace lifecycle implemented.
@@ -2021,4 +2040,4 @@ content.
 - Concurrent execution and workspace isolation implemented.
 - Security and content-safe observability implemented.
 - Model-free operation explicitly validated.
-- 471 backend tests and 59 architecture tests passing.
+- 496 backend tests and 61 architecture tests passing.

@@ -1,8 +1,19 @@
 import json
 import logging
 
+import pytest
+from pydantic import ValidationError
+
 from app.configuration import CodelpSettings
-from app.runtime import create_codelp_application
+from app.runtime import (
+    CapabilityUnavailableError,
+    DiagnosticCategory,
+    InvalidRequestError,
+    categorize_exception,
+    create_codelp_application,
+    safe_diagnostic_message,
+)
+from app.runtime.security import WorkspaceSecurityError
 
 
 def test_runtime_records_analysis_and_retrieval_metrics_without_content(
@@ -59,7 +70,7 @@ def test_observability_records_sanitized_failure_category(tmp_path):
 
     event = runtime.observability.events()[-1]
     assert event.status == "failed"
-    assert event.error_category == "ValueError"
+    assert event.error_category == "internal_error"
     assert "sensitive failure detail" not in event.model_dump_json()
 
 
@@ -80,5 +91,39 @@ def test_disabled_retrieval_records_failure_without_query_text(tmp_path):
     event = runtime.observability.events()[-1]
     assert event.operation == "retrieval"
     assert event.status == "failed"
-    assert event.error_category == "RuntimeError"
+    assert event.error_category == "capability_unavailable"
     assert "DO_NOT_RECORD_THIS_QUERY" not in event.model_dump_json()
+
+
+@pytest.mark.parametrize(
+    ("error", "category"),
+    [
+        (InvalidRequestError("bad input"), DiagnosticCategory.USER),
+        (FileNotFoundError("missing project"), DiagnosticCategory.PROJECT),
+        (
+            CapabilityUnavailableError("disabled"),
+            DiagnosticCategory.CAPABILITY,
+        ),
+        (WorkspaceSecurityError("denied"), DiagnosticCategory.SECURITY),
+        (ValueError("sensitive internal detail"), DiagnosticCategory.INTERNAL),
+    ],
+)
+def test_public_diagnostic_taxonomy_is_stable_and_safe(error, category):
+    assert categorize_exception(error) == category
+    message = safe_diagnostic_message(error)
+    if category == DiagnosticCategory.INTERNAL:
+        assert "sensitive internal detail" not in message
+    else:
+        assert message
+
+
+def test_configuration_validation_has_explicit_diagnostic_category():
+    with pytest.raises(ValidationError) as captured:
+        CodelpSettings(retrieval={"semantic_weight": 0.9})
+
+    assert categorize_exception(captured.value) == (
+        DiagnosticCategory.CONFIGURATION
+    )
+    assert safe_diagnostic_message(captured.value) == (
+        "Invalid Codelp configuration"
+    )

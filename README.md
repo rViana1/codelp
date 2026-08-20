@@ -83,11 +83,13 @@ Implemented:
 Operational usage of the shared runtime, configuration and three public
 interfaces is documented in
 [`docs/user/RUNTIME_INTERFACES.md`](docs/user/RUNTIME_INTERFACES.md).
+Deployment and operational safety are documented in
+[`docs/user/DEPLOYMENT.md`](docs/user/DEPLOYMENT.md).
 
 Validation:
 
-- **471 automated tests passing**
-- **59 architecture boundary tests passing**
+- **496 automated tests passing**
+- **61 architecture boundary tests passing**
 - Deterministic outputs across executions
 - Stable symbol, chunk, embedding, retrieval and context identities
 - Stable persistent identities after file updates, moves and renames
@@ -316,9 +318,13 @@ The MCP layer exposes Codelp project knowledge without coupling the core pipelin
 - Deterministic workspace handles and explicit lifecycle
 - Full and incremental analysis execution
 - Optional asynchronous execution with status and safe queued cancellation
+- Stable execution phases, progress and public wait timeouts
 - CLI, stateless MCP stdio and REST/OpenAPI interfaces
 - Consistent project status, exploration, query and context contracts
 - Canonical root allowlists and symlink escape protection
+- Aggregate request, project and execution resource limits
+- Collision-safe multi-project storage namespaces
+- Shared public diagnostic categories and error envelopes
 - Structured metrics without source code, query text or secret values
 
 Codelp runs without an LLM. Embeddings are disabled by default; scanning,
@@ -332,10 +338,12 @@ Example commands:
 ```bash
 codelp init .
 codelp analyze . --json
+codelp analyse . --json
 codelp explore project --path . --json
+codelp explore dependencies --path . --json
 codelp query "authentication" --path . --json
 codelp-mcp
-codelp-api
+codelp-api --project-root . --host 127.0.0.1 --port 8000
 ```
 
 ---
@@ -435,7 +443,7 @@ pip install -e .
 pytest backend/tests -v
 ```
 
-Expected result: **471 passed**.
+Expected result: **496 passed**.
 
 ---
 

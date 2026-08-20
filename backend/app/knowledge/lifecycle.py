@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Callable
+
 from core.project import Project
 
 from app.knowledge.loader import KnowledgeLoader
@@ -34,6 +36,7 @@ class KnowledgeLifecycleService:
         persistence: KnowledgePersistenceService,
         planner: KnowledgeExecutionPlanner | None = None,
         cache_builder: IncrementalAnalysisCacheBuilder | None = None,
+        storage_key_resolver: Callable[[Project], str] | None = None,
     ) -> None:
 
         self.loader = loader
@@ -45,6 +48,9 @@ class KnowledgeLifecycleService:
         )
         self._prepared_knowledge = {}
         self._prepared_cache = {}
+        self.storage_key_resolver = storage_key_resolver or (
+            lambda project: project.metadata.root_path.name
+        )
 
 
     def prepare(
@@ -55,15 +61,15 @@ class KnowledgeLifecycleService:
         Loads and restores previous knowledge when available.
         """
 
-        project_id = project.metadata.root_path.name
+        storage_key = self.storage_key_resolver(project)
 
         knowledge = self.loader.load(
-            project_id,
+            storage_key,
         )
 
         self._prepared_knowledge[id(project)] = knowledge
         self._prepared_cache[id(project)] = self._load_analysis_cache(
-            project.metadata.root_path.name
+            storage_key
         )
 
         if knowledge is None:
@@ -106,7 +112,10 @@ class KnowledgeLifecycleService:
                 provider,
             )
             try:
-                self.save_analysis_cache(cache)
+                self.save_analysis_cache(
+                    cache,
+                    storage_key=self.storage_key_resolver(project),
+                )
             except Exception as exc:
                 project.diagnostics.append(
                     f"Incremental cache unavailable: {exc}"
@@ -139,6 +148,8 @@ class KnowledgeLifecycleService:
     def save_analysis_cache(
         self,
         cache: IncrementalAnalysisCache,
+        *,
+        storage_key: str | None = None,
     ) -> None:
         storage = getattr(self.persistence, "storage", None)
         if storage is None:
@@ -148,7 +159,10 @@ class KnowledgeLifecycleService:
             "save_analysis_cache",
             None,
         )
-        if saver is not None:
+        save_as = getattr(storage, "save_analysis_cache_as", None)
+        if storage_key is not None and save_as is not None:
+            save_as(storage_key, cache)
+        elif saver is not None:
             saver(cache)
 
     def _load_analysis_cache(

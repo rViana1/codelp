@@ -1,9 +1,13 @@
 import asyncio
 import json
+import threading
+
+import pytest
 
 from app.api import create_rest_api
 from app.configuration import CodelpSettings
 from app.runtime import create_codelp_application
+from app.runtime.exceptions import InterfaceDisabledError
 
 
 def api(tmp_path, *, embeddings=True):
@@ -19,7 +23,7 @@ def api(tmp_path, *, embeddings=True):
     return create_rest_api(runtime)
 
 
-def call(application, method, path, body=None, query_string=""):
+def call(application, method, path, body=None, query_string="", headers=None):
     messages = []
     encoded = json.dumps(body).encode() if body is not None else b""
     received = False
@@ -34,6 +38,8 @@ def call(application, method, path, body=None, query_string=""):
     async def send(message):
         messages.append(message)
 
+    request_headers = [(b"content-type", b"application/json")]
+    request_headers.extend(headers or [])
     scope = {
         "type": "http",
         "asgi": {"version": "3.0"},
@@ -43,7 +49,7 @@ def call(application, method, path, body=None, query_string=""):
         "path": path,
         "raw_path": path.encode(),
         "query_string": query_string.encode(),
-        "headers": [(b"content-type", b"application/json")],
+        "headers": request_headers,
         "client": ("test", 1),
         "server": ("test", 80),
         "root_path": "",
@@ -75,6 +81,9 @@ def test_health_readiness_and_openapi_contract(tmp_path):
     assert call(application, "GET", "/ready") == (200, {"status": "ready"})
     schema = application.openapi()
     assert "/workspaces/{workspace_id}/query" in schema["paths"]
+    assert "/workspaces/{workspace_id}/understanding" in schema["paths"]
+    assert "/workspaces/{workspace_id}/dependencies" in schema["paths"]
+    assert "/executions/{execution_id}/wait" in schema["paths"]
 
 
 def test_workspace_analysis_query_and_exploration_api(tmp_path):
@@ -128,8 +137,10 @@ def test_api_maps_workspace_capability_and_validation_errors(tmp_path):
 
     assert capability_status == 409
     assert capability["code"] == "capability_unavailable"
+    assert capability["category"] == "capability_unavailable"
     assert missing_status == 404
     assert missing["code"] == "workspace_not_found"
+    assert missing["category"] == "project_error"
 
 
 def test_api_authorization_is_injected_and_does_not_store_credentials(tmp_path):
@@ -146,3 +157,135 @@ def test_api_authorization_is_injected_and_does_not_store_credentials(tmp_path):
     assert status == 401
     assert payload["code"] == "unauthorized"
     assert call(application, "GET", "/health")[0] == 200
+
+
+def test_dedicated_understanding_relationship_and_context_endpoints(tmp_path):
+    application = api(tmp_path)
+    _, opened = call(
+        application,
+        "POST",
+        "/workspaces",
+        {"path": str(project(tmp_path))},
+    )
+    workspace_id = opened["workspace_id"]
+    call(application, "POST", f"/workspaces/{workspace_id}/analyze")
+
+    for suffix in (
+        "understanding",
+        "dependencies",
+        "history",
+        "duplicates",
+        "similarity",
+    ):
+        status, _payload = call(
+            application, "GET", f"/workspaces/{workspace_id}/{suffix}"
+        )
+        assert status == 200
+    status, context = call(
+        application,
+        "POST",
+        f"/workspaces/{workspace_id}/context",
+        {"text": "hello", "limit": 3},
+    )
+    assert status == 200
+    assert context["context"] is not None
+
+
+def test_execution_progress_wait_and_uniform_validation_error(tmp_path):
+    application = api(tmp_path)
+    _, opened = call(
+        application,
+        "POST",
+        "/workspaces",
+        {"path": str(project(tmp_path))},
+    )
+    workspace_id = opened["workspace_id"]
+    submitted_status, submitted = call(
+        application,
+        "POST",
+        f"/workspaces/{workspace_id}/executions",
+    )
+    waited_status, waited = call(
+        application,
+        "GET",
+        f"/executions/{submitted['execution_id']}/wait",
+        query_string="timeout=2",
+    )
+    invalid_status, invalid = call(
+        application,
+        "POST",
+        "/workspaces",
+        {"path": str(tmp_path), "unexpected": True},
+    )
+
+    assert submitted_status == 202
+    assert waited_status == 200
+    assert waited["state"] == "completed"
+    assert waited["phase"] == "completed"
+    assert waited["progress_percent"] == 100
+    assert invalid_status == 422
+    assert invalid == {
+        "code": "validation_error",
+        "message": "Request does not match the public API contract",
+        "category": "user_error",
+    }
+
+
+def test_rest_request_size_limit_is_enforced(tmp_path):
+    runtime = create_codelp_application(
+        tmp_path / "knowledge",
+        allowed_roots=(tmp_path,),
+        settings=CodelpSettings(security={"max_request_bytes": 4}),
+    )
+    application = create_rest_api(runtime)
+
+    status, payload = call(
+        application,
+        "POST",
+        "/workspaces",
+        {"path": str(tmp_path)},
+        headers=[(b"content-length", b"100")],
+    )
+
+    assert status == 413
+    assert payload["code"] == "request_too_large"
+
+
+def test_rest_wait_timeout_is_public_and_does_not_cancel_execution(tmp_path):
+    release = threading.Event()
+    runtime = create_codelp_application(
+        tmp_path / "knowledge", allowed_roots=(tmp_path,)
+    )
+    runtime.execution_manager._analyze = lambda _workspace_id: release.wait(1)
+    root = project(tmp_path)
+    workspace = runtime.open_project(root)
+    application = create_rest_api(runtime)
+    _, submitted = call(
+        application,
+        "POST",
+        f"/workspaces/{workspace.workspace_id}/executions",
+    )
+
+    status, payload = call(
+        application,
+        "GET",
+        f"/executions/{submitted['execution_id']}/wait",
+        query_string="timeout=0.001",
+    )
+    release.set()
+    runtime.wait_for_execution(submitted["execution_id"], 1)
+
+    assert status == 408
+    assert payload["code"] == "execution_timeout"
+    assert payload["category"] == "execution_timeout"
+
+
+def test_rest_interface_toggle_is_enforced(tmp_path):
+    runtime = create_codelp_application(
+        tmp_path / "knowledge",
+        allowed_roots=(tmp_path,),
+        settings=CodelpSettings(interfaces={"rest_enabled": False}),
+    )
+
+    with pytest.raises(InterfaceDisabledError):
+        create_rest_api(runtime)

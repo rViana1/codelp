@@ -18,11 +18,24 @@ Future changes will be documented here.
   symbol and exploration contracts with generated OpenAPI.
 - Added asynchronous analysis identities, per-workspace exclusion,
   cross-project concurrency, queued cancellation and wait timeouts.
+- Added stable execution phases, progress percentages and REST wait contracts.
+- Added deterministic canonical-root storage namespaces for collision-free
+  projects with equal directory names.
 - Added canonical workspace allowlists, symlink escape protection and resource
   limits shared by every public transport.
+- Added aggregate request, project file, project byte and worker limits.
 - Added structured correlation, duration, incremental reuse, graph and
   retrieval provenance metrics with content-safe diagnostics.
 - Added public-interface consistency and consolidated architecture tests.
+- Added shared diagnostic categories and uniform REST error envelopes.
+- Added dedicated REST understanding, dependency, history, duplicate,
+  similarity and context-generation endpoints.
+- Added automatic user configuration discovery, CLI overrides and enforced
+  interface enablement.
+- Added explicit CLI exploration subcommands and the `analyse` alias.
+- Added MCP structured-output schemas and an explicit context tool.
+- Added official MCP Python SDK subprocess compatibility validation.
+- Added operational deployment documentation.
 - Added ADR-018 and ADR-019.
 
 ### Architecture
@@ -30,12 +43,13 @@ Future changes will be documented here.
 - Project remains Aggregate Root.
 - CLI, MCP and REST use `CodelpApplication` and cannot assemble the pipeline or
   access persistent Knowledge models.
+- Public project identities remain independent from runtime storage namespaces.
 - Codelp remains useful without embeddings and has no generative LLM
   dependency.
 
 ### Validation
 
-- Validated 471 backend tests under two deterministic hash seeds and 59
+- Validated 496 backend tests under two deterministic hash seeds and 61
   architecture boundary tests.
 - Validated editable packaging and the `codelp`, `codelp-mcp` and `codelp-api`
   entry points.
